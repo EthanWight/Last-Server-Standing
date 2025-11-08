@@ -8,7 +8,6 @@ import android.graphics.PointF;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 import edu.commonwealthu.lastserverstanding.model.Enemy;
 import edu.commonwealthu.lastserverstanding.model.Projectile;
@@ -35,6 +34,16 @@ public class GameEngine {
     private long lastFpsTime;
     private int frameCount;
     
+    // Game systems
+    private CollisionSystem collisionSystem;
+    private Pathfinding pathfinding;
+    private WaveManager waveManager;
+    
+    // World dimensions
+    private int worldWidth;
+    private int worldHeight;
+    private int gridSize;
+    
     // Game constants
     private static final int STARTING_RESOURCES = 500;
     private static final int STARTING_HEALTH = 100;
@@ -56,6 +65,29 @@ public class GameEngine {
         fps = 0;
         lastFpsTime = System.currentTimeMillis();
         frameCount = 0;
+        
+        // Initialize world dimensions (will be set by GameView)
+        worldWidth = 1280;
+        worldHeight = 720;
+        gridSize = 64;
+        
+        // Initialize game systems
+        collisionSystem = new CollisionSystem(worldWidth, worldHeight, gridSize * 2);
+        pathfinding = new Pathfinding(worldWidth / gridSize, worldHeight / gridSize, gridSize);
+        waveManager = new WaveManager();
+    }
+    
+    /**
+     * Set world dimensions (called by GameView after initialization)
+     */
+    public void setWorldDimensions(int width, int height, int cellSize) {
+        this.worldWidth = width;
+        this.worldHeight = height;
+        this.gridSize = cellSize;
+        
+        // Reinitialize systems with correct dimensions
+        collisionSystem = new CollisionSystem(width, height, cellSize * 2);
+        pathfinding = new Pathfinding(width / cellSize, height / cellSize, cellSize);
     }
     
     /**
@@ -68,10 +100,21 @@ public class GameEngine {
         // Update FPS counter
         updateFPS();
         
-        // Update all towers
+        // Update collision system
+        collisionSystem.update(towers, enemies, projectiles);
+        
+        // Update wave manager
+        waveManager.update(deltaTime, this);
+        
+        // Update all towers with collision system for better targeting
         for (Tower tower : towers) {
             tower.update(deltaTime);
-            tower.acquireTarget(enemies);
+            
+            // Use collision system for more efficient target acquisition
+            if (tower.getTarget() == null || !tower.getTarget().isAlive()) {
+                Enemy closestEnemy = collisionSystem.getClosestEnemy(tower.getPosition(), tower.getRange());
+                tower.setTarget(closestEnemy);
+            }
             
             // Fire if possible
             Projectile projectile = tower.fire();
@@ -232,6 +275,20 @@ public class GameEngine {
     }
     
     /**
+     * Add resources
+     */
+    public void addResources(int amount) {
+        resources += amount;
+    }
+    
+    /**
+     * Add score
+     */
+    public void addScore(long amount) {
+        score += amount;
+    }
+    
+    /**
      * Handle game over
      */
     private void gameOver() {
@@ -244,8 +301,8 @@ public class GameEngine {
      * Start next wave
      */
     public void startNextWave() {
-        currentWave++;
-        // Wave spawning logic will be implemented later
+        waveManager.startNextWave(this);
+        currentWave = waveManager.getCurrentWave();
     }
     
     // Getters and Setters
@@ -260,4 +317,8 @@ public class GameEngine {
     public List<Tower> getTowers() { return towers; }
     public List<Enemy> getEnemies() { return enemies; }
     public List<Projectile> getProjectiles() { return projectiles; }
+    
+    public CollisionSystem getCollisionSystem() { return collisionSystem; }
+    public Pathfinding getPathfinding() { return pathfinding; }
+    public WaveManager getWaveManager() { return waveManager; }
 }
