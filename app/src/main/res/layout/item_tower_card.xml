@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/accent_outline"
+    app:cardBackgroundColor="@color/surface_elevated">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Tower Icon -->
+        <ImageView
+            android:id="@+id/tower_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/tower_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Tower Name -->
+        <TextView
+            android:id="@+id/tower_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Firewall"
+            android:textAppearance="@style/TextAppearance.App.Headline2"
+            android:textSize="16sp"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/tower_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp" />
+
+        <!-- Cost -->
+        <LinearLayout
+            android:id="@+id/cost_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/tower_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_resource"
+                android:contentDescription="@string/cost" />
+
+            <TextView
+                android:id="@+id/tower_cost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="100"
+                android:textAppearance="@style/TextAppearance.App.Monospace"
+                android:textColor="@color/warning_yellow"
+                android:layout_marginStart="4dp" />
+
+        </LinearLayout>
+
+        <!-- Stats Container -->
+        <LinearLayout
+            android:id="@+id/stats_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/cost_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="12dp">
+
+            <!-- Damage Chip -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_damage"
+                style="@style/Widget.App.Chip.Damage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="15"
+                app:chipIcon="@drawable/ic_damage"
+                app:chipIconSize="14dp"
+                android:layout_marginEnd="4dp" />
+
+            <!-- Range Chip -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_range"
+                style="@style/Widget.App.Chip.Range"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="150"
+                app:chipIcon="@drawable/ic_range"
+                app:chipIconSize="14dp"
+                android:layout_marginEnd="4dp" />
+
+            <!-- Fire Rate Chip -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_fire_rate"
+                style="@style/Widget.App.Chip.FireRate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2.0"
+                app:chipIcon="@drawable/ic_fire_rate"
+                app:chipIconSize="14dp" />
+
+        </LinearLayout>
+
+        <!-- Info Button -->
+        <ImageButton
+            android:id="@+id/btn_info"
+            style="@style/Widget.App.Button.Icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_info"
+            android:contentDescription="@string/tower_info"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <!-- Lock Overlay (conditionally visible) -->
+        <FrameLayout
+            android:id="@+id/lock_overlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#CC000000"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_lock"
+                android:layout_gravity="center"
+                android:contentDescription="@string/locked" />
+
+        </FrameLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

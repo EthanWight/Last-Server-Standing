@@ -6,12 +6,17 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
 import edu.commonwealthu.lastserverstanding.model.towers.FirewallTower;
 import edu.commonwealthu.lastserverstanding.view.GameView;
+import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
+import edu.commonwealthu.lastserverstanding.data.models.GameState;
+import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
 
 /**
  * Main Activity for Last Server Standing
@@ -22,10 +27,11 @@ public class MainActivity extends AppCompatActivity {
 
     private GameView gameView;
     private GameEngine gameEngine;
+    private GameViewModel viewModel;
     private Handler waveHandler;
     private Runnable waveStarter;
     private Button btnNextWave;
-    
+
     // Test configuration
     private static final boolean AUTO_START_WAVES = false;
     private static final int WAVE_DELAY_MS = 5000; // 5 seconds between waves
@@ -39,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Inflate the layout
         setContentView(R.layout.activity_main);
+
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(this).get(GameViewModel.class);
 
         // Create game engine
         gameEngine = new GameEngine();
@@ -74,7 +83,60 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Manual wave control enabled. Use 'Start Next Wave' button to begin.");
         });
 
+        // Observe game data for future HUD updates
+        observeGameData();
+
         Log.d(TAG, "MainActivity created, game loop starting...");
+    }
+
+    /**
+     * Observe game data changes for HUD updates
+     */
+    private void observeGameData() {
+        viewModel.getResources().observe(this, resources -> {
+            // HUD update will be implemented in Week 4
+            Log.d(TAG, "Resources updated: " + resources);
+        });
+
+        viewModel.getHealth().observe(this, health -> {
+            // HUD update will be implemented in Week 4
+            Log.d(TAG, "Health updated: " + health);
+        });
+
+        viewModel.getCurrentWave().observe(this, wave -> {
+            // HUD update will be implemented in Week 4
+            Log.d(TAG, "Wave updated: " + wave);
+        });
+
+        viewModel.getScore().observe(this, score -> {
+            // HUD update will be implemented in Week 4
+            Log.d(TAG, "Score updated: " + score);
+        });
+    }
+
+    /**
+     * Save game state
+     */
+    private void saveGame(boolean isAutoSave) {
+        GameState state = gameEngine.captureGameState();
+        viewModel.saveGame(state, isAutoSave, new GameRepository.SaveCallback() {
+            @Override
+            public void onSuccess(int saveId) {
+                runOnUiThread(() -> {
+                    String message = isAutoSave ? "Auto-saved!" : "Game saved!";
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Game saved with ID: " + saveId);
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity.this, "Save failed: " + message, Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Save failed: " + message);
+                });
+            }
+        });
     }
 
     /**
@@ -205,15 +267,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "Activity paused - stopping game loop");
-        
+
         if (gameView != null) {
             gameView.stopGameLoop();
         }
-        
+
         if (waveHandler != null) {
             waveHandler.removeCallbacks(waveStarter);
         }
-        
+
+        // Auto-save when app is paused
+        saveGame(true);
+
         // Log final state
         logGameState();
     }

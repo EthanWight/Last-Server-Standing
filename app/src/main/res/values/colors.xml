@@ -1,5 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Primary Colors -->
+    <color name="electric_blue">#2196F3</color>
+    <color name="blue_light">#64B5F6</color>
+    <color name="blue_dark">#1976D2</color>
+
+    <!-- Secondary Colors -->
+    <color name="danger_red">#F44336</color>
+    <color name="red_light">#EF5350</color>
+    <color name="red_dark">#C62828</color>
+
+    <!-- Accent Colors -->
+    <color name="warning_yellow">#FFC107</color>
+    <color name="success_green">#4CAF50</color>
+    <color name="corruption_purple">#9C27B0</color>
+
+    <!-- Background Colors -->
+    <color name="background_deep">#0D1117</color>
+    <color name="surface_dark">#161B22</color>
+    <color name="surface_elevated">#1F2937</color>
+    <color name="accent_outline">#30363D</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#8B949E</color>
+    <color name="text_disabled">#484F58</color>
+
+    <!-- Standard Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Ripple Effects -->
+    <color name="ripple_white">#33FFFFFF</color>
+    <color name="ripple_blue">#332196F3</color>
+
+    <!-- Chip Backgrounds (with transparency) -->
+    <color name="chip_damage_bg">#1AF44336</color>
+    <color name="chip_range_bg">#1A2196F3</color>
+    <color name="chip_firerate_bg">#1AFFC107</color>
+
+    <!-- Progress Indicators -->
+    <color name="progress_indicator">@color/electric_blue</color>
+    <color name="progress_track">#30363D</color>
+
+    <!-- Health Bar States -->
+    <color name="health_high">#4CAF50</color>
+    <color name="health_medium">#FFC107</color>
+    <color name="health_low">#F44336</color>
+
+    <!-- Switch Colors -->
+    <color name="switch_thumb">#2196F3</color>
+    <color name="switch_track">#30363D</color>
+
+    <!-- Grid -->
+    <color name="grid_line">#1F2937</color>
+
+    <!-- Overlay -->
+    <color name="overlay_dark">#CC000000</color>
+    <color name="overlay_red">#4CF44336</color>
 </resources>

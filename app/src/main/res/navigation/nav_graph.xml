@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mainMenuFragment">
+
+    <fragment
+        android:id="@+id/mainMenuFragment"
+        android:name="edu.commonwealthu.lastserverstanding.ui.MainMenuFragment"
+        android:label="Main Menu">
+        <action
+            android:id="@+id/action_menu_to_game"
+            app:destination="@id/gameFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out" />
+        <action
+            android:id="@+id/action_menu_to_stats"
+            app:destination="@id/statsFragment" />
+        <action
+            android:id="@+id/action_menu_to_settings"
+            app:destination="@id/settingsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/gameFragment"
+        android:name="edu.commonwealthu.lastserverstanding.ui.GameFragment"
+        android:label="Game" />
+
+    <!-- Placeholder fragments for Stats and Settings -->
+    <fragment
+        android:id="@+id/statsFragment"
+        android:name="edu.commonwealthu.lastserverstanding.ui.StatsFragment"
+        android:label="Statistics" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="edu.commonwealthu.lastserverstanding.ui.SettingsFragment"
+        android:label="Settings" />
+
+</navigation>

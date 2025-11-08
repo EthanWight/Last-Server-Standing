@@ -72,6 +72,18 @@ public abstract class Tower {
     public abstract String getType();
     
     /**
+     * Get the cost to upgrade this tower to the next level
+     * @return upgrade cost, or 0 if already at max level
+     */
+    public int getUpgradeCost() {
+        if (level >= 5) {
+            return 0; // Already at max level
+        }
+        // Upgrade cost increases with each level: base_cost * level * 0.75
+        return (int)(cost * level * 0.75f);
+    }
+    
+    /**
      * Upgrade tower to next level
      * @return true if upgrade successful
      */

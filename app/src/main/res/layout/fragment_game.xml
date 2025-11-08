@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- GameView Container -->
+    <FrameLayout
+        android:id="@+id/game_view_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- HUD Overlay -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/hud_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <!-- Resource Counter (Top-Left) -->
+        <LinearLayout
+            android:id="@+id/resource_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_hud_element"
+            android:padding="12dp"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_resource"
+                android:contentDescription="@string/resources" />
+
+            <TextView
+                android:id="@+id/text_resources"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="500"
+                android:textAppearance="@style/TextAppearance.HUD"
+                android:layout_marginStart="8dp" />
+
+        </LinearLayout>
+
+        <!-- Health Bar (Top-Center) -->
+        <LinearLayout
+            android:id="@+id/health_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_hud_element"
+            android:padding="12dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/resource_container"
+            app:layout_constraintEnd_toStartOf="@id/wave_container"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/data_center_health"
+                android:textAppearance="@style/TextAppearance.HUD"
+                android:textSize="12sp"
+                android:layout_gravity="center" />
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/health_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="100"
+                app:indicatorColor="@color/health_high"
+                app:trackColor="@color/progress_track"
+                app:trackThickness="8dp"
+                app:trackCornerRadius="4dp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <!-- Wave Counter (Top-Right) -->
+        <LinearLayout
+            android:id="@+id/wave_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_hud_element"
+            android:padding="12dp"
+            android:gravity="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/wave"
+                android:textAppearance="@style/TextAppearance.HUD"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/text_wave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:textAppearance="@style/TextAppearance.HUD"
+                android:textSize="20sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <!-- Emergency Alert Banner (Top, Hidden by Default) -->
+        <LinearLayout
+            android:id="@+id/emergency_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@color/danger_red"
+            android:padding="16dp"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            android:elevation="8dp"
+            app:layout_constraintTop_toBottomOf="@id/health_container"
+            android:layout_marginTop="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_warning"
+                android:contentDescription="@string/emergency_alert" />
+
+            <TextView
+                android:id="@+id/banner_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/breach_detected"
+                android:textAppearance="@style/TextAppearance.HUD"
+                android:layout_marginStart="12dp" />
+
+        </LinearLayout>
+
+        <!-- Pause FAB (Bottom-Right) -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_pause"
+            android:contentDescription="@string/pause_game"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_margin="16dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

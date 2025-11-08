@@ -190,4 +190,9 @@ public abstract class Enemy {
     public int getDamage() { return damage; }
     public boolean isAlive() { return isAlive; }
     public List<StatusEffect> getStatusEffects() { return statusEffects; }
+    public int getCurrentPathIndex() { return currentPathIndex; }
+
+    // Setters for save/load functionality
+    public void setCurrentPathIndex(int index) { this.currentPathIndex = index; }
+    public void setPosition(PointF newPos) { this.position = newPos; }
 }

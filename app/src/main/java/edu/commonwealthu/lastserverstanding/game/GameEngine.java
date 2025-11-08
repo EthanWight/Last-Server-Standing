@@ -304,7 +304,158 @@ public class GameEngine {
         waveManager.startNextWave(this);
         currentWave = waveManager.getCurrentWave();
     }
-    
+
+    /**
+     * Capture current game state for saving
+     */
+    public edu.commonwealthu.lastserverstanding.data.models.GameState captureGameState() {
+        edu.commonwealthu.lastserverstanding.data.models.GameState state = new edu.commonwealthu.lastserverstanding.data.models.GameState();
+        state.currentWave = currentWave;
+        state.resources = resources;
+        state.dataCenterHealth = dataCenterHealth;
+        state.score = score;
+
+        // Capture tower data
+        for (Tower tower : towers) {
+            state.towers.add(new edu.commonwealthu.lastserverstanding.data.models.GameState.TowerData(
+                tower.getType(),
+                tower.getPosition(),
+                tower.getLevel(),
+                tower.isCorrupted()
+            ));
+        }
+
+        // Capture enemy data
+        for (Enemy enemy : enemies) {
+            state.enemies.add(new edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData(
+                enemy.getType(),
+                enemy.getPosition(),
+                enemy.getHealth(),
+                enemy.getCurrentPathIndex(),
+                enemy.getPath()
+            ));
+        }
+
+        return state;
+    }
+
+    /**
+     * Restore game state from saved data
+     */
+    public void restoreGameState(edu.commonwealthu.lastserverstanding.data.models.GameState state) {
+        // Clear current state
+        towers.clear();
+        enemies.clear();
+        projectiles.clear();
+
+        // Restore basic values
+        currentWave = state.currentWave;
+        resources = state.resources;
+        dataCenterHealth = state.dataCenterHealth;
+        score = state.score;
+
+        // Restore towers
+        for (edu.commonwealthu.lastserverstanding.data.models.GameState.TowerData towerData : state.towers) {
+            Tower tower = createTowerFromData(towerData);
+            if (tower != null) {
+                towers.add(tower);
+            }
+        }
+
+        // Restore enemies
+        for (edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData enemyData : state.enemies) {
+            Enemy enemy = createEnemyFromData(enemyData);
+            if (enemy != null) {
+                enemies.add(enemy);
+            }
+        }
+    }
+
+    /**
+     * Helper to create tower from saved data
+     */
+    private Tower createTowerFromData(edu.commonwealthu.lastserverstanding.data.models.GameState.TowerData data) {
+        PointF pos = new PointF(data.x, data.y);
+
+        // For now, only support FirewallTower (expand later)
+        if ("Firewall".equals(data.type)) {
+            edu.commonwealthu.lastserverstanding.model.towers.FirewallTower tower = new edu.commonwealthu.lastserverstanding.model.towers.FirewallTower(pos);
+            // Upgrade to saved level
+            for (int i = 1; i < data.level; i++) {
+                tower.upgrade();
+            }
+            tower.setCorrupted(data.isCorrupted);
+            return tower;
+        }
+
+        return null;
+    }
+
+    /**
+     * Helper to create enemy from saved data
+     */
+    private Enemy createEnemyFromData(edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData data) {
+        // Reconstruct path
+        List<PointF> path = new ArrayList<>();
+        for (edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData.Point p : data.path) {
+            path.add(new PointF(p.x, p.y));
+        }
+
+        // For now, only support DataCrawler (expand later)
+        if ("Data Crawler".equals(data.type)) {
+            edu.commonwealthu.lastserverstanding.model.enemies.DataCrawler enemy = new edu.commonwealthu.lastserverstanding.model.enemies.DataCrawler(path);
+            // Set position and health
+            enemy.setPosition(new PointF(data.x, data.y));
+            enemy.setCurrentPathIndex(data.currentPathIndex);
+            float damage = enemy.getMaxHealth() - data.health;
+            enemy.takeDamage(damage);
+            return enemy;
+        }
+
+        return null;
+    }
+
+    /**
+     * Try to upgrade tower at grid position
+     * @return true if upgrade successful
+     */
+    public boolean tryUpgradeTowerAt(PointF gridPos) {
+        for (Tower tower : towers) {
+            PointF towerGrid = worldToGrid(tower.getPosition());
+            if (Math.abs(towerGrid.x - gridPos.x) < 0.5f && Math.abs(towerGrid.y - gridPos.y) < 0.5f) {
+                int upgradeCost = tower.getUpgradeCost();
+                if (resources >= upgradeCost) {
+                    boolean upgraded = tower.upgrade();
+                    if (upgraded) {
+                        resources -= upgradeCost;
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Convert world position to grid position
+     */
+    private PointF worldToGrid(PointF worldPos) {
+        return new PointF(
+            (int)(worldPos.x / gridSize),
+            (int)(worldPos.y / gridSize)
+        );
+    }
+
+    /**
+     * Trigger emergency alert
+     */
+    public void triggerEmergencyAlert() {
+        // Set flag that GameFragment can check
+        // TODO: Implement alert system
+        System.out.println("Emergency alert triggered!");
+    }
+
     // Getters and Setters
     public int getCurrentWave() { return currentWave; }
     public int getResources() { return resources; }
