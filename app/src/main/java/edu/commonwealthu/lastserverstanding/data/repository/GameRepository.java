@@ -135,6 +135,16 @@ public class GameRepository {
         return settings;
     }
 
+    /**
+     * Shutdown the executor service to prevent resource leaks
+     * Should be called when the repository is no longer needed
+     */
+    public void shutdown() {
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
+    }
+
     // Callback interfaces
     public interface SaveCallback {
         void onSuccess(int saveId);

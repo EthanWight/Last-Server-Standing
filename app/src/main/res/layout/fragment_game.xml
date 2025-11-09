@@ -46,7 +46,7 @@
 
         </LinearLayout>
 
-        <!-- Health Bar (Top-Center) -->
+        <!-- Health Bar (Top, spans between resources and FPS) -->
         <LinearLayout
             android:id="@+id/health_container"
             android:layout_width="0dp"
@@ -56,7 +56,7 @@
             android:padding="12dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@id/resource_container"
-            app:layout_constraintEnd_toStartOf="@id/wave_container"
+            app:layout_constraintEnd_toStartOf="@id/fps_container"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp">
 
@@ -82,33 +82,83 @@
 
         </LinearLayout>
 
-        <!-- Wave Counter (Top-Right) -->
+        <!-- FPS Counter (Top-Right) -->
         <LinearLayout
-            android:id="@+id/wave_container"
+            android:id="@+id/fps_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:background="@drawable/bg_hud_element"
             android:padding="12dp"
-            android:gravity="center"
+            android:gravity="center_vertical"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/wave"
+                android:text="FPS:"
                 android:textAppearance="@style/TextAppearance.HUD"
                 android:textSize="12sp" />
 
             <TextView
-                android:id="@+id/text_wave"
+                android:id="@+id/text_fps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1"
+                android:text="60"
                 android:textAppearance="@style/TextAppearance.HUD"
-                android:textSize="20sp"
-                android:layout_marginTop="4dp" />
+                android:layout_marginStart="4dp" />
+
+        </LinearLayout>
+
+        <!-- Wave Counter & Next Wave Button (Bottom-Right) -->
+        <LinearLayout
+            android:id="@+id/wave_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp">
+
+            <!-- Wave display -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_hud_element"
+                android:padding="12dp"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/wave"
+                    android:textAppearance="@style/TextAppearance.HUD"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/text_wave"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1"
+                    android:textAppearance="@style/TextAppearance.HUD"
+                    android:textSize="20sp"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <!-- Next Wave Button -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_next_wave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_play_arrow"
+                android:contentDescription="Start Next Wave"
+                app:fabSize="normal"
+                android:layout_marginStart="8dp" />
 
         </LinearLayout>
 
@@ -143,16 +193,39 @@
 
         </LinearLayout>
 
-        <!-- Pause FAB (Bottom-Right) -->
+        <!-- Tower Selection Buttons (Bottom-Left) -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_pause"
+            android:id="@+id/fab_tower_firewall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_pause"
-            android:contentDescription="@string/pause_game"
+            android:src="@drawable/ic_tower_firewall"
+            android:contentDescription="Firewall Tower"
+            app:fabSize="normal"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             android:layout_margin="16dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_tower_honeypot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_tower_honeypot"
+            android:contentDescription="Honeypot Tower"
+            app:fabSize="normal"
+            app:layout_constraintBottom_toBottomOf="@id/fab_tower_firewall"
+            app:layout_constraintStart_toEndOf="@id/fab_tower_firewall"
+            android:layout_marginStart="8dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_tower_jammer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_tower_jammer"
+            android:contentDescription="Jammer Tower"
+            app:fabSize="normal"
+            app:layout_constraintBottom_toBottomOf="@id/fab_tower_firewall"
+            app:layout_constraintStart_toEndOf="@id/fab_tower_honeypot"
+            android:layout_marginStart="8dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

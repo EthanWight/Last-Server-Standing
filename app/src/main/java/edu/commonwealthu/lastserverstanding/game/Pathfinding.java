@@ -5,9 +5,11 @@ import android.graphics.PointF;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 /**
  * A* Pathfinding implementation for enemy navigation
@@ -39,7 +41,8 @@ public class Pathfinding {
         public boolean equals(Object obj) {
             if (!(obj instanceof Node)) return false;
             Node other = (Node) obj;
-            return position.equals(other.position.x, other.position.y);
+            return Math.abs(position.x - other.position.x) < 0.01f &&
+                   Math.abs(position.y - other.position.y) < 0.01f;
         }
         
         @Override
@@ -78,14 +81,16 @@ public class Pathfinding {
         
         // Initialize data structures
         PriorityQueue<Node> openSet = new PriorityQueue<>();
+        Set<String> openSetKeys = new HashSet<>(); // For O(1) membership checking
         Map<String, Node> allNodes = new HashMap<>();
-        
+
         Node startNode = new Node(startGrid);
         startNode.gCost = 0;
         startNode.hCost = heuristic(startGrid, goalGrid);
         startNode.fCost = startNode.hCost;
-        
+
         openSet.add(startNode);
+        openSetKeys.add(getKey(startGrid));
         allNodes.put(getKey(startGrid), startNode);
         
         // Convert obstacles to grid coordinates for fast lookup
@@ -98,24 +103,28 @@ public class Pathfinding {
         // A* main loop
         while (!openSet.isEmpty()) {
             Node current = openSet.poll();
-            
+            String currentKey = getKey(current.position);
+            openSetKeys.remove(currentKey);
+
             // Check if we reached the goal
             if (distance(current.position, goalGrid) < 0.5f) {
                 return reconstructPath(current);
             }
-            
+
             // Explore neighbors
             for (Node neighbor : getNeighbors(current, goalGrid, obstacleMap, allNodes)) {
                 float tentativeGCost = current.gCost + distance(current.position, neighbor.position);
-                
+
                 if (tentativeGCost < neighbor.gCost) {
                     neighbor.parent = current;
                     neighbor.gCost = tentativeGCost;
                     neighbor.hCost = heuristic(neighbor.position, goalGrid);
                     neighbor.fCost = neighbor.gCost + neighbor.hCost;
-                    
-                    if (!openSet.contains(neighbor)) {
+
+                    String neighborKey = getKey(neighbor.position);
+                    if (!openSetKeys.contains(neighborKey)) {
                         openSet.add(neighbor);
+                        openSetKeys.add(neighborKey);
                     }
                 }
             }
@@ -155,7 +164,7 @@ public class Pathfinding {
             String key = getKey(neighborPos);
             
             // Skip if obstacle (unless it's the goal)
-            if (obstacles.containsKey(key) && distance(neighborPos, worldToGrid(gridToWorld(goal))) > 0.5f) {
+            if (obstacles.containsKey(key) && distance(neighborPos, goal) > 0.5f) {
                 continue;
             }
             

@@ -1,14 +1,25 @@
 package edu.commonwealthu.lastserverstanding.game;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.model.Enemy;
 import edu.commonwealthu.lastserverstanding.model.Projectile;
 import edu.commonwealthu.lastserverstanding.model.Tower;
@@ -47,11 +58,16 @@ public class GameEngine {
     // Game constants
     private static final int STARTING_RESOURCES = 500;
     private static final int STARTING_HEALTH = 100;
-    
+
+    // Tower icon cache
+    private Map<String, Bitmap> towerIcons;
+    private Context context;
+
     /**
      * Constructor
      */
     public GameEngine() {
+        towerIcons = new HashMap<>();
         towers = new ArrayList<>();
         enemies = new ArrayList<>();
         projectiles = new ArrayList<>();
@@ -78,13 +94,27 @@ public class GameEngine {
     }
     
     /**
+     * Set context for loading resources
+     */
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
+    /**
      * Set world dimensions (called by GameView after initialization)
      */
     public void setWorldDimensions(int width, int height, int cellSize) {
+        if (width <= 0 || height <= 0 || cellSize <= 0) {
+            throw new IllegalArgumentException(
+                "World dimensions must be positive: width=" + width +
+                ", height=" + height + ", cellSize=" + cellSize
+            );
+        }
+
         this.worldWidth = width;
         this.worldHeight = height;
         this.gridSize = cellSize;
-        
+
         // Reinitialize systems with correct dimensions
         collisionSystem = new CollisionSystem(width, height, cellSize * 2);
         pathfinding = new Pathfinding(width / cellSize, height / cellSize, cellSize);
@@ -185,28 +215,111 @@ public class GameEngine {
     }
     
     /**
-     * Draw a tower (placeholder - will be enhanced later)
+     * Get tower icon resource ID based on type
+     */
+    private int getTowerIconResource(String towerType) {
+        switch (towerType) {
+            case "Firewall":
+                return R.drawable.ic_tower_firewall;
+            case "Honeypot":
+                return R.drawable.ic_tower_honeypot;
+            case "Jammer":
+                return R.drawable.ic_tower_jammer;
+            default:
+                return R.drawable.ic_tower_firewall;
+        }
+    }
+
+    /**
+     * Load and cache tower icon
+     * Converts vector drawables to bitmaps for rendering
+     */
+    private Bitmap getTowerIcon(String towerType) {
+        if (!towerIcons.containsKey(towerType) && context != null) {
+            try {
+                int resourceId = getTowerIconResource(towerType);
+
+                // Load the drawable (works for both vector and bitmap drawables)
+                Drawable drawable = ContextCompat.getDrawable(context, resourceId);
+
+                if (drawable != null) {
+                    // Create a bitmap to draw the vector drawable into
+                    int size = 48; // Icon size in pixels
+                    Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(bitmap);
+
+                    // Set the bounds and draw
+                    drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+                    drawable.draw(canvas);
+
+                    towerIcons.put(towerType, bitmap);
+                } else {
+                    // If drawable is null, cache null to avoid repeated attempts
+                    towerIcons.put(towerType, null);
+                }
+            } catch (Exception e) {
+                // If loading fails, cache null to avoid repeated attempts
+                towerIcons.put(towerType, null);
+            }
+        }
+        return towerIcons.get(towerType);
+    }
+
+    /**
+     * Draw a tower with its icon
      */
     private void drawTower(Canvas canvas, Paint paint, Tower tower) {
+        if (tower == null) return;
         PointF pos = tower.getPosition();
-        
-        // Draw tower body
-        paint.setColor(tower.isCorrupted() ? Color.RED : Color.CYAN);
-        canvas.drawCircle(pos.x, pos.y, 20, paint);
-        
-        // Draw range indicator if selected
+        if (pos == null) return;
+
+        // Get tower icon
+        Bitmap icon = getTowerIcon(tower.getType());
+
+        if (icon != null) {
+            // Draw icon centered on position
+            int halfSize = icon.getWidth() / 2;
+            Rect destRect = new Rect(
+                    (int) (pos.x - halfSize),
+                    (int) (pos.y - halfSize),
+                    (int) (pos.x + halfSize),
+                    (int) (pos.y + halfSize)
+            );
+
+            // Apply corruption tint if corrupted
+            if (tower.isCorrupted()) {
+                paint.setColorFilter(new android.graphics.PorterDuffColorFilter(
+                        Color.RED, android.graphics.PorterDuff.Mode.MULTIPLY));
+            }
+
+            canvas.drawBitmap(icon, null, destRect, paint);
+
+            // Clear color filter
+            paint.setColorFilter(null);
+        } else {
+            // Fallback to circle if icon not available
+            paint.setColor(tower.isCorrupted() ? Color.RED : Color.CYAN);
+            canvas.drawCircle(pos.x, pos.y, 24, paint);
+        }
+
+        // Draw range indicator (subtle)
         paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(Color.argb(50, 0, 255, 255));
+        paint.setColor(Color.argb(30, 0, 255, 255));
         paint.setStrokeWidth(2);
         canvas.drawCircle(pos.x, pos.y, tower.getRange(), paint);
+
+        // Reset paint to default state
         paint.setStyle(Paint.Style.FILL);
+        paint.setAlpha(255);
     }
     
     /**
      * Draw an enemy (placeholder - will be enhanced later)
      */
     private void drawEnemy(Canvas canvas, Paint paint, Enemy enemy) {
+        if (enemy == null) return;
         PointF pos = enemy.getPosition();
+        if (pos == null) return;
         
         // Draw enemy body
         paint.setColor(Color.RED);
@@ -228,7 +341,9 @@ public class GameEngine {
      * Draw a projectile (placeholder - will be enhanced later)
      */
     private void drawProjectile(Canvas canvas, Paint paint, Projectile projectile) {
+        if (projectile == null) return;
         PointF pos = projectile.getPosition();
+        if (pos == null) return;
         paint.setColor(Color.YELLOW);
         canvas.drawCircle(pos.x, pos.y, 5, paint);
     }
@@ -259,6 +374,10 @@ public class GameEngine {
      * Add a tower to the game
      */
     public boolean addTower(Tower tower) {
+        if (tower == null) {
+            return false;
+        }
+
         if (resources >= tower.getCost()) {
             towers.add(tower);
             resources -= tower.getCost();

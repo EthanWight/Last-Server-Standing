@@ -7,9 +7,7 @@ plugins {
 
 android {
     namespace = "edu.commonwealthu.lastserverstanding"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "edu.commonwealthu.lastserverstanding"

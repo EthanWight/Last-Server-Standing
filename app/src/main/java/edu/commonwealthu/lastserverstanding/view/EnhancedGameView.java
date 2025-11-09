@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -19,7 +20,9 @@ import edu.commonwealthu.lastserverstanding.game.GameEngine;
  * Supports: tap, long press, pan, pinch zoom, double tap, and swipe
  */
 public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
-    
+
+    private static final String TAG = "EnhancedGameView";
+
     // Game loop thread
     private Thread gameThread;
     private volatile boolean isRunning;
@@ -370,10 +373,13 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     public void stopGameLoop() {
         isRunning = false;
         if (gameThread != null) {
+            Thread threadToJoin = gameThread;
+            gameThread = null;
             try {
-                gameThread.join();
+                threadToJoin.join(1000); // Wait max 1 second
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Log.w(TAG, "Game loop thread interrupted while stopping", e);
+                Thread.currentThread().interrupt(); // Restore interrupt status
             }
         }
     }
@@ -400,7 +406,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
                 try {
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.w(TAG, "Game loop sleep interrupted", e);
+                    Thread.currentThread().interrupt(); // Restore interrupt status
+                    break; // Exit loop when interrupted
                 }
             }
         }

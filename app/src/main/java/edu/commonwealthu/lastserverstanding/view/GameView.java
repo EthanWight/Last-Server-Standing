@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -17,7 +18,9 @@ import edu.commonwealthu.lastserverstanding.game.GameEngine;
  * Handles all game rendering and input
  */
 public class GameView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
-    
+
+    private static final String TAG = "GameView";
+
     // Game loop thread
     private Thread gameThread;
     private volatile boolean isRunning;
@@ -44,7 +47,18 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     
     // Touch input
     private PointF lastTouchPoint;
-    
+
+    // Tap listener for tower placement
+    private OnTapListener tapListener;
+
+    public interface OnTapListener {
+        void onTap(PointF worldPosition);
+    }
+
+    public void setOnTapListener(OnTapListener listener) {
+        this.tapListener = listener;
+    }
+
     /**
      * Constructor for XML inflation
      */
@@ -130,10 +144,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     public void stopGameLoop() {
         isRunning = false;
         if (gameThread != null) {
+            Thread threadToJoin = gameThread;
+            gameThread = null;
             try {
-                gameThread.join();
+                threadToJoin.join(1000); // Wait max 1 second
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Log.w(TAG, "Game loop thread interrupted while stopping", e);
+                Thread.currentThread().interrupt(); // Restore interrupt status
             }
         }
     }
@@ -166,7 +183,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
                 try {
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.w(TAG, "Game loop sleep interrupted", e);
+                    Thread.currentThread().interrupt(); // Restore interrupt status
+                    break; // Exit loop when interrupted
                 }
             }
         }
@@ -240,17 +259,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
      * Draw heads-up display
      */
     private void drawHUD() {
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.WHITE);
-        paint.setTextSize(40);
-        
-        // Draw FPS counter (top-right)
-        if (gameEngine != null) {
-            String fpsText = "FPS: " + gameEngine.getFPS();
-            canvas.drawText(fpsText, getWidth() - 200, 120, paint);
-        }
-        
-        // Additional HUD elements will be added here
+        // HUD elements are now handled by GameFragment overlay
+        // This method can be used for debug overlays if needed
     }
     
     /**
@@ -263,23 +273,28 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 lastTouchPoint.set(touchPoint.x, touchPoint.y);
-                // Handle tap
-                if (gameEngine != null) {
+                return true;
+
+            case MotionEvent.ACTION_UP:
+                // Check if this was a tap (minimal movement)
+                float dx = touchPoint.x - lastTouchPoint.x;
+                float dy = touchPoint.y - lastTouchPoint.y;
+                float distance = (float) Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < 20) { // Threshold for tap vs drag
+                    // Handle tap
                     PointF worldPos = screenToWorld(touchPoint);
-                    gameEngine.handleTap(worldPos);
+                    if (tapListener != null) {
+                        tapListener.onTap(worldPos);
+                    } else if (gameEngine != null) {
+                        gameEngine.handleTap(worldPos);
+                    }
                 }
                 return true;
                 
             case MotionEvent.ACTION_MOVE:
-                // Handle pan
-                float dx = touchPoint.x - lastTouchPoint.x;
-                float dy = touchPoint.y - lastTouchPoint.y;
-                cameraOffset.x += dx;
-                cameraOffset.y += dy;
-                lastTouchPoint.set(touchPoint.x, touchPoint.y);
-                return true;
-                
-            case MotionEvent.ACTION_UP:
+                // Handle pan (disabled for now to make tapping easier)
+                // Can re-enable with two-finger pan later
                 return true;
         }
         

@@ -39,12 +39,16 @@ public class Projectile {
         // Move projectile
         position.x += velocity.x * deltaTime;
         position.y += velocity.y * deltaTime;
-        
-        // Check for collision with target
+
+        // Check for collision with target (verify target still exists)
+        if (target == null || !target.isAlive()) {
+            return;
+        }
+
         float dx = position.x - target.getPosition().x;
         float dy = position.y - target.getPosition().y;
         float distanceSquared = dx * dx + dy * dy;
-        
+
         if (distanceSquared < 1.0f) { // Hit threshold
             hit();
         }
