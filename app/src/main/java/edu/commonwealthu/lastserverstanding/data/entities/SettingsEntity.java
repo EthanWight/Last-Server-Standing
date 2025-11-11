@@ -20,7 +20,7 @@ public class SettingsEntity {
         // Default values
         this.soundEnabled = true;
         this.vibrationEnabled = true;
-        this.accelerometerSensitivity = 0.5f;
+        this.accelerometerSensitivity = 2.5f;
     }
 
     // Getters and Setters

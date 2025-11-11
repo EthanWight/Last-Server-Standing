@@ -83,7 +83,14 @@ public class SettingsFragment extends Fragment {
                 currentSettings = settings;
                 soundSwitch.setChecked(settings.isSoundEnabled());
                 vibrationSwitch.setChecked(settings.isVibrationEnabled());
-                sensitivitySlider.setValue(settings.getAccelerometerSensitivity());
+
+                // Clamp sensitivity value to valid range (1.0 to 5.0)
+                float sensitivity = settings.getAccelerometerSensitivity();
+                if (sensitivity < 1.0f || sensitivity > 5.0f) {
+                    sensitivity = 2.5f; // Reset to default if out of range
+                    settings.setAccelerometerSensitivity(sensitivity);
+                }
+                sensitivitySlider.setValue(sensitivity);
             } else {
                 // Use defaults if no settings exist
                 currentSettings = new SettingsEntity();

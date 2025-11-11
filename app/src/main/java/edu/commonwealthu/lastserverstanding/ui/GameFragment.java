@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
@@ -24,11 +25,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.commonwealthu.lastserverstanding.R;
+import edu.commonwealthu.lastserverstanding.data.models.GameState;
+import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
 import edu.commonwealthu.lastserverstanding.model.towers.FirewallTower;
 import edu.commonwealthu.lastserverstanding.model.towers.HoneypotTower;
 import edu.commonwealthu.lastserverstanding.model.towers.JammerTower;
 import edu.commonwealthu.lastserverstanding.view.GameView;
+import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
 /**
  * Game Fragment - Main gameplay screen
@@ -41,13 +45,16 @@ public class GameFragment extends Fragment {
 
     private GameView gameView;
     private GameEngine gameEngine;
+    private GameViewModel viewModel;
 
     // HUD elements
     private TextView resourcesText;
+    private TextView scoreText;
     private LinearProgressIndicator healthBar;
     private TextView waveText;
     private TextView fpsText;
     private FloatingActionButton nextWaveFab;
+    private FloatingActionButton pauseFab;
     private FloatingActionButton fabFirewall;
     private FloatingActionButton fabHoneypot;
     private FloatingActionButton fabJammer;
@@ -84,23 +91,38 @@ public class GameFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(this).get(GameViewModel.class);
+
         // Initialize HUD views
         resourcesText = view.findViewById(R.id.text_resources);
+        scoreText = view.findViewById(R.id.text_score);
         healthBar = view.findViewById(R.id.health_bar);
         waveText = view.findViewById(R.id.text_wave);
         fpsText = view.findViewById(R.id.text_fps);
         nextWaveFab = view.findViewById(R.id.fab_next_wave);
+        pauseFab = view.findViewById(R.id.fab_pause);
         fabFirewall = view.findViewById(R.id.fab_tower_firewall);
         fabHoneypot = view.findViewById(R.id.fab_tower_honeypot);
         fabJammer = view.findViewById(R.id.fab_tower_jammer);
         emergencyBanner = view.findViewById(R.id.emergency_banner);
-        
+
         // Initialize game engine
         gameEngine = new GameEngine();
         gameEngine.setContext(requireContext());
 
-        // TODO: Load saved game if continuing
+        // Observe settings and update game engine
+        viewModel.getSettings().observe(getViewLifecycleOwner(), settings -> {
+            if (settings != null && gameEngine != null) {
+                gameEngine.setSoundEnabled(settings.isSoundEnabled());
+                gameEngine.setVibrationEnabled(settings.isVibrationEnabled());
+                Log.d(TAG, "Settings updated - Sound: " + settings.isSoundEnabled() +
+                        ", Vibration: " + settings.isVibrationEnabled());
+            }
+        });
+
+        // Load saved game if continuing
         if (continueGame) {
             loadSavedGame();
         }
@@ -123,6 +145,7 @@ public class GameFragment extends Fragment {
 
                 // Start game paused so player can place initial towers
                 gameEngine.setPaused(true);
+                updatePauseButton();
                 Log.d(TAG, "Game initialized - paused for tower placement");
 
                 // Show next wave button for player to start wave 1
@@ -132,6 +155,9 @@ public class GameFragment extends Fragment {
 
         // Set up next wave button
         nextWaveFab.setOnClickListener(v -> startNextWave());
+
+        // Set up pause button
+        pauseFab.setOnClickListener(v -> togglePause());
 
         // Set up tower selection buttons
         fabFirewall.setOnClickListener(v -> selectTower(0, fabFirewall));
@@ -180,12 +206,39 @@ public class GameFragment extends Fragment {
 
             // Auto-unpause the game when starting a wave
             gameEngine.setPaused(false);
+            updatePauseButton();
 
             Toast.makeText(requireContext(),
                 "Wave " + gameEngine.getCurrentWave() + " started!",
                 Toast.LENGTH_SHORT).show();
 
             Log.d(TAG, "Wave " + gameEngine.getCurrentWave() + " started");
+        }
+    }
+
+    /**
+     * Toggle pause state
+     */
+    private void togglePause() {
+        if (gameEngine != null) {
+            boolean isPaused = gameEngine.isPaused();
+            gameEngine.setPaused(!isPaused);
+            updatePauseButton();
+
+            String message = isPaused ? "Game resumed" : "Game paused";
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+            Log.d(TAG, message);
+        }
+    }
+
+    /**
+     * Update pause button icon based on game state
+     */
+    private void updatePauseButton() {
+        if (gameEngine != null && pauseFab != null) {
+            boolean isPaused = gameEngine.isPaused();
+            int iconRes = isPaused ? R.drawable.ic_play_arrow : R.drawable.ic_pause;
+            pauseFab.setImageResource(iconRes);
         }
     }
     
@@ -216,6 +269,10 @@ public class GameFragment extends Fragment {
 
         // Update resources (just the number, icon is in layout)
         resourcesText.setText(String.valueOf(currentResources));
+
+        // Update score
+        long score = gameEngine.getScore();
+        scoreText.setText(String.valueOf(score));
 
         // Update health bar
         int health = gameEngine.getDataCenterHealth();
@@ -448,10 +505,38 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Load saved game state
+     * Load saved game state from most recent auto-save
      */
     private void loadSavedGame() {
-        // TODO: Implement save game loading
+        if (viewModel == null) {
+            Log.e(TAG, "ViewModel is null, cannot load game");
+            return;
+        }
+
+        // Load the most recent save (ID = 1 for auto-save)
+        viewModel.loadGame(1, new GameRepository.LoadCallback() {
+            @Override
+            public void onSuccess(GameState gameState) {
+                if (gameEngine != null && gameState != null) {
+                    // Restore the game state to the engine
+                    gameEngine.restoreGameState(gameState);
+                    Log.d(TAG, "Game loaded successfully - Wave: " + gameState.currentWave +
+                            ", Resources: " + gameState.resources);
+
+                    Toast.makeText(requireContext(),
+                            "Game loaded - Wave " + gameState.currentWave,
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                Log.e(TAG, "Failed to load game: " + error);
+                Toast.makeText(requireContext(),
+                        "No saved game found. Starting new game.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -471,7 +556,56 @@ public class GameFragment extends Fragment {
         // Auto-pause game when leaving
         if (gameEngine != null) {
             gameEngine.setPaused(true);
+
+            // Auto-save game state when going to background
+            saveGameState(true);
         }
+    }
+
+    /**
+     * Save current game state
+     * @param isAutoSave true for auto-save, false for manual save
+     */
+    private void saveGameState(boolean isAutoSave) {
+        if (gameEngine == null || viewModel == null) {
+            Log.w(TAG, "Cannot save game - engine or viewModel is null");
+            return;
+        }
+
+        // Only save if there's actual progress (wave > 0)
+        if (gameEngine.getCurrentWave() == 0) {
+            Log.d(TAG, "Skipping save - no progress to save");
+            return;
+        }
+
+        // Capture game state from engine
+        GameState gameState = gameEngine.captureGameState();
+
+        // Save via ViewModel
+        viewModel.saveGame(gameState, isAutoSave, new GameRepository.SaveCallback() {
+            @Override
+            public void onSuccess(int saveId) {
+                Log.d(TAG, (isAutoSave ? "Auto" : "Manual") + " save successful - Wave: " +
+                        gameState.currentWave + ", Score: " + gameState.score + ", SaveID: " + saveId);
+
+                if (!isAutoSave && isAdded()) {
+                    Toast.makeText(requireContext(),
+                            "Game saved!",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                Log.e(TAG, "Failed to save game: " + error);
+
+                if (!isAutoSave && isAdded()) {
+                    Toast.makeText(requireContext(),
+                            "Failed to save game: " + error,
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override
@@ -487,6 +621,9 @@ public class GameFragment extends Fragment {
         if (hudHandler != null && hudUpdater != null) {
             hudHandler.post(hudUpdater);
         }
+
+        // Update pause button to reflect current state
+        updatePauseButton();
     }
 
     @Override

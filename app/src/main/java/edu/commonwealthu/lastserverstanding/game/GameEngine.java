@@ -2,16 +2,17 @@ package edu.commonwealthu.lastserverstanding.game;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,13 +31,14 @@ import edu.commonwealthu.lastserverstanding.model.Tower;
 public class GameEngine {
     
     // Game state
-    private List<Tower> towers;
-    private List<Enemy> enemies;
-    private List<Projectile> projectiles;
+    private final List<Tower> towers;
+    private final List<Enemy> enemies;
+    private final List<Projectile> projectiles;
     
     private int currentWave;
     private int resources;
     private int dataCenterHealth;
+    private int previousHealth;
     private long score;
     private boolean isPaused;
     
@@ -48,7 +50,7 @@ public class GameEngine {
     // Game systems
     private CollisionSystem collisionSystem;
     private Pathfinding pathfinding;
-    private WaveManager waveManager;
+    private final WaveManager waveManager;
     
     // World dimensions
     private int worldWidth;
@@ -60,8 +62,12 @@ public class GameEngine {
     private static final int STARTING_HEALTH = 100;
 
     // Tower icon cache
-    private Map<String, Bitmap> towerIcons;
+    private final Map<String, Bitmap> towerIcons;
     private Context context;
+
+    // Settings
+    private boolean vibrationEnabled = true;
+    private boolean soundEnabled = true;
 
     /**
      * Constructor
@@ -75,6 +81,7 @@ public class GameEngine {
         currentWave = 0;
         resources = STARTING_RESOURCES;
         dataCenterHealth = STARTING_HEALTH;
+        previousHealth = STARTING_HEALTH;
         score = 0;
         isPaused = false;
         
@@ -158,17 +165,18 @@ public class GameEngine {
         while (enemyIterator.hasNext()) {
             Enemy enemy = enemyIterator.next();
             enemy.update(deltaTime);
-            
+
             // Check if enemy reached end
             if (enemy.hasReachedEnd()) {
                 dataCenterHealth -= enemy.getDamage();
                 enemyIterator.remove();
+                continue;
             }
-            
+
             // Remove dead enemies
             if (!enemy.isAlive()) {
                 resources += enemy.getReward();
-                score += enemy.getReward() * 10;
+                score += enemy.getReward() * 10L;
                 enemyIterator.remove();
             }
         }
@@ -178,13 +186,19 @@ public class GameEngine {
         while (projectileIterator.hasNext()) {
             Projectile projectile = projectileIterator.next();
             projectile.update(deltaTime);
-            
+
             // Remove projectiles that have hit
             if (projectile.hasHit()) {
                 projectileIterator.remove();
             }
         }
-        
+
+        // Check if health decreased and trigger alert
+        if (dataCenterHealth < previousHealth) {
+            triggerEmergencyAlert();
+            previousHealth = dataCenterHealth;
+        }
+
         // Check for game over
         if (dataCenterHealth <= 0) {
             gameOver();
@@ -226,6 +240,8 @@ public class GameEngine {
             case "Jammer":
                 return R.drawable.ic_tower_jammer;
             default:
+                // Unknown tower type, log warning and use firewall as fallback
+                System.err.println("Unknown tower type: " + towerType);
                 return R.drawable.ic_tower_firewall;
         }
     }
@@ -392,7 +408,7 @@ public class GameEngine {
     public void addEnemy(Enemy enemy) {
         enemies.add(enemy);
     }
-    
+
     /**
      * Add resources
      */
@@ -471,6 +487,7 @@ public class GameEngine {
         currentWave = state.currentWave;
         resources = state.resources;
         dataCenterHealth = state.dataCenterHealth;
+        previousHealth = state.dataCenterHealth; // Initialize to avoid false alert on load
         score = state.score;
 
         // Restore towers
@@ -567,12 +584,70 @@ public class GameEngine {
     }
 
     /**
-     * Trigger emergency alert
+     * Trigger emergency alert with haptic and audio feedback
      */
     public void triggerEmergencyAlert() {
-        // Set flag that GameFragment can check
-        // TODO: Implement alert system
         System.out.println("Emergency alert triggered!");
+
+        // Play alert sound if enabled
+        if (soundEnabled) {
+            playAlertSound();
+        }
+
+        // Trigger haptic feedback if enabled
+        if (vibrationEnabled && context != null) {
+            Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            if (vibrator != null && vibrator.hasVibrator()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    // Modern vibration pattern for emergency alert
+                    // Pattern: short-long-short (SOS-like)
+                    long[] timings = {0, 200, 100, 400, 100, 200};
+                    int[] amplitudes = {0, 255, 0, 255, 0, 255};
+                    VibrationEffect effect = VibrationEffect.createWaveform(timings, amplitudes, -1);
+                    vibrator.vibrate(effect);
+                } else {
+                    // Fallback for older devices
+                    long[] pattern = {0, 200, 100, 400, 100, 200};
+                    vibrator.vibrate(pattern, -1);
+                }
+            }
+        }
+    }
+
+    /**
+     * Play emergency alert sound using ToneGenerator
+     */
+    private void playAlertSound() {
+        new Thread(() -> {
+            try {
+                android.media.ToneGenerator toneGen = new android.media.ToneGenerator(android.media.AudioManager.STREAM_ALARM, 100);
+                // Play a series of urgent tones (high pitched beeps)
+                toneGen.startTone(android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
+                Thread.sleep(300);
+                toneGen.startTone(android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 400);
+                Thread.sleep(500);
+                toneGen.startTone(android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
+                Thread.sleep(300);
+                toneGen.release();
+            } catch (Exception e) {
+                // Silently fail if sound cannot be played
+                System.err.println("Failed to play alert sound: " + e.getMessage());
+            }
+        }).start();
+    }
+
+    /**
+     * Set vibration enabled state from settings
+     */
+    public void setVibrationEnabled(boolean enabled) {
+        this.vibrationEnabled = enabled;
+    }
+
+    /**
+     * Set sound enabled state from settings
+     */
+    public void setSoundEnabled(boolean enabled) {
+        this.soundEnabled = enabled;
     }
 
     // Getters and Setters
@@ -586,9 +661,7 @@ public class GameEngine {
     
     public List<Tower> getTowers() { return towers; }
     public List<Enemy> getEnemies() { return enemies; }
-    public List<Projectile> getProjectiles() { return projectiles; }
-    
-    public CollisionSystem getCollisionSystem() { return collisionSystem; }
+
     public Pathfinding getPathfinding() { return pathfinding; }
     public WaveManager getWaveManager() { return waveManager; }
 }
