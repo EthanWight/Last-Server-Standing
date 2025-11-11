@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
@@ -55,6 +56,7 @@ public class GameFragment extends Fragment {
     private TextView fpsText;
     private FloatingActionButton nextWaveFab;
     private FloatingActionButton pauseFab;
+    private FloatingActionButton settingsFab;
     private FloatingActionButton fabFirewall;
     private FloatingActionButton fabHoneypot;
     private FloatingActionButton fabJammer;
@@ -70,14 +72,20 @@ public class GameFragment extends Fragment {
     private FloatingActionButton selectedFab;
 
     private boolean continueGame;
-    
+    private boolean isNewGame;
+    private boolean hasLoadedGame = false;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         // Get arguments
         if (getArguments() != null) {
             continueGame = getArguments().getBoolean("continue_game", false);
+            // Check if this is explicitly a new game
+            isNewGame = !continueGame && getArguments().containsKey("continue_game");
+
+            Log.d(TAG, "onCreate - continueGame: " + continueGame + ", isNewGame: " + isNewGame);
         }
     }
     
@@ -92,8 +100,8 @@ public class GameFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Initialize ViewModel
-        viewModel = new ViewModelProvider(this).get(GameViewModel.class);
+        // Initialize ViewModel (use activity scope to persist across navigation)
+        viewModel = new ViewModelProvider(requireActivity()).get(GameViewModel.class);
 
         // Initialize HUD views
         resourcesText = view.findViewById(R.id.text_resources);
@@ -103,13 +111,52 @@ public class GameFragment extends Fragment {
         fpsText = view.findViewById(R.id.text_fps);
         nextWaveFab = view.findViewById(R.id.fab_next_wave);
         pauseFab = view.findViewById(R.id.fab_pause);
+        settingsFab = view.findViewById(R.id.fab_settings);
         fabFirewall = view.findViewById(R.id.fab_tower_firewall);
         fabHoneypot = view.findViewById(R.id.fab_tower_honeypot);
         fabJammer = view.findViewById(R.id.fab_tower_jammer);
         emergencyBanner = view.findViewById(R.id.emergency_banner);
 
-        // Initialize game engine
-        gameEngine = new GameEngine();
+        // Determine if we should reset the game engine
+        boolean shouldResetEngine = false;
+
+        if (continueGame) {
+            // User clicked "Continue" - always reset and load from save
+            Log.d(TAG, "Continue game requested - will reset and load from save");
+            shouldResetEngine = true;
+        } else if (isNewGame) {
+            // Check if there's already an active game
+            if (viewModel.hasActiveGame()) {
+                int existingWave = viewModel.getGameEngine().getCurrentWave();
+                Log.d(TAG, "isNewGame=true but existing game found with wave: " + existingWave);
+
+                // Only reset if the existing game has no progress
+                if (existingWave == 0) {
+                    shouldResetEngine = true;
+                } else {
+                    // Has progress - don't reset (user probably returning from settings)
+                    Log.d(TAG, "Keeping existing game with progress");
+                }
+            } else {
+                // No existing game - create fresh one
+                shouldResetEngine = true;
+            }
+        }
+
+        if (shouldResetEngine) {
+            if (isNewGame) {
+                Log.d(TAG, "Starting new game - resetting game engine");
+                deleteAutoSave();
+            } else {
+                Log.d(TAG, "Resetting engine to load saved game");
+            }
+            viewModel.resetGameEngine();
+        } else if (viewModel.hasActiveGame()) {
+            Log.d(TAG, "Resuming existing game from ViewModel");
+        }
+
+        // Get the game engine (either existing or newly created)
+        gameEngine = viewModel.getGameEngine();
         gameEngine.setContext(requireContext());
 
         // Observe settings and update game engine
@@ -122,11 +169,6 @@ public class GameFragment extends Fragment {
             }
         });
 
-        // Load saved game if continuing
-        if (continueGame) {
-            loadSavedGame();
-        }
-        
         // Create and add GameView programmatically
         FrameLayout gameContainer = view.findViewById(R.id.game_view_container);
         gameView = new GameView(requireContext());
@@ -143,13 +185,24 @@ public class GameFragment extends Fragment {
                 gameEngine.setWorldDimensions(width, height, gridSize);
                 Log.d(TAG, String.format("World dimensions set: %dx%d, grid size: %d", width, height, gridSize));
 
-                // Start game paused so player can place initial towers
-                gameEngine.setPaused(true);
-                updatePauseButton();
-                Log.d(TAG, "Game initialized - paused for tower placement");
+                // Load saved game only if continuing from main menu (after world setup)
+                if (continueGame && !hasLoadedGame) {
+                    Log.d(TAG, "Loading saved game from main menu");
+                    loadSavedGame();
+                    hasLoadedGame = true;
+                } else {
+                    Log.d(TAG, "Using existing game engine - current wave: " + gameEngine.getCurrentWave());
 
-                // Show next wave button for player to start wave 1
-                nextWaveFab.setVisibility(View.VISIBLE);
+                    // Start game paused so player can place initial towers
+                    gameEngine.setPaused(true);
+                    updatePauseButton();
+                    Log.d(TAG, "Game initialized - paused for tower placement");
+
+                    // Show next wave button for player to start wave 1
+                    if (gameEngine.getCurrentWave() == 0) {
+                        nextWaveFab.setVisibility(View.VISIBLE);
+                    }
+                }
             }
         });
 
@@ -158,6 +211,9 @@ public class GameFragment extends Fragment {
 
         // Set up pause button
         pauseFab.setOnClickListener(v -> togglePause());
+
+        // Set up settings button
+        settingsFab.setOnClickListener(v -> openSettings());
 
         // Set up tower selection buttons
         fabFirewall.setOnClickListener(v -> selectTower(0, fabFirewall));
@@ -201,6 +257,11 @@ public class GameFragment extends Fragment {
      */
     private void startNextWave() {
         if (gameEngine != null) {
+            // Auto-save before starting next wave (if there's progress)
+            if (gameEngine.getCurrentWave() > 0) {
+                saveGameState(true);
+            }
+
             gameEngine.startNextWave();
             nextWaveFab.setVisibility(View.GONE);
 
@@ -228,6 +289,21 @@ public class GameFragment extends Fragment {
             String message = isPaused ? "Game resumed" : "Game paused";
             Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
             Log.d(TAG, message);
+        }
+    }
+
+    /**
+     * Open settings menu (game pauses automatically)
+     */
+    private void openSettings() {
+        if (gameEngine != null) {
+            // Pause the game (it will resume when we come back)
+            gameEngine.setPaused(true);
+            updatePauseButton();
+
+            // Navigate to settings (game engine persists in ViewModel)
+            Navigation.findNavController(requireView()).navigate(R.id.action_game_to_settings);
+            Log.d(TAG, "Navigating to settings - game paused");
         }
     }
 
@@ -491,9 +567,9 @@ public class GameFragment extends Fragment {
                         Toast.LENGTH_SHORT).show();
                 // Don't clear selection - allow multiple placements
             } else {
-                Log.w(TAG, "Tower placement failed - not enough resources");
+                Log.w(TAG, "Tower placement failed - invalid spot");
                 Toast.makeText(requireContext(),
-                        "Not enough resources!",
+                        "Invalid spot! Place towers on walls only.",
                         Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
@@ -521,20 +597,81 @@ public class GameFragment extends Fragment {
                     // Restore the game state to the engine
                     gameEngine.restoreGameState(gameState);
                     Log.d(TAG, "Game loaded successfully - Wave: " + gameState.currentWave +
-                            ", Resources: " + gameState.resources);
+                            ", Resources: " + gameState.resources +
+                            ", Score: " + gameState.score);
 
-                    Toast.makeText(requireContext(),
-                            "Game loaded - Wave " + gameState.currentWave,
-                            Toast.LENGTH_SHORT).show();
+                    // Update UI on main thread
+                    if (isAdded()) {
+                        requireActivity().runOnUiThread(() -> {
+                            // Set pause state
+                            gameEngine.setPaused(true);
+                            updatePauseButton();
+
+                            // Show next wave button if wave is complete
+                            if (!gameEngine.getWaveManager().isWaveActive()) {
+                                nextWaveFab.setVisibility(View.VISIBLE);
+                            }
+
+                            Toast.makeText(requireContext(),
+                                    "Game loaded - Wave " + gameState.currentWave,
+                                    Toast.LENGTH_SHORT).show();
+                        });
+                    }
                 }
             }
 
             @Override
             public void onError(String error) {
                 Log.e(TAG, "Failed to load game: " + error);
-                Toast.makeText(requireContext(),
-                        "No saved game found. Starting new game.",
-                        Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(),
+                                "No saved game found. Starting new game.",
+                                Toast.LENGTH_SHORT).show();
+
+                        // Set up for new game
+                        gameEngine.setPaused(true);
+                        updatePauseButton();
+                        nextWaveFab.setVisibility(View.VISIBLE);
+                    });
+                }
+            }
+        });
+    }
+
+    /**
+     * Delete auto-save when starting a new game
+     */
+    private void deleteAutoSave() {
+        if (viewModel == null) {
+            return;
+        }
+
+        // Delete auto-save by loading and deleting it (use observeOnce to avoid leak)
+        viewModel.getAllSaves().observe(getViewLifecycleOwner(), new androidx.lifecycle.Observer<java.util.List<edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity>>() {
+            @Override
+            public void onChanged(java.util.List<edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity> saves) {
+                // Remove observer immediately after first callback
+                viewModel.getAllSaves().removeObserver(this);
+
+                if (saves != null) {
+                    for (int i = 0; i < saves.size(); i++) {
+                        if (saves.get(i).isAutoSave()) {
+                            final int index = i;
+                            viewModel.deleteSave(saves.get(i), new GameRepository.DeleteCallback() {
+                                @Override
+                                public void onSuccess() {
+                                    Log.d(TAG, "Auto-save " + index + " deleted");
+                                }
+
+                                @Override
+                                public void onError(String error) {
+                                    Log.e(TAG, "Failed to delete auto-save: " + error);
+                                }
+                            });
+                        }
+                    }
+                }
             }
         });
     }
@@ -572,14 +709,20 @@ public class GameFragment extends Fragment {
             return;
         }
 
+        int currentWave = gameEngine.getCurrentWave();
+        Log.d(TAG, "saveGameState called - isAutoSave: " + isAutoSave + ", currentWave: " + currentWave);
+
         // Only save if there's actual progress (wave > 0)
-        if (gameEngine.getCurrentWave() == 0) {
-            Log.d(TAG, "Skipping save - no progress to save");
+        if (currentWave == 0) {
+            Log.d(TAG, "Skipping save - no progress to save (wave 0)");
             return;
         }
 
         // Capture game state from engine
         GameState gameState = gameEngine.captureGameState();
+
+        Log.d(TAG, "Saving game state - Wave: " + gameState.currentWave +
+                ", Resources: " + gameState.resources + ", Score: " + gameState.score);
 
         // Save via ViewModel
         viewModel.saveGame(gameState, isAutoSave, new GameRepository.SaveCallback() {
@@ -624,6 +767,13 @@ public class GameFragment extends Fragment {
 
         // Update pause button to reflect current state
         updatePauseButton();
+
+        // Log current game state
+        if (gameEngine != null) {
+            Log.d(TAG, "Game state on resume - Wave: " + gameEngine.getCurrentWave() +
+                    ", Resources: " + gameEngine.getResources() +
+                    ", Paused: " + gameEngine.isPaused());
+        }
     }
 
     @Override

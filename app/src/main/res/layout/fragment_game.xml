@@ -152,6 +152,18 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp" />
 
+        <!-- Settings Button (Below Pause) -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_settings"
+            android:contentDescription="Settings"
+            app:fabSize="mini"
+            app:layout_constraintTop_toBottomOf="@id/fab_pause"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp" />
+
         <!-- Wave Counter & Next Wave Button (Bottom-Right) -->
         <LinearLayout
             android:id="@+id/wave_container"

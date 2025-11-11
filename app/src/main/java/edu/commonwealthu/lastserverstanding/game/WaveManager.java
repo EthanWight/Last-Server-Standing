@@ -121,18 +121,23 @@ public class WaveManager {
      * Spawn an enemy
      */
     private void spawnEnemy(GameEngine gameEngine) {
-        // Choose random spawn point
-        PointF spawnPoint = spawnPoints.get(random.nextInt(spawnPoints.size()));
-        
-        // Choose random goal point
-        PointF goalPoint = goalPoints.get(random.nextInt(goalPoints.size()));
-        
-        // Generate path from spawn to goal
-        List<PointF> path = generatePath(spawnPoint, goalPoint, gameEngine);
-        
+        List<PointF> path;
+
+        // Use map path if available, otherwise fall back to default behavior
+        GameMap map = gameEngine.getGameMap();
+        if (map != null && !map.getEnemyPath().isEmpty()) {
+            // Use the predefined path from the map
+            path = map.getEnemyPath();
+        } else {
+            // Fallback to old path generation
+            PointF spawnPoint = spawnPoints.get(random.nextInt(spawnPoints.size()));
+            PointF goalPoint = goalPoints.get(random.nextInt(goalPoints.size()));
+            path = generatePath(spawnPoint, goalPoint, gameEngine);
+        }
+
         // Create enemy based on wave number and difficulty
         Enemy enemy = createEnemyForWave(path);
-        
+
         // Add enemy to game
         gameEngine.addEnemy(enemy);
     }

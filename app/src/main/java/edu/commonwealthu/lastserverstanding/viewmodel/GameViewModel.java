@@ -8,6 +8,7 @@ import edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity;
 import edu.commonwealthu.lastserverstanding.data.entities.SettingsEntity;
 import edu.commonwealthu.lastserverstanding.data.models.GameState;
 import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
+import edu.commonwealthu.lastserverstanding.game.GameEngine;
 import java.util.List;
 
 /**
@@ -26,6 +27,9 @@ public class GameViewModel extends AndroidViewModel {
     private MutableLiveData<Integer> resources = new MutableLiveData<>(500);
     private MutableLiveData<Integer> health = new MutableLiveData<>(100);
     private MutableLiveData<Long> score = new MutableLiveData<>(0L);
+
+    // Game engine instance (persists across navigation and config changes)
+    private GameEngine gameEngine;
 
     public GameViewModel(Application application) {
         super(application);
@@ -79,4 +83,29 @@ public class GameViewModel extends AndroidViewModel {
     public LiveData<Integer> getResources() { return resources; }
     public LiveData<Integer> getHealth() { return health; }
     public LiveData<Long> getScore() { return score; }
+
+    /**
+     * Get or create the game engine instance
+     * This ensures the same instance is used across navigation
+     */
+    public GameEngine getGameEngine() {
+        if (gameEngine == null) {
+            gameEngine = new GameEngine();
+        }
+        return gameEngine;
+    }
+
+    /**
+     * Reset game engine (for starting a new game)
+     */
+    public void resetGameEngine() {
+        gameEngine = new GameEngine();
+    }
+
+    /**
+     * Check if game engine exists (has an active game)
+     */
+    public boolean hasActiveGame() {
+        return gameEngine != null;
+    }
 }

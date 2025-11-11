@@ -24,7 +24,11 @@
     <fragment
         android:id="@+id/gameFragment"
         android:name="edu.commonwealthu.lastserverstanding.ui.GameFragment"
-        android:label="Game" />
+        android:label="Game">
+        <action
+            android:id="@+id/action_game_to_settings"
+            app:destination="@id/settingsFragment" />
+    </fragment>
 
     <!-- Placeholder fragments for Stats and Settings -->
     <fragment
@@ -35,6 +39,12 @@
     <fragment
         android:id="@+id/settingsFragment"
         android:name="edu.commonwealthu.lastserverstanding.ui.SettingsFragment"
-        android:label="Settings" />
+        android:label="Settings">
+        <action
+            android:id="@+id/action_settings_to_menu"
+            app:destination="@id/mainMenuFragment"
+            app:popUpTo="@id/mainMenuFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
 
 </navigation>

@@ -51,7 +51,8 @@ public class GameEngine {
     private CollisionSystem collisionSystem;
     private Pathfinding pathfinding;
     private final WaveManager waveManager;
-    
+    private GameMap gameMap;
+
     // World dimensions
     private int worldWidth;
     private int worldHeight;
@@ -125,6 +126,16 @@ public class GameEngine {
         // Reinitialize systems with correct dimensions
         collisionSystem = new CollisionSystem(width, height, cellSize * 2);
         pathfinding = new Pathfinding(width / cellSize, height / cellSize, cellSize);
+
+        // Initialize game map
+        int gridWidth = width / cellSize;
+        int gridHeight = height / cellSize;
+        gameMap = GameMap.createSimpleMap(gridWidth, gridHeight, cellSize);
+
+        // Center the map on screen
+        if (gameMap != null) {
+            gameMap.centerOnScreen(width, height);
+        }
     }
     
     /**
@@ -144,52 +155,60 @@ public class GameEngine {
         waveManager.update(deltaTime, this);
         
         // Update all towers with collision system for better targeting
-        for (Tower tower : towers) {
-            tower.update(deltaTime);
-            
-            // Use collision system for more efficient target acquisition
-            if (tower.getTarget() == null || !tower.getTarget().isAlive()) {
-                Enemy closestEnemy = collisionSystem.getClosestEnemy(tower.getPosition(), tower.getRange());
-                tower.setTarget(closestEnemy);
-            }
-            
-            // Fire if possible
-            Projectile projectile = tower.fire();
-            if (projectile != null) {
-                projectiles.add(projectile);
+        synchronized (towers) {
+            for (Tower tower : towers) {
+                tower.update(deltaTime);
+
+                // Use collision system for more efficient target acquisition
+                if (tower.getTarget() == null || !tower.getTarget().isAlive()) {
+                    Enemy closestEnemy = collisionSystem.getClosestEnemy(tower.getPosition(), tower.getRange());
+                    tower.setTarget(closestEnemy);
+                }
+
+                // Fire if possible
+                Projectile projectile = tower.fire();
+                if (projectile != null) {
+                    synchronized (projectiles) {
+                        projectiles.add(projectile);
+                    }
+                }
             }
         }
-        
+
         // Update all enemies
-        Iterator<Enemy> enemyIterator = enemies.iterator();
-        while (enemyIterator.hasNext()) {
-            Enemy enemy = enemyIterator.next();
-            enemy.update(deltaTime);
+        synchronized (enemies) {
+            Iterator<Enemy> enemyIterator = enemies.iterator();
+            while (enemyIterator.hasNext()) {
+                Enemy enemy = enemyIterator.next();
+                enemy.update(deltaTime);
 
-            // Check if enemy reached end
-            if (enemy.hasReachedEnd()) {
-                dataCenterHealth -= enemy.getDamage();
-                enemyIterator.remove();
-                continue;
-            }
+                // Check if enemy reached end
+                if (enemy.hasReachedEnd()) {
+                    dataCenterHealth -= enemy.getDamage();
+                    enemyIterator.remove();
+                    continue;
+                }
 
-            // Remove dead enemies
-            if (!enemy.isAlive()) {
-                resources += enemy.getReward();
-                score += enemy.getReward() * 10L;
-                enemyIterator.remove();
+                // Remove dead enemies
+                if (!enemy.isAlive()) {
+                    resources += enemy.getReward();
+                    score += enemy.getReward() * 10L;
+                    enemyIterator.remove();
+                }
             }
         }
-        
-        // Update all projectiles
-        Iterator<Projectile> projectileIterator = projectiles.iterator();
-        while (projectileIterator.hasNext()) {
-            Projectile projectile = projectileIterator.next();
-            projectile.update(deltaTime);
 
-            // Remove projectiles that have hit
-            if (projectile.hasHit()) {
-                projectileIterator.remove();
+        // Update all projectiles
+        synchronized (projectiles) {
+            Iterator<Projectile> projectileIterator = projectiles.iterator();
+            while (projectileIterator.hasNext()) {
+                Projectile projectile = projectileIterator.next();
+                projectile.update(deltaTime);
+
+                // Remove projectiles that have hit
+                if (projectile.hasHit()) {
+                    projectileIterator.remove();
+                }
             }
         }
 
@@ -211,20 +230,81 @@ public class GameEngine {
      * @param paint Paint object for drawing
      */
     public void render(Canvas canvas, Paint paint) {
+        // Draw map first (underneath everything)
+        if (gameMap != null) {
+            renderMap(canvas, paint);
+        }
+
+        // Create defensive copies to avoid ConcurrentModificationException
+        // when UI thread modifies collections while render thread is iterating
+        List<Tower> towersCopy;
+        List<Enemy> enemiesCopy;
+        List<Projectile> projectilesCopy;
+
+        synchronized (towers) {
+            towersCopy = new ArrayList<>(towers);
+        }
+        synchronized (enemies) {
+            enemiesCopy = new ArrayList<>(enemies);
+        }
+        synchronized (projectiles) {
+            projectilesCopy = new ArrayList<>(projectiles);
+        }
+
         // Draw towers
         paint.setStyle(Paint.Style.FILL);
-        for (Tower tower : towers) {
+        for (Tower tower : towersCopy) {
             drawTower(canvas, paint, tower);
         }
-        
+
         // Draw enemies
-        for (Enemy enemy : enemies) {
+        for (Enemy enemy : enemiesCopy) {
             drawEnemy(canvas, paint, enemy);
         }
-        
+
         // Draw projectiles
-        for (Projectile projectile : projectiles) {
+        for (Projectile projectile : projectilesCopy) {
             drawProjectile(canvas, paint, projectile);
+        }
+    }
+
+    /**
+     * Render the game map with different colors for different tile types
+     */
+    private void renderMap(Canvas canvas, Paint paint) {
+        paint.setStyle(Paint.Style.FILL);
+
+        float offsetX = gameMap.getOffsetX();
+        float offsetY = gameMap.getOffsetY();
+
+        for (int y = 0; y < gameMap.getHeight(); y++) {
+            for (int x = 0; x < gameMap.getWidth(); x++) {
+                TileType tile = gameMap.getTileAt(x, y);
+                int color;
+
+                switch (tile) {
+                    case PATH:
+                        color = Color.parseColor("#4A5568"); // Gray path
+                        break;
+                    case BUILDABLE:
+                        color = Color.parseColor("#2D3748"); // Dark gray walls
+                        break;
+                    case SPAWN:
+                        color = Color.parseColor("#48BB78"); // Green spawn
+                        break;
+                    case DATACENTER:
+                        color = Color.parseColor("#4299E1"); // Blue datacenter
+                        break;
+                    case EMPTY:
+                    default:
+                        continue; // Don't draw empty tiles
+                }
+
+                paint.setColor(color);
+                float left = x * gridSize + offsetX;
+                float top = y * gridSize + offsetY;
+                canvas.drawRect(left, top, left + gridSize, top + gridSize, paint);
+            }
         }
     }
     
@@ -394,19 +474,44 @@ public class GameEngine {
             return false;
         }
 
+        // Check if tower can be placed at this position
+        if (gameMap != null) {
+            PointF gridPos = gameMap.worldToGrid(tower.getPosition());
+            if (!gameMap.isBuildable(gridPos)) {
+                System.out.println("Cannot place tower - tile is not buildable");
+                return false;
+            }
+
+            // Check if there's already a tower at this position
+            synchronized (towers) {
+                for (Tower existingTower : towers) {
+                    PointF existingGridPos = gameMap.worldToGrid(existingTower.getPosition());
+                    if (Math.abs(existingGridPos.x - gridPos.x) < 0.5f &&
+                        Math.abs(existingGridPos.y - gridPos.y) < 0.5f) {
+                        System.out.println("Cannot place tower - tile already occupied");
+                        return false;
+                    }
+                }
+            }
+        }
+
         if (resources >= tower.getCost()) {
-            towers.add(tower);
+            synchronized (towers) {
+                towers.add(tower);
+            }
             resources -= tower.getCost();
             return true;
         }
         return false;
     }
-    
+
     /**
      * Add an enemy to the game
      */
     public void addEnemy(Enemy enemy) {
-        enemies.add(enemy);
+        synchronized (enemies) {
+            enemies.add(enemy);
+        }
     }
 
     /**
@@ -451,24 +556,28 @@ public class GameEngine {
         state.score = score;
 
         // Capture tower data
-        for (Tower tower : towers) {
-            state.towers.add(new edu.commonwealthu.lastserverstanding.data.models.GameState.TowerData(
-                tower.getType(),
-                tower.getPosition(),
-                tower.getLevel(),
-                tower.isCorrupted()
-            ));
+        synchronized (towers) {
+            for (Tower tower : towers) {
+                state.towers.add(new edu.commonwealthu.lastserverstanding.data.models.GameState.TowerData(
+                    tower.getType(),
+                    tower.getPosition(),
+                    tower.getLevel(),
+                    tower.isCorrupted()
+                ));
+            }
         }
 
         // Capture enemy data
-        for (Enemy enemy : enemies) {
-            state.enemies.add(new edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData(
-                enemy.getType(),
-                enemy.getPosition(),
-                enemy.getHealth(),
-                enemy.getCurrentPathIndex(),
-                enemy.getPath()
-            ));
+        synchronized (enemies) {
+            for (Enemy enemy : enemies) {
+                state.enemies.add(new edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData(
+                    enemy.getType(),
+                    enemy.getPosition(),
+                    enemy.getHealth(),
+                    enemy.getCurrentPathIndex(),
+                    enemy.getPath()
+                ));
+            }
         }
 
         return state;
@@ -479,9 +588,15 @@ public class GameEngine {
      */
     public void restoreGameState(edu.commonwealthu.lastserverstanding.data.models.GameState state) {
         // Clear current state
-        towers.clear();
-        enemies.clear();
-        projectiles.clear();
+        synchronized (towers) {
+            towers.clear();
+        }
+        synchronized (enemies) {
+            enemies.clear();
+        }
+        synchronized (projectiles) {
+            projectiles.clear();
+        }
 
         // Restore basic values
         currentWave = state.currentWave;
@@ -491,18 +606,22 @@ public class GameEngine {
         score = state.score;
 
         // Restore towers
-        for (edu.commonwealthu.lastserverstanding.data.models.GameState.TowerData towerData : state.towers) {
-            Tower tower = createTowerFromData(towerData);
-            if (tower != null) {
-                towers.add(tower);
+        synchronized (towers) {
+            for (edu.commonwealthu.lastserverstanding.data.models.GameState.TowerData towerData : state.towers) {
+                Tower tower = createTowerFromData(towerData);
+                if (tower != null) {
+                    towers.add(tower);
+                }
             }
         }
 
         // Restore enemies
-        for (edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData enemyData : state.enemies) {
-            Enemy enemy = createEnemyFromData(enemyData);
-            if (enemy != null) {
-                enemies.add(enemy);
+        synchronized (enemies) {
+            for (edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData enemyData : state.enemies) {
+                Enemy enemy = createEnemyFromData(enemyData);
+                if (enemy != null) {
+                    enemies.add(enemy);
+                }
             }
         }
     }
@@ -556,18 +675,22 @@ public class GameEngine {
      * @return true if upgrade successful
      */
     public boolean tryUpgradeTowerAt(PointF gridPos) {
-        for (Tower tower : towers) {
-            PointF towerGrid = worldToGrid(tower.getPosition());
-            if (Math.abs(towerGrid.x - gridPos.x) < 0.5f && Math.abs(towerGrid.y - gridPos.y) < 0.5f) {
-                int upgradeCost = tower.getUpgradeCost();
-                if (resources >= upgradeCost) {
-                    boolean upgraded = tower.upgrade();
-                    if (upgraded) {
-                        resources -= upgradeCost;
-                        return true;
+        if (gameMap == null) return false;
+
+        synchronized (towers) {
+            for (Tower tower : towers) {
+                PointF towerGrid = gameMap.worldToGrid(tower.getPosition());
+                if (Math.abs(towerGrid.x - gridPos.x) < 0.5f && Math.abs(towerGrid.y - gridPos.y) < 0.5f) {
+                    int upgradeCost = tower.getUpgradeCost();
+                    if (resources >= upgradeCost) {
+                        boolean upgraded = tower.upgrade();
+                        if (upgraded) {
+                            resources -= upgradeCost;
+                            return true;
+                        }
                     }
+                    return false;
                 }
-                return false;
             }
         }
         return false;
@@ -575,8 +698,13 @@ public class GameEngine {
 
     /**
      * Convert world position to grid position
+     * Delegates to gameMap if available for proper offset handling
      */
     private PointF worldToGrid(PointF worldPos) {
+        if (gameMap != null) {
+            return gameMap.worldToGrid(worldPos);
+        }
+        // Fallback for when map is not initialized
         return new PointF(
             (int)(worldPos.x / gridSize),
             (int)(worldPos.y / gridSize)
@@ -658,10 +786,11 @@ public class GameEngine {
     public boolean isPaused() { return isPaused; }
     public void setPaused(boolean paused) { this.isPaused = paused; }
     public int getFPS() { return fps; }
-    
+
     public List<Tower> getTowers() { return towers; }
     public List<Enemy> getEnemies() { return enemies; }
 
     public Pathfinding getPathfinding() { return pathfinding; }
     public WaveManager getWaveManager() { return waveManager; }
+    public GameMap getGameMap() { return gameMap; }
 }

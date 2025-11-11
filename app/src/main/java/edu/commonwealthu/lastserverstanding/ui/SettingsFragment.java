@@ -1,6 +1,7 @@
 package edu.commonwealthu.lastserverstanding.ui;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +26,7 @@ import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
  */
 public class SettingsFragment extends Fragment {
 
+    private static final String TAG = "SettingsFragment";
     private GameViewModel viewModel;
 
     // UI Elements
@@ -33,6 +35,7 @@ public class SettingsFragment extends Fragment {
     private Slider sensitivitySlider;
     private MaterialButton saveButton;
     private MaterialButton backButton;
+    private MaterialButton mainMenuButton;
 
     private SettingsEntity currentSettings;
 
@@ -57,6 +60,7 @@ public class SettingsFragment extends Fragment {
         sensitivitySlider = view.findViewById(R.id.slider_sensitivity);
         saveButton = view.findViewById(R.id.btn_save);
         backButton = view.findViewById(R.id.btn_back);
+        mainMenuButton = view.findViewById(R.id.btn_main_menu);
 
         // Load current settings
         loadSettings();
@@ -64,6 +68,7 @@ public class SettingsFragment extends Fragment {
         // Set up listeners
         saveButton.setOnClickListener(v -> saveSettings());
         backButton.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
+        mainMenuButton.setOnClickListener(v -> goToMainMenu());
 
         // Set up slider
         sensitivitySlider.setLabelFormatter(value -> {
@@ -122,5 +127,25 @@ public class SettingsFragment extends Fragment {
 
         // Navigate back
         Navigation.findNavController(requireView()).navigateUp();
+    }
+
+    /**
+     * Navigate to main menu (clears back stack and resets game)
+     */
+    private void goToMainMenu() {
+        // Show confirmation dialog
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Return to Main Menu")
+                .setMessage("Return to main menu? Your current game progress will be lost.")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    // Reset the game engine (clear current game)
+                    viewModel.resetGameEngine();
+                    Log.d(TAG, "Game engine reset - returning to main menu");
+
+                    // Navigate to main menu and clear back stack
+                    Navigation.findNavController(requireView()).navigate(R.id.action_settings_to_menu);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }

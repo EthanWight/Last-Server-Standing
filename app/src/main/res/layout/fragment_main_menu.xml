@@ -80,7 +80,7 @@
         <!-- Leaderboard Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_leaderboard"
-            style="@style/Widget.App.Button.Text"
+            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/leaderboard"
@@ -93,14 +93,14 @@
     <!-- Settings Button (Top-Right) -->
     <ImageButton
         android:id="@+id/btn_settings"
-        style="@style/Widget.App.Button.Icon"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:src="@drawable/ic_settings"
         android:contentDescription="@string/settings"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:tint="@color/electric_blue"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless" />
+        android:layout_margin="16dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

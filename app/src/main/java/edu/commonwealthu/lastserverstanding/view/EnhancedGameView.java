@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -12,6 +13,8 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import androidx.annotation.NonNull;
 
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
 
@@ -39,7 +42,7 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     private Canvas canvas;
     
     // Grid settings
-    private int gridSize = 64;
+    private final int gridSize = 64;
     private int gridWidth;
     private int gridHeight;
     
@@ -105,56 +108,60 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
         selectedCell = null;
         
         setFocusable(true);
+        // Mark view as clickable so performClick is meaningful for accessibility
+        setClickable(true);
         
         // Initialize gesture detectors
         setupGestureDetectors(context);
     }
-    
+
     /**
      * Set up gesture detection
      */
     private void setupGestureDetectors(Context context) {
         // Standard gesture detector for taps, scrolls, flings
-        gestureDetector = new GestureDetector(context, 
+        gestureDetector = new GestureDetector(context,
             new GestureDetector.SimpleOnGestureListener() {
-                
+
                 @Override
-                public boolean onSingleTapConfirmed(MotionEvent e) {
+                public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
                     handleSingleTap(e.getX(), e.getY());
+                    // Announce click for accessibility
+                    performClick();
                     return true;
                 }
-                
+
                 @Override
-                public void onLongPress(MotionEvent e) {
+                public void onLongPress(@NonNull MotionEvent e) {
                     handleLongPress(e.getX(), e.getY());
                 }
-                
+
                 @Override
-                public boolean onScroll(MotionEvent e1, MotionEvent e2,
+                public boolean onScroll(MotionEvent e1, @NonNull MotionEvent e2,
                                        float distanceX, float distanceY) {
                     handlePan(distanceX, distanceY);
                     return true;
                 }
-                
+
                 @Override
-                public boolean onDoubleTap(MotionEvent e) {
+                public boolean onDoubleTap(@NonNull MotionEvent e) {
                     handleDoubleTap(e.getX(), e.getY());
                     return true;
                 }
-                
+
                 @Override
-                public boolean onFling(MotionEvent e1, MotionEvent e2,
+                public boolean onFling(MotionEvent e1, @NonNull MotionEvent e2,
                                       float velocityX, float velocityY) {
                     handleFling(velocityX, velocityY);
                     return true;
                 }
             });
-        
+
         // Scale gesture detector for pinch zoom
         scaleDetector = new ScaleGestureDetector(context,
             new ScaleGestureDetector.SimpleOnScaleGestureListener() {
                 @Override
-                public boolean onScale(ScaleGestureDetector detector) {
+                public boolean onScale(@NonNull ScaleGestureDetector detector) {
                     handlePinchZoom(detector);
                     return true;
                 }
@@ -232,17 +239,25 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     private void handleDoubleTap(float screenX, float screenY) {
         PointF worldPos = screenToWorld(new PointF(screenX, screenY));
         PointF gridPos = worldToGrid(worldPos);
-        
+
         // Try to upgrade tower at this position
         if (gameEngine != null) {
             boolean upgraded = gameEngine.tryUpgradeTowerAt(gridPos);
-            
+
             if (upgraded) {
-                // Success feedback
-                performHapticFeedback(android.view.HapticFeedbackConstants.CONFIRM);
+                // Success feedback (use API level check for newer constants)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    performHapticFeedback(android.view.HapticFeedbackConstants.CONFIRM);
+                } else {
+                    performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
+                }
             } else {
-                // Failure feedback
-                performHapticFeedback(android.view.HapticFeedbackConstants.REJECT);
+                // Failure feedback (use API level check for newer constants)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    performHapticFeedback(android.view.HapticFeedbackConstants.REJECT);
+                } else {
+                    performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                }
             }
         }
     }
@@ -252,7 +267,8 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
      */
     private void handleFling(float velocityX, float velocityY) {
         // Check for upward swipe from bottom of screen
-        if (velocityY < -2000) { // Threshold for swipe up
+        // Use absolute value of velocityX to ensure it's primarily vertical
+        if (velocityY < -2000 && Math.abs(velocityX) < Math.abs(velocityY)) {
             if (swipeUpListener != null) {
                 swipeUpListener.onSwipeUp();
             }
@@ -306,8 +322,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
             (int)(worldPos.y / gridSize)
         );
     }
-    
+
     @Override
+    @SuppressWarnings("ClickableViewAccessibility") // performClick is called via gestureDetector
     public boolean onTouchEvent(MotionEvent event) {
         // Process gestures in order of priority
         boolean handled = scaleDetector.onTouchEvent(event);
@@ -316,44 +333,55 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
         }
         return handled || super.onTouchEvent(event);
     }
+
+    @Override
+    public boolean performClick() {
+        // Call super to handle accessibility events
+        super.performClick();
+        return true;
+    }
     
     /**
      * Set game engine
      */
+    @SuppressWarnings("unused") // Public API
     public void setGameEngine(GameEngine engine) {
         this.gameEngine = engine;
     }
-    
+
     /**
      * Set gesture listeners
      */
+    @SuppressWarnings("unused") // Public API
     public void setOnGridTapListener(OnGridTapListener listener) {
         this.gridTapListener = listener;
     }
-    
+
+    @SuppressWarnings("unused") // Public API
     public void setOnTowerLongPressListener(OnTowerLongPressListener listener) {
         this.towerLongPressListener = listener;
     }
-    
+
+    @SuppressWarnings("unused") // Public API
     public void setOnSwipeUpListener(OnSwipeUpListener listener) {
         this.swipeUpListener = listener;
     }
     
     // Game loop and rendering methods (same as original GameView)
-    
+
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
+    public void surfaceCreated(@NonNull SurfaceHolder holder) {
         calculateGridDimensions(getWidth(), getHeight());
         startGameLoop();
     }
-    
+
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
         calculateGridDimensions(width, height);
     }
-    
+
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
+    public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
         stopGameLoop();
     }
     
@@ -387,23 +415,24 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     @Override
     public void run() {
         long lastFrameTime = System.currentTimeMillis();
-        
+
         while (isRunning) {
             long startTime = System.currentTimeMillis();
             long deltaTime = startTime - lastFrameTime;
-            
+
             if (gameEngine != null) {
                 gameEngine.update(deltaTime / 1000f);
             }
-            
+
             render();
-            
+
             lastFrameTime = startTime;
-            
+
             long frameTime = System.currentTimeMillis() - startTime;
             long sleepTime = TARGET_FRAME_TIME - frameTime;
             if (sleepTime > 0) {
                 try {
+                    //noinspection BusyWait - Intentional frame rate control
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
                     Log.w(TAG, "Game loop sleep interrupted", e);
@@ -482,8 +511,13 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
             canvas.drawText(fpsText, getWidth() - 200, 120, paint);
         }
     }
-    
+
+    @SuppressWarnings("unused") // Public API
     public int getGridSize() { return gridSize; }
+
+    @SuppressWarnings("unused") // Public API
     public int getGridWidth() { return gridWidth; }
+
+    @SuppressWarnings("unused") // Public API
     public int getGridHeight() { return gridHeight; }
 }
