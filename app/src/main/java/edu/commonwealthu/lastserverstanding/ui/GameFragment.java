@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
@@ -24,6 +25,7 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.data.models.GameState;
@@ -38,6 +40,13 @@ import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 /**
  * Game Fragment - Main gameplay screen
  * Contains GameView and HUD overlay
+ *
+ * Save/Load Flow:
+ * - Auto-save occurs in onPause() whenever there's progress (wave > 0)
+ * - This saves when: going to settings, main menu, background, or exiting app
+ * - When user clicks "Continue" from main menu, saved game is loaded
+ * - When user clicks "New Game" from main menu, saves are deleted and fresh game starts
+ * - When returning from settings, existing game state is preserved in ViewModel
  */
 public class GameFragment extends Fragment {
 
@@ -117,42 +126,19 @@ public class GameFragment extends Fragment {
         fabJammer = view.findViewById(R.id.fab_tower_jammer);
         emergencyBanner = view.findViewById(R.id.emergency_banner);
 
-        // Determine if we should reset the game engine
-        boolean shouldResetEngine = false;
-
+        // Determine how to initialize the game based on navigation args
         if (continueGame) {
-            // User clicked "Continue" - always reset and load from save
-            Log.d(TAG, "Continue game requested - will reset and load from save");
-            shouldResetEngine = true;
-        } else if (isNewGame) {
-            // Check if there's already an active game
-            if (viewModel.hasActiveGame()) {
-                int existingWave = viewModel.getGameEngine().getCurrentWave();
-                Log.d(TAG, "isNewGame=true but existing game found with wave: " + existingWave);
-
-                // Only reset if the existing game has no progress
-                if (existingWave == 0) {
-                    shouldResetEngine = true;
-                } else {
-                    // Has progress - don't reset (user probably returning from settings)
-                    Log.d(TAG, "Keeping existing game with progress");
-                }
-            } else {
-                // No existing game - create fresh one
-                shouldResetEngine = true;
-            }
-        }
-
-        if (shouldResetEngine) {
-            if (isNewGame) {
-                Log.d(TAG, "Starting new game - resetting game engine");
-                deleteAutoSave();
-            } else {
-                Log.d(TAG, "Resetting engine to load saved game");
-            }
+            // User clicked "Continue" from main menu - load saved game
+            Log.d(TAG, "Continue game requested - will load from save");
             viewModel.resetGameEngine();
-        } else if (viewModel.hasActiveGame()) {
-            Log.d(TAG, "Resuming existing game from ViewModel");
+        } else if (isNewGame) {
+            // User clicked "New Game" from main menu - start fresh
+            Log.d(TAG, "New game requested - deleting save and starting fresh");
+            deleteAutoSave();
+            viewModel.resetGameEngine();
+        } else {
+            // Returning from settings or other navigation - keep existing game
+            Log.d(TAG, "No game mode specified - resuming existing game if available");
         }
 
         // Get the game engine (either existing or newly created)
@@ -183,7 +169,7 @@ public class GameFragment extends Fragment {
 
             if (width > 0 && height > 0) {
                 gameEngine.setWorldDimensions(width, height, gridSize);
-                Log.d(TAG, String.format("World dimensions set: %dx%d, grid size: %d", width, height, gridSize));
+                Log.d(TAG, String.format(Locale.getDefault(), "World dimensions set: %dx%d, grid size: %d", width, height, gridSize));
 
                 // Load saved game only if continuing from main menu (after world setup)
                 if (continueGame && !hasLoadedGame) {
@@ -356,11 +342,11 @@ public class GameFragment extends Fragment {
 
         // Update health bar color based on health
         if (health > 60) {
-            healthBar.setIndicatorColor(getResources().getColor(R.color.health_high, requireContext().getTheme()));
+            healthBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.health_high));
         } else if (health > 30) {
-            healthBar.setIndicatorColor(getResources().getColor(R.color.health_medium, requireContext().getTheme()));
+            healthBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.health_medium));
         } else {
-            healthBar.setIndicatorColor(getResources().getColor(R.color.health_low, requireContext().getTheme()));
+            healthBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.health_low));
         }
 
         // Update wave counter (just the number)
@@ -388,9 +374,7 @@ public class GameFragment extends Fragment {
         bannerText.setText(message);
 
         // Auto-hide after 3 seconds
-        emergencyBanner.postDelayed(() -> {
-            emergencyBanner.setVisibility(View.GONE);
-        }, 3000);
+        emergencyBanner.postDelayed(() -> emergencyBanner.setVisibility(View.GONE), 3000);
     }
 
     /**
@@ -460,7 +444,7 @@ public class GameFragment extends Fragment {
         // Deselect previous tower
         if (selectedFab != null) {
             selectedFab.setBackgroundTintList(ColorStateList.valueOf(
-                    getResources().getColor(R.color.electric_blue, requireContext().getTheme())));
+                    ContextCompat.getColor(requireContext(), R.color.electric_blue)));
         }
 
         // Select new tower
@@ -469,7 +453,7 @@ public class GameFragment extends Fragment {
 
         // Highlight selected tower with different color
         fab.setBackgroundTintList(ColorStateList.valueOf(
-                getResources().getColor(R.color.success_green, requireContext().getTheme())));
+                ContextCompat.getColor(requireContext(), R.color.success_green)));
 
         // Get current resources
         int resources = gameEngine != null ? gameEngine.getResources() : 0;
@@ -498,9 +482,9 @@ public class GameFragment extends Fragment {
         // Build the message
         String message = tower.getDescription() + "\n\n" +
                 "Cost: " + tower.getCost() + " resources\n" +
-                "Damage: " + String.format("%.0f", tower.getDamage()) + "\n" +
-                "Range: " + String.format("%.0f", tower.getRange()) + "\n" +
-                "Fire Rate: " + String.format("%.1f", tower.getFireRate()) + " attacks/sec";
+                "Damage: " + String.format(Locale.getDefault(), "%.0f", tower.getDamage()) + "\n" +
+                "Range: " + String.format(Locale.getDefault(), "%.0f", tower.getRange()) + "\n" +
+                "Fire Rate: " + String.format(Locale.getDefault(), "%.1f", tower.getFireRate()) + " attacks/sec";
 
         if (tower.isLocked()) {
             message += "\n\nStatus: LOCKED\nComplete more waves to unlock this tower.";
@@ -561,7 +545,7 @@ public class GameFragment extends Fragment {
             }
 
             if (placed) {
-                Log.d(TAG, String.format("Tower placed successfully at (%.0f, %.0f)", worldPosition.x, worldPosition.y));
+                Log.d(TAG, String.format(Locale.getDefault(), "Tower placed successfully at (%.0f, %.0f)", worldPosition.x, worldPosition.y));
                 Toast.makeText(requireContext(),
                         selectedTower.getName() + " placed!",
                         Toast.LENGTH_SHORT).show();
@@ -589,8 +573,8 @@ public class GameFragment extends Fragment {
             return;
         }
 
-        // Load the most recent save (ID = 1 for auto-save)
-        viewModel.loadGame(1, new GameRepository.LoadCallback() {
+        // Load the most recent auto-save
+        viewModel.loadLatestAutoSave(new GameRepository.LoadCallback() {
             @Override
             public void onSuccess(GameState gameState) {
                 if (gameEngine != null && gameState != null) {
@@ -648,7 +632,7 @@ public class GameFragment extends Fragment {
         }
 
         // Delete auto-save by loading and deleting it (use observeOnce to avoid leak)
-        viewModel.getAllSaves().observe(getViewLifecycleOwner(), new androidx.lifecycle.Observer<java.util.List<edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity>>() {
+        viewModel.getAllSaves().observe(getViewLifecycleOwner(), new androidx.lifecycle.Observer<>() {
             @Override
             public void onChanged(java.util.List<edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity> saves) {
                 // Remove observer immediately after first callback
@@ -679,7 +663,7 @@ public class GameFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        Log.d(TAG, "Fragment paused - stopping game loop");
+        Log.d(TAG, "Fragment paused - stopping game loop and auto-saving");
 
         if (gameView != null) {
             gameView.stopGameLoop();
@@ -690,11 +674,15 @@ public class GameFragment extends Fragment {
             hudHandler.removeCallbacks(hudUpdater);
         }
 
-        // Auto-pause game when leaving
+        // Auto-pause game and auto-save when leaving GameFragment
         if (gameEngine != null) {
             gameEngine.setPaused(true);
 
-            // Auto-save game state when going to background
+            // Auto-save game state - this ensures progress is saved when:
+            // - Going to settings
+            // - Going to main menu
+            // - App going to background
+            // - User exiting the app
             saveGameState(true);
         }
     }

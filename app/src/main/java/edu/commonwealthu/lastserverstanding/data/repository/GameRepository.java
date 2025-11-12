@@ -45,6 +45,11 @@ public class GameRepository {
     public void saveGame(GameState gameState, boolean isAutoSave, SaveCallback callback) {
         executorService.execute(() -> {
             try {
+                // If this is an auto-save, delete previous auto-saves first
+                if (isAutoSave) {
+                    saveGameDao.deleteAllAutoSaves();
+                }
+
                 String json = gameState.toJson();
                 SaveGameEntity entity = new SaveGameEntity(
                     System.currentTimeMillis(),
@@ -68,20 +73,58 @@ public class GameRepository {
     }
 
     /**
-     * Load game state
+     * Load game state by ID
      */
     public void loadGame(int saveId, LoadCallback callback) {
         executorService.execute(() -> {
             try {
-                LiveData<SaveGameEntity> saveData = saveGameDao.getSaveById(saveId);
-                // This is simplified - in real implementation, observe LiveData
-                // For now, just notify success
+                SaveGameEntity saveEntity = saveGameDao.getSaveByIdSync(saveId);
+
+                if (saveEntity == null) {
+                    if (callback != null) {
+                        callback.onError("Save game not found");
+                    }
+                    return;
+                }
+
+                // Deserialize JSON to GameState
+                GameState gameState = GameState.fromJson(saveEntity.getGameStateJson());
+
                 if (callback != null) {
-                    callback.onSuccess(null); // Will fix this properly
+                    callback.onSuccess(gameState);
                 }
             } catch (Exception e) {
                 if (callback != null) {
-                    callback.onError(e.getMessage());
+                    callback.onError("Failed to load game: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    /**
+     * Load most recent auto-save
+     */
+    public void loadLatestAutoSave(LoadCallback callback) {
+        executorService.execute(() -> {
+            try {
+                SaveGameEntity saveEntity = saveGameDao.getLatestAutoSaveSync();
+
+                if (saveEntity == null) {
+                    if (callback != null) {
+                        callback.onError("No auto-save found");
+                    }
+                    return;
+                }
+
+                // Deserialize JSON to GameState
+                GameState gameState = GameState.fromJson(saveEntity.getGameStateJson());
+
+                if (callback != null) {
+                    callback.onSuccess(gameState);
+                }
+            } catch (Exception e) {
+                if (callback != null) {
+                    callback.onError("Failed to load auto-save: " + e.getMessage());
                 }
             }
         });

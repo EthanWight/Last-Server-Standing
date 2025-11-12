@@ -46,10 +46,17 @@ public class GameViewModel extends AndroidViewModel {
     }
 
     /**
-     * Load saved game
+     * Load saved game by ID
      */
     public void loadGame(int saveId, GameRepository.LoadCallback callback) {
         repository.loadGame(saveId, callback);
+    }
+
+    /**
+     * Load most recent auto-save
+     */
+    public void loadLatestAutoSave(GameRepository.LoadCallback callback) {
+        repository.loadLatestAutoSave(callback);
     }
 
     /**

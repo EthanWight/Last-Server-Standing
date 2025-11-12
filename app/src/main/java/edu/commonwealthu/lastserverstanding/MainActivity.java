@@ -4,11 +4,8 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
-
-import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
 /**
  * Main Activity for Last Server Standing
@@ -18,7 +15,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private NavController navController;
-    private GameViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,9 +24,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Use the fragment-based layout
         setContentView(R.layout.activity_main_updated);
-
-        // Initialize ViewModel (shared across fragments)
-        viewModel = new ViewModelProvider(this).get(GameViewModel.class);
 
         // Set up Navigation Component
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()

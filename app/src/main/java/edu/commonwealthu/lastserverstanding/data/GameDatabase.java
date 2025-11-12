@@ -13,7 +13,7 @@ import edu.commonwealthu.lastserverstanding.data.entities.SettingsEntity;
 /**
  * Main Room database for the app
  */
-@Database(entities = {SaveGameEntity.class, SettingsEntity.class}, version = 1, exportSchema = false)
+@Database(entities = {SaveGameEntity.class, SettingsEntity.class}, version = 2, exportSchema = false)
 @TypeConverters({Converters.class})
 public abstract class GameDatabase extends RoomDatabase {
 
@@ -33,7 +33,9 @@ public abstract class GameDatabase extends RoomDatabase {
                         context.getApplicationContext(),
                         GameDatabase.class,
                         "last_server_standing_database"
-                    ).build();
+                    )
+                    .fallbackToDestructiveMigration() // Recreate DB on schema changes (dev mode)
+                    .build();
                 }
             }
         }

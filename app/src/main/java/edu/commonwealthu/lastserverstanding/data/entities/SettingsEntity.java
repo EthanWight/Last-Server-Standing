@@ -14,13 +14,11 @@ public class SettingsEntity {
 
     private boolean soundEnabled;
     private boolean vibrationEnabled;
-    private float accelerometerSensitivity;
 
     public SettingsEntity() {
         // Default values
         this.soundEnabled = true;
         this.vibrationEnabled = true;
-        this.accelerometerSensitivity = 2.5f;
     }
 
     // Getters and Setters
@@ -32,7 +30,4 @@ public class SettingsEntity {
 
     public boolean isVibrationEnabled() { return vibrationEnabled; }
     public void setVibrationEnabled(boolean vibrationEnabled) { this.vibrationEnabled = vibrationEnabled; }
-
-    public float getAccelerometerSensitivity() { return accelerometerSensitivity; }
-    public void setAccelerometerSensitivity(float sensitivity) { this.accelerometerSensitivity = sensitivity; }
 }

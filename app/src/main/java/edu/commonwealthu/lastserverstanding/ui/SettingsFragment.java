@@ -14,11 +14,13 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.slider.Slider;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.data.entities.SettingsEntity;
+import edu.commonwealthu.lastserverstanding.data.models.GameState;
+import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
+import edu.commonwealthu.lastserverstanding.game.GameEngine;
 import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
 /**
@@ -32,7 +34,6 @@ public class SettingsFragment extends Fragment {
     // UI Elements
     private SwitchMaterial soundSwitch;
     private SwitchMaterial vibrationSwitch;
-    private Slider sensitivitySlider;
     private MaterialButton saveButton;
     private MaterialButton backButton;
     private MaterialButton mainMenuButton;
@@ -57,7 +58,6 @@ public class SettingsFragment extends Fragment {
         // Initialize views
         soundSwitch = view.findViewById(R.id.switch_sound);
         vibrationSwitch = view.findViewById(R.id.switch_vibration);
-        sensitivitySlider = view.findViewById(R.id.slider_sensitivity);
         saveButton = view.findViewById(R.id.btn_save);
         backButton = view.findViewById(R.id.btn_back);
         mainMenuButton = view.findViewById(R.id.btn_main_menu);
@@ -69,14 +69,6 @@ public class SettingsFragment extends Fragment {
         saveButton.setOnClickListener(v -> saveSettings());
         backButton.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         mainMenuButton.setOnClickListener(v -> goToMainMenu());
-
-        // Set up slider
-        sensitivitySlider.setLabelFormatter(value -> {
-            if (value < 2.0f) return "Very Sensitive";
-            else if (value < 3.0f) return "Sensitive";
-            else if (value < 4.0f) return "Normal";
-            else return "Less Sensitive";
-        });
     }
 
     /**
@@ -88,20 +80,11 @@ public class SettingsFragment extends Fragment {
                 currentSettings = settings;
                 soundSwitch.setChecked(settings.isSoundEnabled());
                 vibrationSwitch.setChecked(settings.isVibrationEnabled());
-
-                // Clamp sensitivity value to valid range (1.0 to 5.0)
-                float sensitivity = settings.getAccelerometerSensitivity();
-                if (sensitivity < 1.0f || sensitivity > 5.0f) {
-                    sensitivity = 2.5f; // Reset to default if out of range
-                    settings.setAccelerometerSensitivity(sensitivity);
-                }
-                sensitivitySlider.setValue(sensitivity);
             } else {
                 // Use defaults if no settings exist
                 currentSettings = new SettingsEntity();
                 soundSwitch.setChecked(true);
                 vibrationSwitch.setChecked(true);
-                sensitivitySlider.setValue(2.5f);
             }
         });
     }
@@ -117,7 +100,6 @@ public class SettingsFragment extends Fragment {
         // Update settings from UI
         currentSettings.setSoundEnabled(soundSwitch.isChecked());
         currentSettings.setVibrationEnabled(vibrationSwitch.isChecked());
-        currentSettings.setAccelerometerSensitivity(sensitivitySlider.getValue());
 
         // Save via ViewModel
         viewModel.updateSettings(currentSettings);
@@ -130,22 +112,65 @@ public class SettingsFragment extends Fragment {
     }
 
     /**
-     * Navigate to main menu (clears back stack and resets game)
+     * Navigate to main menu (saves current game progress)
      */
     private void goToMainMenu() {
         // Show confirmation dialog
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                 .setTitle("Return to Main Menu")
-                .setMessage("Return to main menu? Your current game progress will be lost.")
+                .setMessage("Return to main menu? Your progress will be saved.")
                 .setPositiveButton("Yes", (dialog, which) -> {
-                    // Reset the game engine (clear current game)
-                    viewModel.resetGameEngine();
-                    Log.d(TAG, "Game engine reset - returning to main menu");
-
-                    // Navigate to main menu and clear back stack
-                    Navigation.findNavController(requireView()).navigate(R.id.action_settings_to_menu);
+                    // Save current game state before returning to menu
+                    saveCurrentGameAndReturnToMenu();
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    /**
+     * Save current game state and navigate to main menu
+     */
+    private void saveCurrentGameAndReturnToMenu() {
+        GameEngine gameEngine = viewModel.getGameEngine();
+
+        if (gameEngine != null && gameEngine.getCurrentWave() > 0) {
+            // There's actual game progress to save
+            GameState gameState = gameEngine.captureGameState();
+
+            Log.d(TAG, "Saving game state before returning to menu - Wave: " + gameState.currentWave);
+
+            viewModel.saveGame(gameState, true, new GameRepository.SaveCallback() {
+                @Override
+                public void onSuccess(int saveId) {
+                    Log.d(TAG, "Game auto-saved successfully - SaveID: " + saveId);
+
+                    if (isAdded()) {
+                        requireActivity().runOnUiThread(() -> {
+                            Toast.makeText(requireContext(), "Game saved", Toast.LENGTH_SHORT).show();
+
+                            // Navigate to main menu
+                            Navigation.findNavController(requireView()).navigate(R.id.action_settings_to_menu);
+                        });
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+                    Log.e(TAG, "Failed to save game: " + error);
+
+                    if (isAdded()) {
+                        requireActivity().runOnUiThread(() -> {
+                            // Still navigate even if save failed
+                            Toast.makeText(requireContext(), "Warning: Failed to save game", Toast.LENGTH_SHORT).show();
+                            Navigation.findNavController(requireView()).navigate(R.id.action_settings_to_menu);
+                        });
+                    }
+                }
+            });
+        } else {
+            // No progress to save, just navigate
+            Log.d(TAG, "No game progress to save - returning to menu");
+            Navigation.findNavController(requireView()).navigate(R.id.action_settings_to_menu);
+        }
     }
 }

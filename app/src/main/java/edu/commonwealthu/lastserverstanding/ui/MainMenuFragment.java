@@ -41,8 +41,8 @@ public class MainMenuFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Initialize ViewModel
-        viewModel = new ViewModelProvider(this).get(GameViewModel.class);
+        // Initialize ViewModel (use activity scope for consistency)
+        viewModel = new ViewModelProvider(requireActivity()).get(GameViewModel.class);
 
         // Initialize views
         continueButton = view.findViewById(R.id.btn_continue);
@@ -107,16 +107,8 @@ public class MainMenuFragment extends Fragment {
             // Navigate to settings
             Navigation.findNavController(v).navigate(R.id.action_menu_to_settings);
         });
-        
-        // Start background animation
-        startBackgroundAnimation(view);
-    }
-    
-    /**
-     * Start animated background effect
-     */
-    private void startBackgroundAnimation(View view) {
-        // TODO: Implement circuit board animation
-        // This will be a custom animated drawable or canvas animation
+
+        // TODO: Implement background animation
+        // startBackgroundAnimation(view);
     }
 }

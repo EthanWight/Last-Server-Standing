@@ -15,6 +15,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 
 import java.util.List;
+import java.util.Locale;
 
 import edu.commonwealthu.lastserverstanding.R;
 
@@ -91,9 +92,9 @@ public class TowerAdapter extends RecyclerView.Adapter<TowerAdapter.TowerViewHol
             icon.setImageResource(tower.getIconResId());
             name.setText(tower.getName());
             cost.setText(String.valueOf(tower.getCost()));
-            damageChip.setText(String.format("%.0f", tower.getDamage()));
-            rangeChip.setText(String.format("%.0f", tower.getRange()));
-            fireRateChip.setText(String.format("%.1f", tower.getFireRate()));
+            damageChip.setText(String.format(Locale.getDefault(), "%.0f", tower.getDamage()));
+            rangeChip.setText(String.format(Locale.getDefault(), "%.0f", tower.getRange()));
+            fireRateChip.setText(String.format(Locale.getDefault(), "%.1f", tower.getFireRate()));
 
             // Show/hide lock overlay
             lockOverlay.setVisibility(tower.isLocked() ? View.VISIBLE : View.GONE);
