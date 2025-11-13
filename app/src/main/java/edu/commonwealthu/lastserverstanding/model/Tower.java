@@ -23,15 +23,19 @@ public abstract class Tower {
     
     // Economy
     protected int cost;
-    
+
     // Current target
     protected Enemy target;
-    
+
     // Status
     protected boolean isCorrupted;
-    
+
     // Timing for attack rate
     protected long lastFireTime;
+
+    // Spacing constants
+    protected static final float TOWER_RADIUS = 32f; // Half of grid size (64/2)
+    protected static final float MIN_TOWER_SPACING = 64f; // One grid cell spacing
     
     /**
      * Constructor for tower base class
@@ -73,14 +77,15 @@ public abstract class Tower {
     
     /**
      * Get the cost to upgrade this tower to the next level
+     * Exponential cost scaling: cost * (1.5 ^ level)
      * @return upgrade cost, or 0 if already at max level
      */
     public int getUpgradeCost() {
         if (level >= 5) {
             return 0; // Already at max level
         }
-        // Upgrade cost increases with each level: base_cost * level * 0.75
-        return (int)(cost * level * 0.75f);
+        // Exponential cost: base_cost * (1.5^level)
+        return (int)(cost * Math.pow(1.5, level));
     }
     
     /**
@@ -90,10 +95,10 @@ public abstract class Tower {
     public boolean upgrade() {
         if (level < 5) {
             level++;
-            // Increase stats by 20% per level
-            damage *= 1.2f;
-            range *= 1.1f;
-            fireRate *= 1.15f;
+            // Increase stats
+            damage *= 2.0f;
+            range *= 1.25f;
+            fireRate *= 1.25f;
             return true;
         }
         return false;
@@ -129,7 +134,11 @@ public abstract class Tower {
     public int getCost() { return cost; }
     public Enemy getTarget() { return target; }
     public boolean isCorrupted() { return isCorrupted; }
-    
+
     public void setTarget(Enemy target) { this.target = target; }
     public void setCorrupted(boolean corrupted) { this.isCorrupted = corrupted; }
+
+    // Static getters for constants
+    public static float getTowerRadius() { return TOWER_RADIUS; }
+    public static float getMinTowerSpacing() { return MIN_TOWER_SPACING; }
 }

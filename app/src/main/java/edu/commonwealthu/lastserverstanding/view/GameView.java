@@ -51,12 +51,45 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     // Tap listener for tower placement
     private OnTapListener tapListener;
 
+    // Drag preview
+    private boolean showDragPreview = false;
+    private PointF dragPreviewPosition = new PointF();
+    private String dragPreviewTowerType = null;
+    private int dragPreviewIconRes = 0;
+    private boolean isDragPreviewValid = false;
+
     public interface OnTapListener {
         void onTap(PointF worldPosition);
     }
 
     public void setOnTapListener(OnTapListener listener) {
         this.tapListener = listener;
+    }
+
+    /**
+     * Show tower drag preview
+     */
+    public void showDragPreview(String towerType, int iconRes) {
+        this.showDragPreview = true;
+        this.dragPreviewTowerType = towerType;
+        this.dragPreviewIconRes = iconRes;
+    }
+
+    /**
+     * Hide tower drag preview
+     */
+    public void hideDragPreview() {
+        this.showDragPreview = false;
+        this.dragPreviewTowerType = null;
+    }
+
+    /**
+     * Update drag preview position and validity
+     */
+    public void updateDragPreview(PointF screenPos, boolean isValid) {
+        PointF worldPos = screenToWorld(screenPos);
+        dragPreviewPosition.set(worldPos.x, worldPos.y);
+        isDragPreviewValid = isValid;
     }
 
     /**
@@ -221,10 +254,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
             if (gameEngine != null) {
                 gameEngine.render(canvas, paint);
             }
-            
+
+            // Draw drag preview (if active)
+            if (showDragPreview) {
+                drawDragPreview();
+            }
+
             // Restore canvas state
             canvas.restore();
-            
+
             // Draw HUD (not affected by camera)
             drawHUD();
             
@@ -255,6 +293,48 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
         }
     }
     
+    /**
+     * Draw drag preview of tower being placed
+     */
+    private void drawDragPreview() {
+        if (dragPreviewPosition == null) return;
+
+        // Draw semi-transparent circle for tower preview
+        paint.setStyle(Paint.Style.FILL);
+
+        // Set color based on validity (red if invalid, green if valid)
+        if (isDragPreviewValid) {
+            paint.setColor(Color.argb(100, 0, 255, 0)); // Green with transparency
+        } else {
+            paint.setColor(Color.argb(100, 255, 0, 0)); // Red with transparency
+        }
+
+        // Draw tower circle
+        float radius = gridSize / 2f;
+        canvas.drawCircle(dragPreviewPosition.x, dragPreviewPosition.y, radius, paint);
+
+        // Draw border
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(3);
+        if (isDragPreviewValid) {
+            paint.setColor(Color.argb(200, 0, 255, 0)); // Solid green border
+        } else {
+            paint.setColor(Color.argb(200, 255, 0, 0)); // Solid red border
+        }
+        canvas.drawCircle(dragPreviewPosition.x, dragPreviewPosition.y, radius, paint);
+
+        // Draw spacing border (shows minimum spacing)
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(1);
+        paint.setColor(Color.argb(80, 255, 255, 255)); // Light white
+        canvas.drawCircle(dragPreviewPosition.x, dragPreviewPosition.y,
+                edu.commonwealthu.lastserverstanding.model.Tower.getMinTowerSpacing() / 2f, paint);
+
+        // Reset paint style
+        paint.setStyle(Paint.Style.FILL);
+        paint.setAlpha(255);
+    }
+
     /**
      * Draw heads-up display
      */
@@ -304,7 +384,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     /**
      * Convert screen coordinates to world coordinates
      */
-    private PointF screenToWorld(PointF screenPos) {
+    public PointF screenToWorld(PointF screenPos) {
         return new PointF(
             (screenPos.x - cameraOffset.x) / cameraZoom,
             (screenPos.y - cameraOffset.y) / cameraZoom

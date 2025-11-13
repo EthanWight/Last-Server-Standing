@@ -40,6 +40,21 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp" />
 
+        <!-- Level Indicator -->
+        <TextView
+            android:id="@+id/tower_level"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Level 1"
+            android:textSize="12sp"
+            android:textColor="@color/warning_yellow"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/tower_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="4dp" />
+
         <!-- Cost -->
         <LinearLayout
             android:id="@+id/cost_container"
@@ -47,7 +62,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            app:layout_constraintTop_toBottomOf="@id/tower_name"
+            app:layout_constraintTop_toBottomOf="@id/tower_level"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp">
@@ -69,6 +84,20 @@
 
         </LinearLayout>
 
+        <!-- Description -->
+        <TextView
+            android:id="@+id/tower_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Basic defense tower with high fire rate."
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/cost_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
         <!-- Stats Container -->
         <LinearLayout
             android:id="@+id/stats_container"
@@ -76,7 +105,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            app:layout_constraintTop_toBottomOf="@id/cost_container"
+            app:layout_constraintTop_toBottomOf="@id/tower_description"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="12dp">
@@ -115,14 +144,44 @@
 
         </LinearLayout>
 
+        <!-- Upgrade Button (for dialog use) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_upgrade"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Upgrade"
+            android:backgroundTint="@color/success_green"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/stats_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp" />
+
+        <!-- Close Button (for dialog use) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_close"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Close"
+            android:textColor="@color/electric_blue"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/btn_upgrade"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp" />
+
         <!-- Info Button -->
         <ImageButton
             android:id="@+id/btn_info"
             style="@style/Widget.App.Button.Icon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:src="@drawable/ic_info"
             android:contentDescription="@string/tower_info"
+            android:padding="12dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:background="?attr/selectableItemBackgroundBorderless" />

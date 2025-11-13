@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -31,6 +32,7 @@ import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.data.models.GameState;
 import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
+import edu.commonwealthu.lastserverstanding.model.Tower;
 import edu.commonwealthu.lastserverstanding.model.towers.FirewallTower;
 import edu.commonwealthu.lastserverstanding.model.towers.HoneypotTower;
 import edu.commonwealthu.lastserverstanding.model.towers.JammerTower;
@@ -126,23 +128,28 @@ public class GameFragment extends Fragment {
         fabJammer = view.findViewById(R.id.fab_tower_jammer);
         emergencyBanner = view.findViewById(R.id.emergency_banner);
 
-        // Determine how to initialize the game based on navigation args
-        if (continueGame) {
-            // User clicked "Continue" from main menu - load saved game
-            Log.d(TAG, "Continue game requested - will load from save");
+        // Get the game engine first
+        gameEngine = viewModel.getGameEngine();
+
+        // Only reset/reload if this is a fresh navigation from main menu
+        if (continueGame && !hasLoadedGame) {
+            // User clicked "Continue" from main menu - reset and load saved game
+            Log.d(TAG, "Continue game requested - will reset and load from save");
             viewModel.resetGameEngine();
-        } else if (isNewGame) {
-            // User clicked "New Game" from main menu - start fresh
+            gameEngine = viewModel.getGameEngine();
+        } else if (isNewGame && gameEngine.getCurrentWave() == 0 && !hasLoadedGame) {
+            // User clicked "New Game" from main menu - start fresh (only if no progress)
             Log.d(TAG, "New game requested - deleting save and starting fresh");
             deleteAutoSave();
             viewModel.resetGameEngine();
+            gameEngine = viewModel.getGameEngine();
         } else {
-            // Returning from settings or other navigation - keep existing game
-            Log.d(TAG, "No game mode specified - resuming existing game if available");
+            // Returning from settings or resuming - keep existing game
+            Log.d(TAG, "Resuming existing game - Wave: " + gameEngine.getCurrentWave() +
+                    ", Resources: " + gameEngine.getResources());
         }
 
-        // Get the game engine (either existing or newly created)
-        gameEngine = viewModel.getGameEngine();
+        // Set context (safe to call multiple times)
         gameEngine.setContext(requireContext());
 
         // Observe settings and update game engine
@@ -201,33 +208,16 @@ public class GameFragment extends Fragment {
         // Set up settings button
         settingsFab.setOnClickListener(v -> openSettings());
 
-        // Set up tower selection buttons
-        fabFirewall.setOnClickListener(v -> selectTower(0, fabFirewall));
-        fabFirewall.setOnLongClickListener(v -> {
-            showTowerInfoDialog(0);
-            return true;
-        });
+        // Set up tower selection buttons with drag and drop
+        setupTowerDragAndDrop(fabFirewall, 0);
+        setupTowerDragAndDrop(fabHoneypot, 1);
+        setupTowerDragAndDrop(fabJammer, 2);
 
-        fabHoneypot.setOnClickListener(v -> selectTower(1, fabHoneypot));
-        fabHoneypot.setOnLongClickListener(v -> {
-            showTowerInfoDialog(1);
-            return true;
-        });
-
-        fabJammer.setOnClickListener(v -> selectTower(2, fabJammer));
-        fabJammer.setOnLongClickListener(v -> {
-            showTowerInfoDialog(2);
-            return true;
-        });
-
-        // Set up tap listener for tower placement
+        // Set up tap listener for tower placement or upgrade
         gameView.setOnTapListener(this::handleTowerPlacement);
 
         // Initialize available towers
         initializeTowerOptions();
-
-        // Select Firewall by default
-        selectTower(0, fabFirewall);
 
         // Set up HUD update callback
         setupHUDUpdates();
@@ -291,6 +281,82 @@ public class GameFragment extends Fragment {
             Navigation.findNavController(requireView()).navigate(R.id.action_game_to_settings);
             Log.d(TAG, "Navigating to settings - game paused");
         }
+    }
+
+    /**
+     * Set up drag and drop for tower button
+     */
+    private void setupTowerDragAndDrop(FloatingActionButton fab, int towerIndex) {
+        fab.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    // Start drag
+                    if (towerIndex < availableTowers.size()) {
+                        TowerOption tower = availableTowers.get(towerIndex);
+                        selectTower(towerIndex, fab);
+                        gameView.showDragPreview(tower.getType(), tower.getIconResId());
+                        updateDragPreview(event.getRawX(), event.getRawY());
+                    }
+                    return true;
+
+                case MotionEvent.ACTION_MOVE:
+                    // Update drag preview position
+                    updateDragPreview(event.getRawX(), event.getRawY());
+                    return true;
+
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    // Drop tower
+                    gameView.hideDragPreview();
+                    handleTowerDrop(event.getRawX(), event.getRawY());
+                    // Always deselect when finger is lifted
+                    deselectTower();
+                    return true;
+            }
+            return false;
+        });
+
+        // Long press shows info
+        fab.setOnLongClickListener(v -> {
+            showTowerInfoDialog(towerIndex);
+            return true;
+        });
+    }
+
+    /**
+     * Update drag preview position and validity
+     */
+    private void updateDragPreview(float screenX, float screenY) {
+        // Convert screen coordinates to game view coordinates
+        int[] location = new int[2];
+        gameView.getLocationOnScreen(location);
+        float viewX = screenX - location[0];
+        float viewY = screenY - location[1];
+
+        PointF screenPos = new PointF(viewX, viewY);
+        PointF worldPos = gameView.screenToWorld(screenPos);
+
+        // Check if placement is valid
+        boolean isValid = gameEngine != null && gameEngine.isValidTowerPlacement(worldPos);
+
+        gameView.updateDragPreview(screenPos, isValid);
+    }
+
+    /**
+     * Handle tower drop
+     */
+    private void handleTowerDrop(float screenX, float screenY) {
+        // Convert screen coordinates to game view coordinates
+        int[] location = new int[2];
+        gameView.getLocationOnScreen(location);
+        float viewX = screenX - location[0];
+        float viewY = screenY - location[1];
+
+        PointF screenPos = new PointF(viewX, viewY);
+        PointF worldPos = gameView.screenToWorld(screenPos);
+
+        // Try to place the tower
+        handleTowerPlacement(worldPos);
     }
 
     /**
@@ -470,7 +536,22 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Show info dialog for a tower
+     * Deselect the currently selected tower
+     */
+    private void deselectTower() {
+        if (selectedFab != null) {
+            // Reset button color to default
+            selectedFab.setBackgroundTintList(ColorStateList.valueOf(
+                    ContextCompat.getColor(requireContext(), R.color.electric_blue)));
+        }
+
+        selectedTower = null;
+        selectedFab = null;
+        Log.d(TAG, "Tower deselected");
+    }
+
+    /**
+     * Show info dialog for a tower using the tower card layout
      */
     private void showTowerInfoDialog(int index) {
         if (index < 0 || index >= availableTowers.size()) {
@@ -479,37 +560,180 @@ public class GameFragment extends Fragment {
 
         TowerOption tower = availableTowers.get(index);
 
-        // Build the message
-        String message = tower.getDescription() + "\n\n" +
-                "Cost: " + tower.getCost() + " resources\n" +
-                "Damage: " + String.format(Locale.getDefault(), "%.0f", tower.getDamage()) + "\n" +
-                "Range: " + String.format(Locale.getDefault(), "%.0f", tower.getRange()) + "\n" +
-                "Fire Rate: " + String.format(Locale.getDefault(), "%.1f", tower.getFireRate()) + " attacks/sec";
+        // Inflate the tower card layout
+        View cardView = LayoutInflater.from(requireContext()).inflate(R.layout.item_tower_card, null);
 
-        if (tower.isLocked()) {
-            message += "\n\nStatus: LOCKED\nComplete more waves to unlock this tower.";
-        }
+        // Get references to views
+        android.widget.ImageView iconView = cardView.findViewById(R.id.tower_icon);
+        TextView nameView = cardView.findViewById(R.id.tower_name);
+        TextView costView = cardView.findViewById(R.id.tower_cost);
+        TextView descriptionView = cardView.findViewById(R.id.tower_description);
+        com.google.android.material.chip.Chip damageChip = cardView.findViewById(R.id.chip_damage);
+        com.google.android.material.chip.Chip rangeChip = cardView.findViewById(R.id.chip_range);
+        com.google.android.material.chip.Chip fireRateChip = cardView.findViewById(R.id.chip_fire_rate);
+        View lockOverlay = cardView.findViewById(R.id.lock_overlay);
+        View infoButton = cardView.findViewById(R.id.btn_info);
+        com.google.android.material.button.MaterialButton closeButton = cardView.findViewById(R.id.btn_close);
 
-        // Show AlertDialog
-        new AlertDialog.Builder(requireContext())
-                .setTitle(tower.getName() + " Tower")
-                .setMessage(message)
-                .setPositiveButton("OK", null)
-                .setIcon(tower.getIconResId())
-                .show();
+        // Populate the card with tower data
+        iconView.setImageResource(tower.getIconResId());
+        nameView.setText(tower.getName() + " Tower");
+        costView.setText(String.valueOf(tower.getCost()));
+        descriptionView.setText(tower.getDescription());
+        damageChip.setText(String.format(Locale.getDefault(), "%.0f", tower.getDamage()));
+        rangeChip.setText(String.format(Locale.getDefault(), "%.0f", tower.getRange()));
+        fireRateChip.setText(String.format(Locale.getDefault(), "%.1f", tower.getFireRate()));
+
+        // Show/hide elements for dialog mode
+        lockOverlay.setVisibility(tower.isLocked() ? View.VISIBLE : View.GONE);
+        infoButton.setVisibility(View.GONE); // Hide info button in dialog
+        closeButton.setVisibility(View.VISIBLE); // Show close button in dialog
+
+        // Create and show dialog
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(cardView)
+                .create();
+
+        // Set up close button to dismiss dialog
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     /**
-     * Handle tap event for tower placement
+     * Show upgrade dialog for an existing tower
+     */
+    private void showTowerUpgradeDialog(Tower tower) {
+        if (tower == null) return;
+
+        // Inflate the tower card layout
+        View cardView = LayoutInflater.from(requireContext()).inflate(R.layout.item_tower_card, null);
+
+        // Get references to views
+        android.widget.ImageView iconView = cardView.findViewById(R.id.tower_icon);
+        TextView nameView = cardView.findViewById(R.id.tower_name);
+        TextView levelView = cardView.findViewById(R.id.tower_level);
+        TextView costView = cardView.findViewById(R.id.tower_cost);
+        TextView descriptionView = cardView.findViewById(R.id.tower_description);
+        com.google.android.material.chip.Chip damageChip = cardView.findViewById(R.id.chip_damage);
+        com.google.android.material.chip.Chip rangeChip = cardView.findViewById(R.id.chip_range);
+        com.google.android.material.chip.Chip fireRateChip = cardView.findViewById(R.id.chip_fire_rate);
+        View infoButton = cardView.findViewById(R.id.btn_info);
+        com.google.android.material.button.MaterialButton upgradeButton = cardView.findViewById(R.id.btn_upgrade);
+        com.google.android.material.button.MaterialButton closeButton = cardView.findViewById(R.id.btn_close);
+        View lockOverlay = cardView.findViewById(R.id.lock_overlay);
+        View costContainer = cardView.findViewById(R.id.cost_container);
+
+        // Get tower type name
+        String towerType = tower.getType();
+
+        // Populate the card with tower data
+        iconView.setImageResource(getTowerIconResource(towerType));
+        nameView.setText(towerType + " Tower");
+        levelView.setText("Level " + tower.getLevel());
+        levelView.setVisibility(View.VISIBLE); // Show level for existing tower
+        descriptionView.setText(getTowerDescription(towerType));
+        damageChip.setText(String.format(Locale.getDefault(), "%.0f", tower.getDamage()));
+        rangeChip.setText(String.format(Locale.getDefault(), "%.0f", tower.getRange()));
+        fireRateChip.setText(String.format(Locale.getDefault(), "%.1f", tower.getFireRate()));
+
+        // Hide cost container and lock overlay for existing towers
+        costContainer.setVisibility(View.GONE);
+        lockOverlay.setVisibility(View.GONE);
+        infoButton.setVisibility(View.GONE);
+
+        // Show upgrade button
+        upgradeButton.setVisibility(View.VISIBLE);
+        closeButton.setVisibility(View.VISIBLE);
+
+        int upgradeCost = tower.getUpgradeCost();
+        if (upgradeCost > 0) {
+            upgradeButton.setText("Upgrade - " + upgradeCost + " resources");
+            upgradeButton.setEnabled(gameEngine.getResources() >= upgradeCost);
+        } else {
+            upgradeButton.setText("Max Level");
+            upgradeButton.setEnabled(false);
+        }
+
+        // Create and show dialog
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(cardView)
+                .create();
+
+        // Set up upgrade button click
+        upgradeButton.setOnClickListener(v -> {
+            if (gameEngine.upgradeTower(tower)) {
+                Toast.makeText(requireContext(),
+                        towerType + " upgraded to Level " + tower.getLevel() + "!",
+                        Toast.LENGTH_SHORT).show();
+                Log.d(TAG, towerType + " upgraded - New stats: Damage=" + tower.getDamage() +
+                        ", Range=" + tower.getRange() + ", FireRate=" + tower.getFireRate());
+                dialog.dismiss();
+            } else {
+                Toast.makeText(requireContext(),
+                        "Not enough resources!",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Set up close button
+        closeButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    /**
+     * Get tower icon resource by type
+     */
+    private int getTowerIconResource(String towerType) {
+        switch (towerType) {
+            case "Firewall":
+                return R.drawable.ic_tower_firewall;
+            case "Honeypot":
+                return R.drawable.ic_tower_honeypot;
+            case "Jammer":
+                return R.drawable.ic_tower_jammer;
+            default:
+                return R.drawable.ic_tower_firewall;
+        }
+    }
+
+    /**
+     * Get tower description by type
+     */
+    private String getTowerDescription(String towerType) {
+        switch (towerType) {
+            case "Firewall":
+                return "Basic defense tower with high fire rate. Good all-around tower for early game.";
+            case "Honeypot":
+                return "Slows enemies and deals damage over time. Effective for controlling enemy movement.";
+            case "Jammer":
+                return "Fast attack speed with wide range. Best for hitting multiple targets.";
+            default:
+                return "Unknown tower type.";
+        }
+    }
+
+    /**
+     * Handle tap event for tower placement or upgrade
      */
     private void handleTowerPlacement(PointF worldPosition) {
-        if (selectedTower == null) {
-            Log.d(TAG, "No tower selected - tap ignored");
+        if (gameEngine == null) {
+            Log.e(TAG, "GameEngine is null!");
             return;
         }
 
-        if (gameEngine == null) {
-            Log.e(TAG, "GameEngine is null!");
+        // First, check if there's an existing tower at this position
+        Tower existingTower = gameEngine.getTowerAt(worldPosition);
+        if (existingTower != null) {
+            // Show upgrade dialog for existing tower
+            showTowerUpgradeDialog(existingTower);
+            return;
+        }
+
+        // No existing tower, proceed with placement
+        if (selectedTower == null) {
+            Log.d(TAG, "No tower selected - tap ignored");
             return;
         }
 
@@ -549,7 +773,6 @@ public class GameFragment extends Fragment {
                 Toast.makeText(requireContext(),
                         selectedTower.getName() + " placed!",
                         Toast.LENGTH_SHORT).show();
-                // Don't clear selection - allow multiple placements
             } else {
                 Log.w(TAG, "Tower placement failed - invalid spot");
                 Toast.makeText(requireContext(),

@@ -467,6 +467,37 @@ public class GameEngine {
     }
     
     /**
+     * Check if a tower can be placed at the given position
+     * @param position World position to check
+     * @return true if placement is valid
+     */
+    public boolean isValidTowerPlacement(PointF position) {
+        if (gameMap == null) return false;
+
+        // Check if position is on a buildable tile
+        PointF gridPos = gameMap.worldToGrid(position);
+        if (!gameMap.isBuildable(gridPos)) {
+            return false;
+        }
+
+        // Check spacing from other towers
+        synchronized (towers) {
+            for (Tower existingTower : towers) {
+                float dx = existingTower.getPosition().x - position.x;
+                float dy = existingTower.getPosition().y - position.y;
+                float distance = (float) Math.sqrt(dx * dx + dy * dy);
+
+                // Enforce minimum spacing between towers
+                if (distance < Tower.getMinTowerSpacing()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Add a tower to the game
      */
     public boolean addTower(Tower tower) {
@@ -475,24 +506,9 @@ public class GameEngine {
         }
 
         // Check if tower can be placed at this position
-        if (gameMap != null) {
-            PointF gridPos = gameMap.worldToGrid(tower.getPosition());
-            if (!gameMap.isBuildable(gridPos)) {
-                System.out.println("Cannot place tower - tile is not buildable");
-                return false;
-            }
-
-            // Check if there's already a tower at this position
-            synchronized (towers) {
-                for (Tower existingTower : towers) {
-                    PointF existingGridPos = gameMap.worldToGrid(existingTower.getPosition());
-                    if (Math.abs(existingGridPos.x - gridPos.x) < 0.5f &&
-                        Math.abs(existingGridPos.y - gridPos.y) < 0.5f) {
-                        System.out.println("Cannot place tower - tile already occupied");
-                        return false;
-                    }
-                }
-            }
+        if (!isValidTowerPlacement(tower.getPosition())) {
+            System.out.println("Cannot place tower - invalid position or too close to another tower");
+            return false;
         }
 
         if (resources >= tower.getCost()) {
@@ -512,6 +528,49 @@ public class GameEngine {
         synchronized (enemies) {
             enemies.add(enemy);
         }
+    }
+
+    /**
+     * Get tower at a specific position (grid coordinates)
+     * @param worldPos World position to check
+     * @return Tower at that position, or null if none found
+     */
+    public Tower getTowerAt(PointF worldPos) {
+        if (gameMap == null) return null;
+
+        PointF gridPos = gameMap.worldToGrid(worldPos);
+        synchronized (towers) {
+            for (Tower tower : towers) {
+                PointF towerGridPos = gameMap.worldToGrid(tower.getPosition());
+                if (Math.abs(towerGridPos.x - gridPos.x) < 0.5f &&
+                    Math.abs(towerGridPos.y - gridPos.y) < 0.5f) {
+                    return tower;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Upgrade a tower
+     * @param tower Tower to upgrade
+     * @return true if upgrade successful
+     */
+    public boolean upgradeTower(Tower tower) {
+        if (tower == null) return false;
+
+        int upgradeCost = tower.getUpgradeCost();
+        if (upgradeCost == 0) {
+            return false; // Already at max level
+        }
+
+        if (resources >= upgradeCost) {
+            if (tower.upgrade()) {
+                resources -= upgradeCost;
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
