@@ -32,11 +32,9 @@ public class SettingsFragment extends Fragment {
     private GameViewModel viewModel;
 
     // UI Elements
+    private com.google.android.material.textfield.TextInputEditText playerNameEdit;
     private SwitchMaterial soundSwitch;
     private SwitchMaterial vibrationSwitch;
-    private MaterialButton saveButton;
-    private MaterialButton backButton;
-    private MaterialButton mainMenuButton;
 
     private SettingsEntity currentSettings;
 
@@ -56,11 +54,15 @@ public class SettingsFragment extends Fragment {
         viewModel = new ViewModelProvider(requireActivity()).get(GameViewModel.class);
 
         // Initialize views
+        playerNameEdit = view.findViewById(R.id.edit_player_name);
         soundSwitch = view.findViewById(R.id.switch_sound);
         vibrationSwitch = view.findViewById(R.id.switch_vibration);
-        saveButton = view.findViewById(R.id.btn_save);
-        backButton = view.findViewById(R.id.btn_back);
-        mainMenuButton = view.findViewById(R.id.btn_main_menu);
+        MaterialButton saveButton = view.findViewById(R.id.btn_save);
+        MaterialButton backButton = view.findViewById(R.id.btn_back);
+        MaterialButton mainMenuButton = view.findViewById(R.id.btn_main_menu);
+
+        // Load player name from SharedPreferences
+        loadPlayerName();
 
         // Load current settings
         loadSettings();
@@ -69,6 +71,21 @@ public class SettingsFragment extends Fragment {
         saveButton.setOnClickListener(v -> saveSettings());
         backButton.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         mainMenuButton.setOnClickListener(v -> goToMainMenu());
+    }
+
+    /**
+     * Load player name from SharedPreferences
+     */
+    private void loadPlayerName() {
+        android.content.SharedPreferences prefs = requireContext().getSharedPreferences("game_prefs", android.content.Context.MODE_PRIVATE);
+        String playerName = prefs.getString("player_name", "");
+
+        // If no name set, use device model as default
+        if (playerName.isEmpty()) {
+            playerName = android.os.Build.MODEL;
+        }
+
+        playerNameEdit.setText(playerName);
     }
 
     /**
@@ -93,6 +110,20 @@ public class SettingsFragment extends Fragment {
      * Save settings to database
      */
     private void saveSettings() {
+        // Save player name to SharedPreferences
+        String playerName = "";
+        if (playerNameEdit != null && playerNameEdit.getText() != null) {
+            playerName = playerNameEdit.getText().toString().trim();
+        }
+        if (playerName.isEmpty()) {
+            playerName = android.os.Build.MODEL;
+        }
+
+        android.content.SharedPreferences prefs = requireContext().getSharedPreferences("game_prefs", android.content.Context.MODE_PRIVATE);
+        prefs.edit().putString("player_name", playerName).apply();
+
+        Log.d(TAG, "Player name saved: " + playerName);
+
         if (currentSettings == null) {
             currentSettings = new SettingsEntity();
         }

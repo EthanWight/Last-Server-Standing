@@ -27,14 +27,18 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     
     // Target frame rate
     private static final int TARGET_FPS = 60;
-    private static final long TARGET_FRAME_TIME = 1000 / TARGET_FPS;
-    
+    private static final long TARGET_FRAME_TIME_NS = 1000000000L / TARGET_FPS; // Use nanoseconds for precision
+
     // Game engine reference
     private GameEngine gameEngine;
-    
+
     // Rendering
     private Paint paint;
+    private Paint gridPaint; // Separate paint for grid to avoid reconfiguration
     private Canvas canvas;
+
+    // Performance optimization - cache grid
+    private boolean gridNeedsRedraw = true;
     
     // Grid settings
     private int gridSize = 64; // Size of each grid cell in pixels
@@ -114,15 +118,22 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     private void init(Context context) {
         // Set up surface holder callbacks
         getHolder().addCallback(this);
-        
-        // Initialize paint
+
+        // Initialize paint for game objects
         paint = new Paint();
         paint.setAntiAlias(true);
-        
+
+        // Initialize separate paint for grid (optimization)
+        gridPaint = new Paint();
+        gridPaint.setColor(Color.parseColor("#1F2937"));
+        gridPaint.setStrokeWidth(1);
+        gridPaint.setStyle(Paint.Style.STROKE);
+        gridPaint.setAntiAlias(false); // Grid doesn't need anti-aliasing
+
         // Initialize camera
         cameraOffset = new PointF(0, 0);
         lastTouchPoint = new PointF(0, 0);
-        
+
         // Make view focusable
         setFocusable(true);
     }
@@ -189,32 +200,40 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     }
     
     /**
-     * Main game loop - runs at 60 FPS
+     * Main game loop - runs at 60 FPS with high precision timing
      */
     @Override
     public void run() {
-        long lastFrameTime = System.currentTimeMillis();
-        
+        long lastFrameTime = System.nanoTime();
+
         while (isRunning) {
-            long startTime = System.currentTimeMillis();
-            long deltaTime = startTime - lastFrameTime;
-            
+            long startTime = System.nanoTime();
+            long deltaTimeNs = startTime - lastFrameTime;
+            float deltaTime = deltaTimeNs / 1000000000f; // Convert to seconds
+
             // Update game state
             if (gameEngine != null) {
-                gameEngine.update(deltaTime / 1000f); // Convert to seconds
+                gameEngine.update(deltaTime);
             }
-            
+
             // Render frame
             render();
-            
+
             lastFrameTime = startTime;
-            
-            // Sleep to maintain target frame rate
-            long frameTime = System.currentTimeMillis() - startTime;
-            long sleepTime = TARGET_FRAME_TIME - frameTime;
-            if (sleepTime > 0) {
+
+            // Calculate sleep time for 60 FPS
+            long frameTimeNs = System.nanoTime() - startTime;
+            long sleepTimeNs = TARGET_FRAME_TIME_NS - frameTimeNs;
+
+            if (sleepTimeNs > 0) {
+                // Use a combination of sleep and busy wait for more accurate timing
+                long sleepMs = sleepTimeNs / 1000000L;
+                int sleepNs = (int) (sleepTimeNs % 1000000L);
+
                 try {
-                    Thread.sleep(sleepTime);
+                    if (sleepMs > 0) {
+                        Thread.sleep(sleepMs, sleepNs);
+                    }
                 } catch (InterruptedException e) {
                     Log.w(TAG, "Game loop sleep interrupted", e);
                     Thread.currentThread().interrupt(); // Restore interrupt status
@@ -273,23 +292,23 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     }
     
     /**
-     * Draw the game grid
+     * Draw the game grid (optimized to use pre-configured paint)
      */
     private void drawGrid() {
-        paint.setColor(Color.parseColor("#1F2937"));
-        paint.setStrokeWidth(1);
-        paint.setStyle(Paint.Style.STROKE);
-        
+        // Use pre-configured gridPaint for better performance
+        // Draw fewer lines by using larger step size (every 2 or 4 cells) for distant zoom levels
+        int step = cameraZoom < 0.5f ? 4 : (cameraZoom < 0.75f ? 2 : 1);
+
         // Vertical lines
-        for (int x = 0; x <= gridWidth; x++) {
+        for (int x = 0; x <= gridWidth; x += step) {
             float xPos = x * gridSize;
-            canvas.drawLine(xPos, 0, xPos, gridHeight * gridSize, paint);
+            canvas.drawLine(xPos, 0, xPos, gridHeight * gridSize, gridPaint);
         }
-        
+
         // Horizontal lines
-        for (int y = 0; y <= gridHeight; y++) {
+        for (int y = 0; y <= gridHeight; y += step) {
             float yPos = y * gridSize;
-            canvas.drawLine(0, yPos, gridWidth * gridSize, yPos, paint);
+            canvas.drawLine(0, yPos, gridWidth * gridSize, yPos, gridPaint);
         }
     }
     

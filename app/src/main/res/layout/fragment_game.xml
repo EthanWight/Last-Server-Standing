@@ -42,36 +42,10 @@
                 android:layout_height="wrap_content"
                 android:text="500"
                 android:textAppearance="@style/TextAppearance.HUD"
-                android:layout_marginStart="8dp" />
-
-        </LinearLayout>
-
-        <!-- Score Counter (Below Resources) -->
-        <LinearLayout
-            android:id="@+id/score_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="@drawable/bg_hud_element"
-            android:padding="12dp"
-            android:gravity="center_vertical"
-            app:layout_constraintTop_toBottomOf="@id/resource_container"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="8dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_star"
-                android:contentDescription="Score" />
-
-            <TextView
-                android:id="@+id/text_score"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textAppearance="@style/TextAppearance.HUD"
-                android:layout_marginStart="8dp" />
+                android:layout_marginStart="8dp"
+                android:minEms="4"
+                android:gravity="end"
+                android:fontFamily="monospace" />
 
         </LinearLayout>
 

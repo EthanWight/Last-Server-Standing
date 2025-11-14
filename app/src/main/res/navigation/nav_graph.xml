@@ -27,7 +27,14 @@
         android:label="Game">
         <action
             android:id="@+id/action_game_to_settings"
-            app:destination="@id/settingsFragment" />
+            app:destination="@id/settingsFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+        <argument
+            android:name="continue_game"
+            android:defaultValue="false" />
     </fragment>
 
     <!-- Placeholder fragments for Stats and Settings -->

@@ -115,4 +115,13 @@ public class GameViewModel extends AndroidViewModel {
     public boolean hasActiveGame() {
         return gameEngine != null;
     }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        // Shutdown repository executor service to prevent resource leaks
+        if (repository != null) {
+            repository.shutdown();
+        }
+    }
 }

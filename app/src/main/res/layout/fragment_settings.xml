@@ -37,6 +37,44 @@
             app:layout_constraintBottom_toBottomOf="@id/title"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Player Profile Section -->
+        <TextView
+            android:id="@+id/profile_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Profile"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/electric_blue"
+            android:layout_marginTop="32dp"
+            app:layout_constraintTop_toBottomOf="@id/title"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Player Name Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/player_name_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Player Name"
+            app:boxBackgroundMode="filled"
+            app:boxBackgroundColor="@color/surface_elevated"
+            app:hintTextColor="@color/text_secondary"
+            app:layout_constraintTop_toBottomOf="@id/profile_header"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_player_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:maxLength="20"
+                android:inputType="textPersonName"
+                android:singleLine="true" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
         <!-- Audio Section -->
         <TextView
             android:id="@+id/audio_header"
@@ -46,8 +84,8 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/electric_blue"
-            android:layout_marginTop="32dp"
-            app:layout_constraintTop_toBottomOf="@id/title"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/player_name_layout"
             app:layout_constraintStart_toStartOf="parent" />
 
         <!-- Sound Switch -->

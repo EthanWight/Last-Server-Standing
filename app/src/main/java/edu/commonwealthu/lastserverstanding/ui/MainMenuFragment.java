@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -54,33 +53,11 @@ public class MainMenuFragment extends Fragment {
         continueButton.setVisibility(View.GONE);
 
         // Observe saved games and show continue button if any exist with progress
+        // This observer will automatically update when saves change
         viewModel.getAllSaves().observe(getViewLifecycleOwner(), saves -> {
-            Log.d(TAG, "Checking saved games - count: " + (saves != null ? saves.size() : 0));
-
-            // Only show continue button if there are saves with actual game progress
-            boolean hasValidSaves = saves != null && !saves.isEmpty();
-
-            // Additional check: make sure saves have actual progress (not just initialization)
-            if (hasValidSaves && saves != null) {
-                hasValidSaves = false;
-                for (int i = 0; i < saves.size(); i++) {
-                    int wave = saves.get(i).getWave();
-                    boolean isAutoSave = saves.get(i).isAutoSave();
-                    Log.d(TAG, "Save " + i + " - Wave: " + wave + ", AutoSave: " + isAutoSave);
-
-                    // Check if save has any meaningful progress (wave > 0)
-                    if (wave > 0) {
-                        hasValidSaves = true;
-                        Log.d(TAG, "Found valid save with wave " + wave);
-                        break;
-                    }
-                }
-            }
-
-            Log.d(TAG, "Continue button visibility: " + (hasValidSaves ? "VISIBLE" : "GONE"));
-            continueButton.setVisibility(hasValidSaves ? View.VISIBLE : View.GONE);
+            updateContinueButtonVisibility(saves);
         });
-        
+
         // Set up button listeners
         continueButton.setOnClickListener(v -> {
             Log.d(TAG, "Continue button clicked - navigating to game");
@@ -97,12 +74,12 @@ public class MainMenuFragment extends Fragment {
             args.putBoolean("continue_game", false);
             Navigation.findNavController(v).navigate(R.id.action_menu_to_game, args);
         });
-        
+
         leaderboardButton.setOnClickListener(v -> {
             // Navigate to stats/leaderboard
             Navigation.findNavController(v).navigate(R.id.action_menu_to_stats);
         });
-        
+
         settingsButton.setOnClickListener(v -> {
             // Navigate to settings
             Navigation.findNavController(v).navigate(R.id.action_menu_to_settings);
@@ -110,5 +87,41 @@ public class MainMenuFragment extends Fragment {
 
         // TODO: Implement background animation
         // startBackgroundAnimation(view);
+    }
+
+    /**
+     * Update continue button visibility based on saved games
+     */
+    private void updateContinueButtonVisibility(java.util.List<edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity> saves) {
+        if (saves == null) {
+            Log.d(TAG, "Saves is null - hiding continue button");
+            continueButton.setVisibility(View.GONE);
+            return;
+        }
+
+        Log.d(TAG, "Checking saved games - count: " + saves.size());
+
+        // Check if any saves have actual progress (wave > 0)
+        boolean hasValidSaves = false;
+
+        for (int i = 0; i < saves.size(); i++) {
+            int wave = saves.get(i).getWave();
+            boolean isAutoSave = saves.get(i).isAutoSave();
+            Log.d(TAG, "  Save " + i + " - Wave: " + wave + ", AutoSave: " + isAutoSave);
+
+            // Check if save has any meaningful progress (wave > 0)
+            if (wave > 0) {
+                hasValidSaves = true;
+                Log.d(TAG, "  ✓ Found valid save with wave " + wave);
+                break;
+            }
+        }
+
+        if (!hasValidSaves && !saves.isEmpty()) {
+            Log.d(TAG, "  ✗ No valid saves found (all saves have wave 0)");
+        }
+
+        Log.d(TAG, "Continue button visibility: " + (hasValidSaves ? "VISIBLE" : "GONE"));
+        continueButton.setVisibility(hasValidSaves ? View.VISIBLE : View.GONE);
     }
 }

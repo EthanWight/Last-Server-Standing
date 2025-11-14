@@ -42,7 +42,6 @@ import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 /**
  * Game Fragment - Main gameplay screen
  * Contains GameView and HUD overlay
- *
  * Save/Load Flow:
  * - Auto-save occurs in onPause() whenever there's progress (wave > 0)
  * - This saves when: going to settings, main menu, background, or exiting app
@@ -61,16 +60,11 @@ public class GameFragment extends Fragment {
 
     // HUD elements
     private TextView resourcesText;
-    private TextView scoreText;
     private LinearProgressIndicator healthBar;
     private TextView waveText;
     private TextView fpsText;
     private FloatingActionButton nextWaveFab;
     private FloatingActionButton pauseFab;
-    private FloatingActionButton settingsFab;
-    private FloatingActionButton fabFirewall;
-    private FloatingActionButton fabHoneypot;
-    private FloatingActionButton fabJammer;
     private View emergencyBanner;
 
     // HUD update handler
@@ -86,9 +80,18 @@ public class GameFragment extends Fragment {
     private boolean isNewGame;
     private boolean hasLoadedGame = false;
 
+    // Key to save state across configuration changes and fragment recreation
+    private static final String KEY_HAS_LOADED = "has_loaded_game";
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Restore state from savedInstanceState (survives configuration changes and recreation)
+        if (savedInstanceState != null) {
+            hasLoadedGame = savedInstanceState.getBoolean(KEY_HAS_LOADED, false);
+            Log.d(TAG, "onCreate - restored hasLoadedGame: " + hasLoadedGame);
+        }
 
         // Get arguments
         if (getArguments() != null) {
@@ -98,6 +101,14 @@ public class GameFragment extends Fragment {
 
             Log.d(TAG, "onCreate - continueGame: " + continueGame + ", isNewGame: " + isNewGame);
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Save state so it survives configuration changes and fragment recreation
+        outState.putBoolean(KEY_HAS_LOADED, hasLoadedGame);
+        Log.d(TAG, "onSaveInstanceState - saving hasLoadedGame: " + hasLoadedGame);
     }
     
     @Nullable
@@ -116,37 +127,51 @@ public class GameFragment extends Fragment {
 
         // Initialize HUD views
         resourcesText = view.findViewById(R.id.text_resources);
-        scoreText = view.findViewById(R.id.text_score);
         healthBar = view.findViewById(R.id.health_bar);
         waveText = view.findViewById(R.id.text_wave);
         fpsText = view.findViewById(R.id.text_fps);
         nextWaveFab = view.findViewById(R.id.fab_next_wave);
         pauseFab = view.findViewById(R.id.fab_pause);
-        settingsFab = view.findViewById(R.id.fab_settings);
-        fabFirewall = view.findViewById(R.id.fab_tower_firewall);
-        fabHoneypot = view.findViewById(R.id.fab_tower_honeypot);
-        fabJammer = view.findViewById(R.id.fab_tower_jammer);
+        FloatingActionButton settingsFab = view.findViewById(R.id.fab_settings);
+        FloatingActionButton fabFirewall = view.findViewById(R.id.fab_tower_firewall);
+        FloatingActionButton fabHoneypot = view.findViewById(R.id.fab_tower_honeypot);
+        FloatingActionButton fabJammer = view.findViewById(R.id.fab_tower_jammer);
         emergencyBanner = view.findViewById(R.id.emergency_banner);
 
         // Get the game engine first
         gameEngine = viewModel.getGameEngine();
 
-        // Only reset/reload if this is a fresh navigation from main menu
-        if (continueGame && !hasLoadedGame) {
-            // User clicked "Continue" from main menu - reset and load saved game
-            Log.d(TAG, "Continue game requested - will reset and load from save");
-            viewModel.resetGameEngine();
-            gameEngine = viewModel.getGameEngine();
-        } else if (isNewGame && gameEngine.getCurrentWave() == 0 && !hasLoadedGame) {
-            // User clicked "New Game" from main menu - start fresh (only if no progress)
+        // Set up game event listener
+        gameEngine.setGameListener(this::handleGameOver);
+
+        // Check if the game engine is already initialized (has active game state)
+        // This prevents resetting an active game when returning from settings
+        boolean isGameAlreadyActive = viewModel.hasActiveGame() && gameEngine.getCurrentWave() > 0;
+
+        // Only reset/reload if this is a fresh navigation from main menu AND game isn't already active
+        if (isNewGame && !hasLoadedGame && !isGameAlreadyActive) {
+            // User clicked "New Game" from main menu - ALWAYS start fresh
             Log.d(TAG, "New game requested - deleting save and starting fresh");
             deleteAutoSave();
             viewModel.resetGameEngine();
             gameEngine = viewModel.getGameEngine();
+            // Re-set the listener after reset
+            gameEngine.setGameListener(this::handleGameOver);
+            hasLoadedGame = true; // Mark as loaded to prevent re-initialization
+            Log.d(TAG, "New game initialized - Wave: " + gameEngine.getCurrentWave() + ", Resources: " + gameEngine.getResources());
+        } else if (continueGame && !hasLoadedGame && !isGameAlreadyActive) {
+            // User clicked "Continue" from main menu - reset and load saved game
+            Log.d(TAG, "Continue game requested - will reset and load from save");
+            viewModel.resetGameEngine();
+            gameEngine = viewModel.getGameEngine();
+            // Re-set the listener after reset
+            gameEngine.setGameListener(this::handleGameOver);
+            hasLoadedGame = true; // Will be set to true after loading completes
         } else {
             // Returning from settings or resuming - keep existing game
             Log.d(TAG, "Resuming existing game - Wave: " + gameEngine.getCurrentWave() +
                     ", Resources: " + gameEngine.getResources());
+            hasLoadedGame = true; // Mark as loaded since we're using existing game
         }
 
         // Set context (safe to call multiple times)
@@ -179,10 +204,10 @@ public class GameFragment extends Fragment {
                 Log.d(TAG, String.format(Locale.getDefault(), "World dimensions set: %dx%d, grid size: %d", width, height, gridSize));
 
                 // Load saved game only if continuing from main menu (after world setup)
-                if (continueGame && !hasLoadedGame) {
+                if (continueGame && !hasLoadedGame && !isGameAlreadyActive) {
                     Log.d(TAG, "Loading saved game from main menu");
                     loadSavedGame();
-                    hasLoadedGame = true;
+                    // hasLoadedGame will be set to true in the load callback
                 } else {
                     Log.d(TAG, "Using existing game engine - current wave: " + gameEngine.getCurrentWave());
 
@@ -311,6 +336,8 @@ public class GameFragment extends Fragment {
                     handleTowerDrop(event.getRawX(), event.getRawY());
                     // Always deselect when finger is lifted
                     deselectTower();
+                    // Call performClick for accessibility
+                    v.performClick();
                     return true;
             }
             return false;
@@ -397,10 +424,6 @@ public class GameFragment extends Fragment {
 
         // Update resources (just the number, icon is in layout)
         resourcesText.setText(String.valueOf(currentResources));
-
-        // Update score
-        long score = gameEngine.getScore();
-        scoreText.setText(String.valueOf(score));
 
         // Update health bar
         int health = gameEngine.getDataCenterHealth();
@@ -613,7 +636,6 @@ public class GameFragment extends Fragment {
         android.widget.ImageView iconView = cardView.findViewById(R.id.tower_icon);
         TextView nameView = cardView.findViewById(R.id.tower_name);
         TextView levelView = cardView.findViewById(R.id.tower_level);
-        TextView costView = cardView.findViewById(R.id.tower_cost);
         TextView descriptionView = cardView.findViewById(R.id.tower_description);
         com.google.android.material.chip.Chip damageChip = cardView.findViewById(R.id.chip_damage);
         com.google.android.material.chip.Chip rangeChip = cardView.findViewById(R.id.chip_range);
@@ -803,9 +825,9 @@ public class GameFragment extends Fragment {
                 if (gameEngine != null && gameState != null) {
                     // Restore the game state to the engine
                     gameEngine.restoreGameState(gameState);
+                    hasLoadedGame = true; // Mark as loaded to prevent re-initialization
                     Log.d(TAG, "Game loaded successfully - Wave: " + gameState.currentWave +
-                            ", Resources: " + gameState.resources +
-                            ", Score: " + gameState.score);
+                            ", Resources: " + gameState.resources);
 
                     // Update UI on main thread
                     if (isAdded()) {
@@ -830,6 +852,7 @@ public class GameFragment extends Fragment {
             @Override
             public void onError(String error) {
                 Log.e(TAG, "Failed to load game: " + error);
+                hasLoadedGame = true; // Mark as loaded to prevent re-initialization
                 if (isAdded()) {
                     requireActivity().runOnUiThread(() -> {
                         Toast.makeText(requireContext(),
@@ -883,6 +906,107 @@ public class GameFragment extends Fragment {
         });
     }
 
+    /**
+     * Handle game over event
+     */
+    private void handleGameOver(int finalWave) {
+        if (!isAdded()) return;
+
+        requireActivity().runOnUiThread(() -> {
+            Log.d(TAG, "Game Over! Final Wave: " + finalWave);
+
+            // Delete auto-save to prevent continuing a dead game
+            deleteAutoSave();
+
+            // Get player name from SharedPreferences or use default
+            android.content.SharedPreferences prefs = requireContext().getSharedPreferences("game_prefs", android.content.Context.MODE_PRIVATE);
+            String playerName = prefs.getString("player_name", android.os.Build.MODEL); // Use device model as default
+
+            // Get the final score from game engine
+            long finalScore = gameEngine != null ? gameEngine.getScore() : 0;
+
+            // Submit score to Firebase
+            edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager.getInstance()
+                    .submitHighScore(playerName, finalWave, new edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager.LeaderboardCallback() {
+                        @Override
+                        public void onSuccess() {
+                            Log.d(TAG, "Score submitted successfully to leaderboard - Player: " + playerName + ", Wave: " + finalWave);
+                            if (isAdded()) {
+                                Toast.makeText(requireContext(),
+                                    "Score submitted to leaderboard!",
+                                    Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            Log.e(TAG, "Failed to submit score: " + message);
+                            if (isAdded()) {
+                                Toast.makeText(requireContext(),
+                                    "Warning: Failed to submit score to leaderboard",
+                                    Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
+            // Show game over dialog
+            showGameOverDialog(finalWave, finalScore);
+        });
+    }
+
+    /**
+     * Show game over dialog
+     */
+    private void showGameOverDialog(int finalWave, long finalScore) {
+        if (!isAdded()) return;
+
+        String message = String.format(
+            "You reached Wave %d!\nFinal Score: %,d\n\nYour score has been submitted to the leaderboard.",
+            finalWave,
+            finalScore
+        );
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Game Over!")
+                .setMessage(message)
+                .setPositiveButton("Main Menu", (dialog, which) -> {
+                    // Clear the game engine to prevent continuing
+                    viewModel.resetGameEngine();
+                    Navigation.findNavController(requireView()).navigateUp();
+                })
+                .setNegativeButton("New Game", (dialog, which) -> {
+                    // Reset game and start fresh
+                    viewModel.resetGameEngine();
+                    gameEngine = viewModel.getGameEngine();
+                    gameEngine.setContext(requireContext());
+
+                    // Re-initialize the game
+                    if (gameView != null) {
+                        gameView.setGameEngine(gameEngine);
+                    }
+
+                    // Set up game event listener
+                    gameEngine.setGameListener(new GameEngine.GameListener() {
+                        @Override
+                        public void onGameOver(int finalWave) {
+                            handleGameOver(finalWave);
+                        }
+                    });
+
+                    // Mark as loaded to prevent re-initialization
+                    hasLoadedGame = true;
+
+                    // Start paused for tower placement
+                    gameEngine.setPaused(true);
+                    updatePauseButton();
+                    nextWaveFab.setVisibility(View.VISIBLE);
+
+                    Log.d(TAG, "New game started after game over");
+                })
+                .setCancelable(false)
+                .show();
+    }
+
     @Override
     public void onPause() {
         super.onPause();
@@ -920,6 +1044,12 @@ public class GameFragment extends Fragment {
             return;
         }
 
+        // Don't save if game is over - prevents saving with 0 health
+        if (gameEngine.isGameOver()) {
+            Log.d(TAG, "Skipping save - game is over");
+            return;
+        }
+
         int currentWave = gameEngine.getCurrentWave();
         Log.d(TAG, "saveGameState called - isAutoSave: " + isAutoSave + ", currentWave: " + currentWave);
 
@@ -932,15 +1062,22 @@ public class GameFragment extends Fragment {
         // Capture game state from engine
         GameState gameState = gameEngine.captureGameState();
 
+        // Double-check health - don't save if health is 0 or less
+        if (gameState.dataCenterHealth <= 0) {
+            Log.d(TAG, "Skipping save - datacenter health is 0 or less");
+            return;
+        }
+
         Log.d(TAG, "Saving game state - Wave: " + gameState.currentWave +
-                ", Resources: " + gameState.resources + ", Score: " + gameState.score);
+                ", Resources: " + gameState.resources +
+                ", Health: " + gameState.dataCenterHealth);
 
         // Save via ViewModel
         viewModel.saveGame(gameState, isAutoSave, new GameRepository.SaveCallback() {
             @Override
             public void onSuccess(int saveId) {
                 Log.d(TAG, (isAutoSave ? "Auto" : "Manual") + " save successful - Wave: " +
-                        gameState.currentWave + ", Score: " + gameState.score + ", SaveID: " + saveId);
+                        gameState.currentWave + ", SaveID: " + saveId);
 
                 if (!isAutoSave && isAdded()) {
                     Toast.makeText(requireContext(),

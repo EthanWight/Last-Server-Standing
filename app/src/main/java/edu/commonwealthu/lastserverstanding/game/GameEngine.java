@@ -29,18 +29,22 @@ import edu.commonwealthu.lastserverstanding.model.Tower;
  * Core game engine managing all game logic and state
  */
 public class GameEngine {
-    
+
+    // Game listener for events
+    private GameListener gameListener;
+
     // Game state
     private final List<Tower> towers;
     private final List<Enemy> enemies;
     private final List<Projectile> projectiles;
-    
+
     private int currentWave;
     private int resources;
     private int dataCenterHealth;
     private int previousHealth;
     private long score;
     private boolean isPaused;
+    private boolean isGameOver;
     
     // FPS tracking
     private int fps;
@@ -70,6 +74,10 @@ public class GameEngine {
     private boolean vibrationEnabled = true;
     private boolean soundEnabled = true;
 
+    // Object pooling for performance (reduce GC)
+    private final Rect tempRect = new Rect();
+    private final Paint tempPaint = new Paint();
+
     /**
      * Constructor
      */
@@ -78,6 +86,9 @@ public class GameEngine {
         towers = new ArrayList<>();
         enemies = new ArrayList<>();
         projectiles = new ArrayList<>();
+
+        // Initialize temp paint
+        tempPaint.setAntiAlias(true);
         
         currentWave = 0;
         resources = STARTING_RESOURCES;
@@ -85,6 +96,7 @@ public class GameEngine {
         previousHealth = STARTING_HEALTH;
         score = 0;
         isPaused = false;
+        isGameOver = false;
         
         fps = 0;
         lastFpsTime = System.currentTimeMillis();
@@ -272,6 +284,10 @@ public class GameEngine {
      * Render the game map with different colors for different tile types
      */
     private void renderMap(Canvas canvas, Paint paint) {
+        if (gameMap == null) {
+            return; // Guard against null gameMap
+        }
+
         paint.setStyle(Paint.Style.FILL);
 
         float offsetX = gameMap.getOffsetX();
@@ -321,7 +337,7 @@ public class GameEngine {
                 return R.drawable.ic_tower_jammer;
             default:
                 // Unknown tower type, log warning and use firewall as fallback
-                System.err.println("Unknown tower type: " + towerType);
+                android.util.Log.w("GameEngine", "Unknown tower type: " + towerType);
                 return R.drawable.ic_tower_firewall;
         }
     }
@@ -362,7 +378,7 @@ public class GameEngine {
     }
 
     /**
-     * Draw a tower with its icon
+     * Draw a tower with its icon (optimized to reduce object allocation)
      */
     private void drawTower(Canvas canvas, Paint paint, Tower tower) {
         if (tower == null) return;
@@ -373,9 +389,9 @@ public class GameEngine {
         Bitmap icon = getTowerIcon(tower.getType());
 
         if (icon != null) {
-            // Draw icon centered on position
+            // Draw icon centered on position - reuse tempRect to avoid allocation
             int halfSize = icon.getWidth() / 2;
-            Rect destRect = new Rect(
+            tempRect.set(
                     (int) (pos.x - halfSize),
                     (int) (pos.y - halfSize),
                     (int) (pos.x + halfSize),
@@ -388,7 +404,7 @@ public class GameEngine {
                         Color.RED, android.graphics.PorterDuff.Mode.MULTIPLY));
             }
 
-            canvas.drawBitmap(icon, null, destRect, paint);
+            canvas.drawBitmap(icon, null, tempRect, paint);
 
             // Clear color filter
             paint.setColorFilter(null);
@@ -398,11 +414,14 @@ public class GameEngine {
             canvas.drawCircle(pos.x, pos.y, 24, paint);
         }
 
-        // Draw range indicator (subtle)
+        // Draw range indicator (subtle) - only draw if tower is selected to save performance
+        // Comment this out for performance, or only draw for selected tower
+        /*
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.argb(30, 0, 255, 255));
         paint.setStrokeWidth(2);
         canvas.drawCircle(pos.x, pos.y, tower.getRange(), paint);
+        */
 
         // Reset paint to default state
         paint.setStyle(Paint.Style.FILL);
@@ -463,7 +482,7 @@ public class GameEngine {
     public void handleTap(PointF worldPos) {
         // Will be implemented for tower placement
         // For now, just log the position
-        System.out.println("Tapped at: " + worldPos.x + ", " + worldPos.y);
+        android.util.Log.d("GameEngine", "Tapped at: " + worldPos.x + ", " + worldPos.y);
     }
     
     /**
@@ -507,7 +526,7 @@ public class GameEngine {
 
         // Check if tower can be placed at this position
         if (!isValidTowerPlacement(tower.getPosition())) {
-            System.out.println("Cannot place tower - invalid position or too close to another tower");
+            android.util.Log.w("GameEngine", "Cannot place tower - invalid position or too close to another tower");
             return false;
         }
 
@@ -591,9 +610,15 @@ public class GameEngine {
      * Handle game over
      */
     private void gameOver() {
+        if (isGameOver) return; // Prevent multiple game over calls
+
+        isGameOver = true;
         isPaused = true;
-        // Game over logic will be implemented later
-        System.out.println("Game Over! Final Score: " + score);
+
+        // Notify listener
+        if (gameListener != null) {
+            gameListener.onGameOver(currentWave);
+        }
     }
     
     /**
@@ -774,7 +799,7 @@ public class GameEngine {
      * Trigger emergency alert with haptic and audio feedback
      */
     public void triggerEmergencyAlert() {
-        System.out.println("Emergency alert triggered!");
+        android.util.Log.d("GameEngine", "Emergency alert triggered!");
 
         // Play alert sound if enabled
         if (soundEnabled) {
@@ -806,8 +831,9 @@ public class GameEngine {
      */
     private void playAlertSound() {
         new Thread(() -> {
+            android.media.ToneGenerator toneGen = null;
             try {
-                android.media.ToneGenerator toneGen = new android.media.ToneGenerator(android.media.AudioManager.STREAM_ALARM, 100);
+                toneGen = new android.media.ToneGenerator(android.media.AudioManager.STREAM_ALARM, 100);
                 // Play a series of urgent tones (high pitched beeps)
                 toneGen.startTone(android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
                 Thread.sleep(300);
@@ -815,10 +841,18 @@ public class GameEngine {
                 Thread.sleep(500);
                 toneGen.startTone(android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
                 Thread.sleep(300);
-                toneGen.release();
             } catch (Exception e) {
                 // Silently fail if sound cannot be played
-                System.err.println("Failed to play alert sound: " + e.getMessage());
+                android.util.Log.e("GameEngine", "Failed to play alert sound: " + e.getMessage(), e);
+            } finally {
+                // Always release ToneGenerator to prevent resource leak
+                if (toneGen != null) {
+                    try {
+                        toneGen.release();
+                    } catch (Exception e) {
+                        android.util.Log.e("GameEngine", "Error releasing ToneGenerator: " + e.getMessage(), e);
+                    }
+                }
             }
         }).start();
     }
@@ -845,6 +879,7 @@ public class GameEngine {
     public boolean isPaused() { return isPaused; }
     public void setPaused(boolean paused) { this.isPaused = paused; }
     public int getFPS() { return fps; }
+    public boolean isGameOver() { return isGameOver; }
 
     public List<Tower> getTowers() { return towers; }
     public List<Enemy> getEnemies() { return enemies; }
@@ -852,4 +887,15 @@ public class GameEngine {
     public Pathfinding getPathfinding() { return pathfinding; }
     public WaveManager getWaveManager() { return waveManager; }
     public GameMap getGameMap() { return gameMap; }
+
+    public void setGameListener(GameListener listener) {
+        this.gameListener = listener;
+    }
+
+    /**
+     * Interface for game event callbacks
+     */
+    public interface GameListener {
+        void onGameOver(int finalWave);
+    }
 }
