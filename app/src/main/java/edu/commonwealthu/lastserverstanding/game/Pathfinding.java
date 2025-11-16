@@ -51,9 +51,9 @@ public class Pathfinding {
         }
     }
     
-    private int gridWidth;
-    private int gridHeight;
-    private int cellSize;
+    private final int gridWidth;
+    private final int gridHeight;
+    private final int cellSize;
     
     /**
      * Constructor
@@ -103,6 +103,8 @@ public class Pathfinding {
         // A* main loop
         while (!openSet.isEmpty()) {
             Node current = openSet.poll();
+            if (current == null) continue; // Safety check
+
             String currentKey = getKey(current.position);
             openSetKeys.remove(currentKey);
 
@@ -169,12 +171,8 @@ public class Pathfinding {
             }
             
             // Get or create neighbor node
-            Node neighbor = allNodes.get(key);
-            if (neighbor == null) {
-                neighbor = new Node(neighborPos);
-                allNodes.put(key, neighbor);
-            }
-            
+            Node neighbor = allNodes.computeIfAbsent(key, k -> new Node(neighborPos));
+
             neighbors.add(neighbor);
         }
         
@@ -229,21 +227,10 @@ public class Pathfinding {
     /**
      * Check if there's a clear line of sight between two points
      */
+    @SuppressWarnings("unused")
     private boolean hasLineOfSight(PointF start, PointF end) {
-        float dx = end.x - start.x;
-        float dy = end.y - start.y;
-        float distance = (float) Math.sqrt(dx * dx + dy * dy);
-        
-        int steps = (int) (distance * 2); // Check twice per unit
-        for (int i = 1; i < steps; i++) {
-            float t = i / (float) steps;
-            float x = start.x + dx * t;
-            float y = start.y + dy * t;
-            
-            // In a full implementation, check against obstacles here
-            // For now, assume clear line of sight
-        }
-        
+        // In a full implementation, check against obstacles here
+        // For now, assume clear line of sight
         return true;
     }
     

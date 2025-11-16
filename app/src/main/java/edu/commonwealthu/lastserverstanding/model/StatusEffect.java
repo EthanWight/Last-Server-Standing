@@ -8,12 +8,11 @@ public class StatusEffect {
     public enum Type {
         SLOW,
         STUN,
-        CORRUPTION,
         BURN
     }
     
-    private Type type;
-    private float strength; // 0.0 to 1.0 (percentage effect)
+    private final Type type;
+    private final float strength; // 0.0 to 1.0 (percentage effect)
     private float duration; // Seconds remaining
     
     public StatusEffect(Type type, float strength, float duration) {
@@ -39,5 +38,4 @@ public class StatusEffect {
     // Getters
     public Type getType() { return type; }
     public float getStrength() { return strength; }
-    public float getDuration() { return duration; }
 }

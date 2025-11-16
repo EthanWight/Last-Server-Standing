@@ -1,16 +1,19 @@
 package edu.commonwealthu.lastserverstanding.data.repository;
 
 import android.app.Application;
+
 import androidx.lifecycle.LiveData;
+
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import edu.commonwealthu.lastserverstanding.data.GameDatabase;
 import edu.commonwealthu.lastserverstanding.data.dao.SaveGameDao;
 import edu.commonwealthu.lastserverstanding.data.dao.SettingsDao;
 import edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity;
 import edu.commonwealthu.lastserverstanding.data.entities.SettingsEntity;
 import edu.commonwealthu.lastserverstanding.data.models.GameState;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Repository for managing data operations
@@ -18,13 +21,13 @@ import java.util.concurrent.Executors;
  */
 public class GameRepository {
 
-    private SaveGameDao saveGameDao;
-    private SettingsDao settingsDao;
-    private ExecutorService executorService;
+    private final SaveGameDao saveGameDao;
+    private final SettingsDao settingsDao;
+    private final ExecutorService executorService;
 
     // LiveData
-    private LiveData<List<SaveGameEntity>> allSaves;
-    private LiveData<SettingsEntity> settings;
+    private final LiveData<List<SaveGameEntity>> allSaves;
+    private final LiveData<SettingsEntity> settings;
 
     public GameRepository(Application application) {
         GameDatabase db = GameDatabase.getInstance(application);
@@ -152,9 +155,7 @@ public class GameRepository {
      * Update settings
      */
     public void updateSettings(SettingsEntity settings) {
-        executorService.execute(() -> {
-            settingsDao.update(settings);
-        });
+        executorService.execute(() -> settingsDao.update(settings));
     }
 
     /**

@@ -75,12 +75,7 @@ public abstract class Enemy {
      * Get the enemy type name
      */
     public abstract String getType();
-    
-    /**
-     * Special ability triggered on certain conditions
-     */
-    public abstract void triggerAbility();
-    
+
     /**
      * Move enemy along its path
      */
@@ -113,6 +108,15 @@ public abstract class Enemy {
      */
     private float getEffectiveSpeed() {
         float effectiveSpeed = speed;
+
+        // Check for stun first (overrides other effects)
+        for (StatusEffect effect : statusEffects) {
+            if (effect.getType() == StatusEffect.Type.STUN) {
+                return 0; // Completely immobilized
+            }
+        }
+
+        // Apply slow effects
         for (StatusEffect effect : statusEffects) {
             if (effect.getType() == StatusEffect.Type.SLOW) {
                 effectiveSpeed *= (1 - effect.getStrength());
@@ -127,6 +131,12 @@ public abstract class Enemy {
     private void applyStatusEffects(float deltaTime) {
         List<StatusEffect> expiredEffects = new ArrayList<>();
         for (StatusEffect effect : statusEffects) {
+            // Apply burn damage
+            if (effect.getType() == StatusEffect.Type.BURN) {
+                float burnDamage = effect.getStrength() * deltaTime;
+                takeDamage(burnDamage);
+            }
+
             effect.update(deltaTime);
             if (effect.isExpired()) {
                 expiredEffects.add(effect);
@@ -138,17 +148,14 @@ public abstract class Enemy {
     /**
      * Take damage from a tower
      * @param damageAmount Amount of damage to take
-     * @return true if enemy was killed
      */
-    public boolean takeDamage(float damageAmount) {
+    public void takeDamage(float damageAmount) {
         health -= damageAmount;
         if (health <= 0) {
             health = 0;
             isAlive = false;
             onDeath();
-            return true;
         }
-        return false;
     }
     
     /**
@@ -185,11 +192,9 @@ public abstract class Enemy {
     public List<PointF> getPath() { return path; }
     public float getHealth() { return health; }
     public float getMaxHealth() { return maxHealth; }
-    public float getSpeed() { return speed; }
     public int getReward() { return reward; }
     public int getDamage() { return damage; }
     public boolean isAlive() { return isAlive; }
-    public List<StatusEffect> getStatusEffects() { return statusEffects; }
     public int getCurrentPathIndex() { return currentPathIndex; }
 
     // Setters for save/load functionality

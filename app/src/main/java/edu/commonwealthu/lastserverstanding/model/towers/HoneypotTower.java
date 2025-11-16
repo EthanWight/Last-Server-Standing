@@ -2,10 +2,8 @@ package edu.commonwealthu.lastserverstanding.model.towers;
 
 import android.graphics.PointF;
 
-import java.util.List;
 import java.util.UUID;
 
-import edu.commonwealthu.lastserverstanding.model.Enemy;
 import edu.commonwealthu.lastserverstanding.model.Projectile;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
@@ -33,14 +31,14 @@ public class HoneypotTower extends Tower {
     @Override
     public void update(float deltaTime) {
         // Update target validity
-        if (target != null && (!target.isAlive() || !isInRange(target))) {
+        if (target != null && (!target.isAlive() || isOutOfRange(target))) {
             target = null;
         }
     }
 
     @Override
     public Projectile fire() {
-        if (target == null || !canFire() || isCorrupted) {
+        if (target == null || isOnCooldown() || isCorrupted) {
             return null;
         }
 
@@ -52,32 +50,6 @@ public class HoneypotTower extends Tower {
             damage,
             350f // Projectile speed (slower than firewall)
         );
-    }
-
-    @Override
-    public void acquireTarget(List<Enemy> enemies) {
-        if (target != null && target.isAlive() && isInRange(target)) {
-            return; // Keep current target
-        }
-
-        // Find closest enemy in range
-        Enemy closestEnemy = null;
-        float closestDistance = Float.MAX_VALUE;
-
-        for (Enemy enemy : enemies) {
-            if (!enemy.isAlive()) continue;
-
-            float dx = enemy.getPosition().x - position.x;
-            float dy = enemy.getPosition().y - position.y;
-            float distance = dx * dx + dy * dy; // Use squared distance to avoid sqrt
-
-            if (distance <= range * range && distance < closestDistance) {
-                closestEnemy = enemy;
-                closestDistance = distance;
-            }
-        }
-
-        target = closestEnemy;
     }
 
     @Override

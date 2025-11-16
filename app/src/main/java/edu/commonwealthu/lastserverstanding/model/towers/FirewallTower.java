@@ -2,11 +2,10 @@ package edu.commonwealthu.lastserverstanding.model.towers;
 
 import android.graphics.PointF;
 
-import java.util.List;
 import java.util.UUID;
 
-import edu.commonwealthu.lastserverstanding.model.Enemy;
 import edu.commonwealthu.lastserverstanding.model.Projectile;
+import edu.commonwealthu.lastserverstanding.model.StatusEffect;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
 /**
@@ -37,53 +36,46 @@ public class FirewallTower extends Tower {
     @Override
     public void update(float deltaTime) {
         // Update target validity
-        if (target != null && (!target.isAlive() || !isInRange(target))) {
+        if (target != null && (!target.isAlive() || isOutOfRange(target))) {
             target = null;
         }
     }
     
     @Override
     public Projectile fire() {
-        if (target == null || !canFire() || isCorrupted) {
+        if (target == null || isOnCooldown() || isCorrupted) {
             return null;
         }
-        
+
         lastFireTime = System.currentTimeMillis();
+
+        // Create burn effect (damage over time)
+        StatusEffect burnEffect = new StatusEffect(
+            StatusEffect.Type.BURN,
+            damage * 0.5f, // Burn DPS (50% of direct damage)
+            2.0f           // 2 seconds duration
+        );
+
+        // Create stun effect (brief immobilization)
+        StatusEffect stunEffect = new StatusEffect(
+            StatusEffect.Type.STUN,
+            1.0f,  // Full stun
+            0.3f   // 0.3 seconds duration
+        );
+
+        // Alternate between burn and stun (could be random or level-based)
+        StatusEffect effect = (System.currentTimeMillis() % 2 == 0) ? burnEffect : stunEffect;
+
         return new Projectile(
             UUID.randomUUID().toString(),
             new PointF(position.x, position.y),
             target,
             damage,
-            400f // Projectile speed
+            400f, // Projectile speed
+            effect
         );
     }
-    
-    @Override
-    public void acquireTarget(List<Enemy> enemies) {
-        if (target != null && target.isAlive() && isInRange(target)) {
-            return; // Keep current target
-        }
-        
-        // Find closest enemy in range
-        Enemy closestEnemy = null;
-        float closestDistance = Float.MAX_VALUE;
-        
-        for (Enemy enemy : enemies) {
-            if (!enemy.isAlive()) continue;
-            
-            float dx = enemy.getPosition().x - position.x;
-            float dy = enemy.getPosition().y - position.y;
-            float distance = dx * dx + dy * dy; // Use squared distance to avoid sqrt
-            
-            if (distance <= range * range && distance < closestDistance) {
-                closestEnemy = enemy;
-                closestDistance = distance;
-            }
-        }
-        
-        target = closestEnemy;
-    }
-    
+
     @Override
     public String getType() {
         return "Firewall";
@@ -98,8 +90,5 @@ public class FirewallTower extends Tower {
         }
         return upgraded;
     }
-    
-    public float getPenetration() {
-        return penetration;
-    }
+
 }

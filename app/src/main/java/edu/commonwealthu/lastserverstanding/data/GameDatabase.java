@@ -4,7 +4,6 @@ import android.content.Context;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-import androidx.room.TypeConverters;
 import edu.commonwealthu.lastserverstanding.data.dao.SaveGameDao;
 import edu.commonwealthu.lastserverstanding.data.dao.SettingsDao;
 import edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity;
@@ -14,7 +13,6 @@ import edu.commonwealthu.lastserverstanding.data.entities.SettingsEntity;
  * Main Room database for the app
  */
 @Database(entities = {SaveGameEntity.class, SettingsEntity.class}, version = 2, exportSchema = false)
-@TypeConverters({Converters.class})
 public abstract class GameDatabase extends RoomDatabase {
 
     private static volatile GameDatabase INSTANCE;

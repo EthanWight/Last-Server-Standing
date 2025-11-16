@@ -47,13 +47,6 @@ public class GameMap {
     }
 
     /**
-     * Get tile type at grid position (PointF version)
-     */
-    public TileType getTileAt(PointF gridPos) {
-        return getTileAt((int) gridPos.x, (int) gridPos.y);
-    }
-
-    /**
      * Set tile type at grid position
      */
     public void setTileAt(int x, int y, TileType type) {
@@ -84,13 +77,6 @@ public class GameMap {
             x * gridSize + gridSize / 2f + offsetX,
             y * gridSize + gridSize / 2f + offsetY
         );
-    }
-
-    /**
-     * Convert grid coordinates to world coordinates (PointF version)
-     */
-    public PointF gridToWorld(PointF gridPos) {
-        return gridToWorld((int) gridPos.x, (int) gridPos.y);
     }
 
     /**
@@ -144,21 +130,6 @@ public class GameMap {
     }
 
     /**
-     * Set the path points for enemies to follow
-     */
-    public void setPathPoints(List<PointF> points) {
-        pathPoints.clear();
-        pathPoints.addAll(points);
-    }
-
-    /**
-     * Add a path point for enemies to follow
-     */
-    public void addPathPoint(PointF point) {
-        pathPoints.add(point);
-    }
-
-    /**
      * Add a path point for enemies to follow (grid coordinates)
      */
     public void addPathPoint(int x, int y) {
@@ -168,15 +139,10 @@ public class GameMap {
     // Getters
     public int getWidth() { return width; }
     public int getHeight() { return height; }
-    public int getGridSize() { return gridSize; }
     public float getOffsetX() { return offsetX; }
     public float getOffsetY() { return offsetY; }
-    public PointF getSpawnPoint() { return spawnPoint; }
-    public PointF getDataCenterPoint() { return dataCenterPoint; }
 
-    public void setSpawnPoint(PointF point) { this.spawnPoint = point; }
     public void setSpawnPoint(int x, int y) { this.spawnPoint = gridToWorld(x, y); }
-    public void setDataCenterPoint(PointF point) { this.dataCenterPoint = point; }
     public void setDataCenterPoint(int x, int y) { this.dataCenterPoint = gridToWorld(x, y); }
 
     /**

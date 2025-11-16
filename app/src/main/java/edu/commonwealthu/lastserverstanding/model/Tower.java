@@ -33,10 +33,6 @@ public abstract class Tower {
     // Timing for attack rate
     protected long lastFireTime;
 
-    // Spacing constants
-    protected static final float TOWER_RADIUS = 32f; // Half of grid size (64/2)
-    protected static final float MIN_TOWER_SPACING = 64f; // One grid cell spacing
-    
     /**
      * Constructor for tower base class
      */
@@ -63,13 +59,7 @@ public abstract class Tower {
      * @return Projectile if fired, null otherwise
      */
     public abstract Projectile fire();
-    
-    /**
-     * Find and acquire a target from the list of enemies
-     * @param enemies List of all active enemies
-     */
-    public abstract void acquireTarget(java.util.List<Enemy> enemies);
-    
+
     /**
      * Get the tower type name
      */
@@ -96,7 +86,7 @@ public abstract class Tower {
         if (level < 5) {
             level++;
             // Increase stats
-            damage *= 2.0f;
+            damage *= 1.5f;
             range *= 1.25f;
             fireRate *= 1.25f;
             return true;
@@ -105,23 +95,23 @@ public abstract class Tower {
     }
     
     /**
-     * Check if enemy is within range
+     * Check if enemy is outside tower's attack range
      */
-    protected boolean isInRange(Enemy enemy) {
-        if (enemy == null) return false;
+    protected boolean isOutOfRange(Enemy enemy) {
+        if (enemy == null) return true;
         float dx = enemy.getPosition().x - position.x;
         float dy = enemy.getPosition().y - position.y;
         float distanceSquared = dx * dx + dy * dy;
-        return distanceSquared <= range * range;
+        return distanceSquared > range * range;
     }
     
     /**
-     * Check if enough time has passed to fire again
+     * Check if tower is on cooldown and cannot fire yet
      */
-    protected boolean canFire() {
+    protected boolean isOnCooldown() {
         long currentTime = System.currentTimeMillis();
         long fireInterval = (long)(1000 / fireRate);
-        return currentTime - lastFireTime >= fireInterval;
+        return currentTime - lastFireTime < fireInterval;
     }
     
     // Getters and Setters
@@ -137,8 +127,4 @@ public abstract class Tower {
 
     public void setTarget(Enemy target) { this.target = target; }
     public void setCorrupted(boolean corrupted) { this.isCorrupted = corrupted; }
-
-    // Static getters for constants
-    public static float getTowerRadius() { return TOWER_RADIUS; }
-    public static float getMinTowerSpacing() { return MIN_TOWER_SPACING; }
 }

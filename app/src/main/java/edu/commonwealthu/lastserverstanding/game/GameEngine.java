@@ -76,7 +76,6 @@ public class GameEngine {
 
     // Object pooling for performance (reduce GC)
     private final Rect tempRect = new Rect();
-    private final Paint tempPaint = new Paint();
 
     /**
      * Constructor
@@ -88,6 +87,7 @@ public class GameEngine {
         projectiles = new ArrayList<>();
 
         // Initialize temp paint
+        Paint tempPaint = new Paint();
         tempPaint.setAntiAlias(true);
         
         currentWave = 0;
@@ -145,9 +145,7 @@ public class GameEngine {
         gameMap = GameMap.createSimpleMap(gridWidth, gridHeight, cellSize);
 
         // Center the map on screen
-        if (gameMap != null) {
-            gameMap.centerOnScreen(width, height);
-        }
+        gameMap.centerOnScreen(width, height);
     }
     
     /**
@@ -245,9 +243,7 @@ public class GameEngine {
      */
     public void render(Canvas canvas, Paint paint) {
         // Draw map first (underneath everything)
-        if (gameMap != null) {
-            renderMap(canvas, paint);
-        }
+        renderMap(canvas, paint);
 
         // Create defensive copies to avoid ConcurrentModificationException
         // when UI thread modifies collections while render thread is iterating
@@ -416,18 +412,6 @@ public class GameEngine {
             canvas.drawCircle(pos.x, pos.y, 24, paint);
         }
 
-        // Draw range indicator (subtle) - only draw if tower is selected to save performance
-        // Comment this out for performance, or only draw for selected tower
-        /*
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(Color.argb(30, 0, 255, 255));
-        paint.setStrokeWidth(2);
-        canvas.drawCircle(pos.x, pos.y, tower.getRange(), paint);
-        */
-
-        // Reset paint to default state
-        paint.setStyle(Paint.Style.FILL);
-        paint.setAlpha(255);
     }
     
     /**
@@ -508,8 +492,8 @@ public class GameEngine {
                 float dy = existingTower.getPosition().y - position.y;
                 float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
-                // Enforce minimum spacing between towers
-                if (distance < Tower.getMinTowerSpacing()) {
+                // Enforce minimum spacing between towers (one grid cell)
+                if (distance < 64f) {
                     return false;
                 }
             }
@@ -801,21 +785,6 @@ public class GameEngine {
     }
 
     /**
-     * Convert world position to grid position
-     * Delegates to gameMap if available for proper offset handling
-     */
-    private PointF worldToGrid(PointF worldPos) {
-        if (gameMap != null) {
-            return gameMap.worldToGrid(worldPos);
-        }
-        // Fallback for when map is not initialized
-        return new PointF(
-            (int)(worldPos.x / gridSize),
-            (int)(worldPos.y / gridSize)
-        );
-    }
-
-    /**
      * Trigger emergency alert with haptic and audio feedback
      */
     public void triggerEmergencyAlert() {
@@ -894,7 +863,6 @@ public class GameEngine {
     // Getters and Setters
     public int getCurrentWave() { return currentWave; }
     public int getResources() { return resources; }
-    public int getDataCenterHealth() { return dataCenterHealth; }
     public long getScore() { return score; }
     public boolean isPaused() { return isPaused; }
     public void setPaused(boolean paused) { this.isPaused = paused; }

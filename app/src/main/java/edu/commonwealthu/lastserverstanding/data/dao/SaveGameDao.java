@@ -24,20 +24,11 @@ public interface SaveGameDao {
     LiveData<List<SaveGameEntity>> getAllSaves();
 
     @Query("SELECT * FROM save_games WHERE id = :saveId")
-    LiveData<SaveGameEntity> getSaveById(int saveId);
-
-    @Query("SELECT * FROM save_games WHERE id = :saveId")
     SaveGameEntity getSaveByIdSync(int saveId);
-
-    @Query("SELECT * FROM save_games WHERE isAutoSave = 1 ORDER BY timestamp DESC LIMIT 1")
-    LiveData<SaveGameEntity> getLatestAutoSave();
 
     @Query("SELECT * FROM save_games WHERE isAutoSave = 1 ORDER BY timestamp DESC LIMIT 1")
     SaveGameEntity getLatestAutoSaveSync();
 
     @Query("DELETE FROM save_games WHERE isAutoSave = 1")
     void deleteAllAutoSaves();
-
-    @Query("SELECT COUNT(*) FROM save_games")
-    int getSaveCount();
 }

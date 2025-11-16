@@ -1,6 +1,7 @@
 package edu.commonwealthu.lastserverstanding.data.firebase;
 
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -18,9 +19,8 @@ public class FirebaseManager {
 
     private static final String TAG = "FirebaseManager";
     private static FirebaseManager instance;
-    private DatabaseReference databaseRef;
     private DatabaseReference leaderboardRef;
-    private boolean initialized = false;
+    private boolean initialized;
 
     private FirebaseManager() {
         try {
@@ -37,7 +37,7 @@ public class FirebaseManager {
                 Log.d(TAG, "Firebase persistence already configured");
             }
 
-            databaseRef = database.getReference();
+            DatabaseReference databaseRef = database.getReference();
             leaderboardRef = databaseRef.child("leaderboard");
 
             // Enable keepSynced to prioritize loading leaderboard data
@@ -184,7 +184,7 @@ public class FirebaseManager {
             leaderboardRef.orderByChild("wave").limitToLast(limit)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         List<LeaderboardEntry> entries = new ArrayList<>();
                         try {
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -207,7 +207,7 @@ public class FirebaseManager {
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
                         Log.e(TAG, "Leaderboard query cancelled: " + databaseError.getMessage());
                         if (callback != null) {
                             callback.onError(databaseError.getMessage());
@@ -229,10 +229,6 @@ public class FirebaseManager {
         public String playerName;
         public int wave;
         public long timestamp;
-
-        public LeaderboardEntry() {
-            // Required for Firebase
-        }
 
         public LeaderboardEntry(String playerName, int wave, long timestamp) {
             this.playerName = playerName;

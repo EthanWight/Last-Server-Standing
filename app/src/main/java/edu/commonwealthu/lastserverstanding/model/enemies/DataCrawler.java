@@ -37,13 +37,7 @@ public class DataCrawler extends Enemy {
     public String getType() {
         return "Data Crawler";
     }
-    
-    @Override
-    public void triggerAbility() {
-        // Data Crawlers have no special ability
-        // Their strength is in their speed and numbers
-    }
-    
+
     @Override
     protected void onDeath() {
         super.onDeath();

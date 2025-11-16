@@ -1,6 +1,5 @@
 package edu.commonwealthu.lastserverstanding.ui;
 
-import android.graphics.PointF;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,40 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.commonwealthu.lastserverstanding.R;
-import edu.commonwealthu.lastserverstanding.game.GameEngine;
-import edu.commonwealthu.lastserverstanding.model.Tower;
-import edu.commonwealthu.lastserverstanding.model.towers.FirewallTower;
 
 /**
  * Bottom Sheet for tower selection and purchase
  * Displays available towers in a grid layout
  */
 public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
-    
-    private RecyclerView towerRecyclerView;
-    private TowerAdapter towerAdapter;
-    private GameEngine gameEngine;
-    private PointF selectedPosition;
-    
-    private OnTowerSelectedListener listener;
-    
-    /**
-     * Interface for tower selection callback
-     */
-    public interface OnTowerSelectedListener {
-        void onTowerSelected(Tower tower, PointF position);
-    }
-    
-    /**
-     * Create new instance with position and game engine
-     */
-    public static TowerSelectionBottomSheet newInstance(PointF position, GameEngine gameEngine) {
-        TowerSelectionBottomSheet sheet = new TowerSelectionBottomSheet();
-        sheet.selectedPosition = position;
-        sheet.gameEngine = gameEngine;
-        return sheet;
-    }
-    
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -63,14 +35,14 @@ public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
         super.onViewCreated(view, savedInstanceState);
         
         // Set up RecyclerView
-        towerRecyclerView = view.findViewById(R.id.tower_recycler_view);
+        RecyclerView towerRecyclerView = view.findViewById(R.id.tower_recycler_view);
         towerRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         
         // Create tower list
         List<TowerInfo> towers = createTowerList();
         
         // Set up adapter
-        towerAdapter = new TowerAdapter(towers, this::onTowerClicked);
+        TowerAdapter towerAdapter = new TowerAdapter(towers, this::onTowerClicked);
         towerRecyclerView.setAdapter(towerAdapter);
     }
     
@@ -91,8 +63,7 @@ public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
             2.0f, // fire rate
             true  // unlocked
         ));
-        
-        // TODO: Add more tower types
+
         // Honeypot Tower
         towers.add(new TowerInfo(
             "Honeypot",
@@ -124,51 +95,13 @@ public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
      * Handle tower click
      */
     private void onTowerClicked(TowerInfo towerInfo) {
-        if (!towerInfo.isUnlocked) {
-            // Show locked message
-            // TODO: Show snackbar or toast
-            return;
-        }
-        
-        // Check if player has enough resources
-        if (gameEngine != null && gameEngine.getResources() < towerInfo.cost) {
-            // Show insufficient resources message
-            // TODO: Show snackbar
-            return;
-        }
-        
-        // Create tower instance based on type
-        Tower tower = createTowerFromInfo(towerInfo);
-        
-        // Notify listener
-        if (listener != null && tower != null) {
-            listener.onTowerSelected(tower, selectedPosition);
-        }
-        
+        // TODO: Implement tower selection callback mechanism
+        // TODO: Create tower instance and notify parent
+
         // Dismiss bottom sheet
         dismiss();
     }
-    
-    /**
-     * Create tower instance from tower info
-     */
-    private Tower createTowerFromInfo(TowerInfo info) {
-        switch (info.name) {
-            case "Firewall":
-                return new FirewallTower(selectedPosition);
-            // TODO: Add cases for other tower types
-            default:
-                return null;
-        }
-    }
-    
-    /**
-     * Set the tower selection listener
-     */
-    public void setOnTowerSelectedListener(OnTowerSelectedListener listener) {
-        this.listener = listener;
-    }
-    
+
     /**
      * Inner class for tower information
      */
@@ -200,8 +133,8 @@ public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
      */
     static class TowerAdapter extends RecyclerView.Adapter<TowerAdapter.TowerViewHolder> {
         
-        private List<TowerInfo> towers;
-        private OnTowerClickListener clickListener;
+        private final List<TowerInfo> towers;
+        private final OnTowerClickListener clickListener;
         
         interface OnTowerClickListener {
             void onTowerClick(TowerInfo tower);

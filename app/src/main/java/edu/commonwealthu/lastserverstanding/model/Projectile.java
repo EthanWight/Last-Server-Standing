@@ -6,23 +6,29 @@ import android.graphics.PointF;
  * Represents a projectile fired from a tower toward an enemy
  */
 public class Projectile {
-    private String id;
-    private PointF position;
+    private final String id;
+    private final PointF position;
     private PointF velocity;
-    private Enemy target;
-    private float damage;
-    private float speed;
+    private final Enemy target;
+    private final float damage;
+    private final float speed;
     private boolean hasHit;
     private float distanceTraveled;
+    private final StatusEffect statusEffect; // Optional status effect to apply on hit
     private static final float MAX_TRAVEL_DISTANCE = 2000f; // Remove if travels too far
     private static final float HIT_RADIUS_SQUARED = 625f; // 25 pixel hit radius (25^2)
 
     public Projectile(String id, PointF start, Enemy target, float damage, float speed) {
+        this(id, start, target, damage, speed, null);
+    }
+
+    public Projectile(String id, PointF start, Enemy target, float damage, float speed, StatusEffect statusEffect) {
         this.id = id;
         this.position = new PointF(start.x, start.y);
         this.target = target;
         this.damage = damage;
         this.speed = speed;
+        this.statusEffect = statusEffect;
         this.hasHit = false;
         this.distanceTraveled = 0f;
         updateVelocity();
@@ -33,7 +39,7 @@ public class Projectile {
      * @param deltaTime Time since last update in seconds
      */
     public void update(float deltaTime) {
-        if (hasHit || target == null || !target.isAlive()) {
+        if (hasHit || !target.isAlive()) {
             hasHit = true; // Mark as hit so it gets removed
             return;
         }
@@ -55,8 +61,8 @@ public class Projectile {
             return;
         }
 
-        // Check for collision with target (verify target still exists)
-        if (target == null || !target.isAlive()) {
+        // Check for collision with target
+        if (!target.isAlive()) {
             hasHit = true; // Mark as hit so it gets removed
             return;
         }
@@ -74,8 +80,6 @@ public class Projectile {
      * Calculate velocity toward target
      */
     private void updateVelocity() {
-        if (target == null) return;
-        
         PointF targetPos = target.getPosition();
         float dx = targetPos.x - position.x;
         float dy = targetPos.y - position.y;
@@ -95,8 +99,14 @@ public class Projectile {
      * Handle projectile hitting target
      */
     private void hit() {
-        if (!hasHit && target != null && target.isAlive()) {
+        if (!hasHit && target.isAlive()) {
             target.takeDamage(damage);
+
+            // Apply status effect if present
+            if (statusEffect != null) {
+                target.addStatusEffect(statusEffect);
+            }
+
             hasHit = true;
         }
     }
@@ -104,8 +114,6 @@ public class Projectile {
     // Getters
     public String getId() { return id; }
     public PointF getPosition() { return position; }
-    public PointF getVelocity() { return velocity; }
-    public Enemy getTarget() { return target; }
     public float getDamage() { return damage; }
     public boolean hasHit() { return hasHit; }
 }

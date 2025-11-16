@@ -443,7 +443,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
         paint.setStrokeWidth(1);
         paint.setColor(Color.argb(80, 255, 255, 255)); // Light white
         canvas.drawCircle(dragPreviewPosition.x, dragPreviewPosition.y,
-                edu.commonwealthu.lastserverstanding.model.Tower.getMinTowerSpacing() / 2f, paint);
+                32f, paint); // Half of minimum spacing (64f / 2)
 
         // Reset paint style
         paint.setStyle(Paint.Style.FILL);

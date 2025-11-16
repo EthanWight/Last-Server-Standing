@@ -2,11 +2,10 @@ package edu.commonwealthu.lastserverstanding.model.towers;
 
 import android.graphics.PointF;
 
-import java.util.List;
 import java.util.UUID;
 
-import edu.commonwealthu.lastserverstanding.model.Enemy;
 import edu.commonwealthu.lastserverstanding.model.Projectile;
+import edu.commonwealthu.lastserverstanding.model.StatusEffect;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
 /**
@@ -33,51 +32,34 @@ public class JammerTower extends Tower {
     @Override
     public void update(float deltaTime) {
         // Update target validity
-        if (target != null && (!target.isAlive() || !isInRange(target))) {
+        if (target != null && (!target.isAlive() || isOutOfRange(target))) {
             target = null;
         }
     }
 
     @Override
     public Projectile fire() {
-        if (target == null || !canFire() || isCorrupted) {
+        if (target == null || isOnCooldown() || isCorrupted) {
             return null;
         }
 
         lastFireTime = System.currentTimeMillis();
+
+        // Create stun effect (neural jammer disrupts enemy movement)
+        StatusEffect stunEffect = new StatusEffect(
+            StatusEffect.Type.STUN,
+            1.0f,  // Full stun
+            0.5f   // 0.5 seconds duration (longer than firewall)
+        );
+
         return new Projectile(
             UUID.randomUUID().toString(),
             new PointF(position.x, position.y),
             target,
             damage,
-            500f // Projectile speed (very fast)
+            500f, // Projectile speed (very fast)
+            stunEffect
         );
-    }
-
-    @Override
-    public void acquireTarget(List<Enemy> enemies) {
-        if (target != null && target.isAlive() && isInRange(target)) {
-            return; // Keep current target
-        }
-
-        // Find closest enemy in range
-        Enemy closestEnemy = null;
-        float closestDistance = Float.MAX_VALUE;
-
-        for (Enemy enemy : enemies) {
-            if (!enemy.isAlive()) continue;
-
-            float dx = enemy.getPosition().x - position.x;
-            float dy = enemy.getPosition().y - position.y;
-            float distance = dx * dx + dy * dy; // Use squared distance to avoid sqrt
-
-            if (distance <= range * range && distance < closestDistance) {
-                closestEnemy = enemy;
-                closestDistance = distance;
-            }
-        }
-
-        target = closestEnemy;
     }
 
     @Override

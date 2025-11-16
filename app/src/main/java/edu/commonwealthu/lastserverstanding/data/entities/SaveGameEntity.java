@@ -12,9 +12,9 @@ public class SaveGameEntity {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
-    private long timestamp;
-    private String gameStateJson; // Serialized GameState
-    private boolean isAutoSave;
+    private final long timestamp;
+    private final String gameStateJson; // Serialized GameState
+    private final boolean isAutoSave;
     private int wave;
     private long score;
 
@@ -32,13 +32,10 @@ public class SaveGameEntity {
     public void setId(int id) { this.id = id; }
 
     public long getTimestamp() { return timestamp; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
     public String getGameStateJson() { return gameStateJson; }
-    public void setGameStateJson(String gameStateJson) { this.gameStateJson = gameStateJson; }
 
     public boolean isAutoSave() { return isAutoSave; }
-    public void setAutoSave(boolean autoSave) { isAutoSave = autoSave; }
 
     public int getWave() { return wave; }
     public void setWave(int wave) { this.wave = wave; }
