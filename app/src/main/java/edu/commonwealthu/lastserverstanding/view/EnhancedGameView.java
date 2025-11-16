@@ -452,7 +452,7 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
         if (canvas == null) return;
         
         try {
-            canvas.drawColor(Color.parseColor("#0D1117"));
+            canvas.drawColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.background_deep));
             
             canvas.save();
             canvas.translate(cameraOffset.x, cameraOffset.y);
@@ -474,7 +474,7 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     private void drawGrid() {
-        paint.setColor(Color.parseColor("#1F2937"));
+        paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.grid_line));
         paint.setStrokeWidth(1);
         paint.setStyle(Paint.Style.STROKE);
         
@@ -491,7 +491,7 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     
     private void drawSelectedCell() {
         if (selectedCell != null) {
-            paint.setColor(Color.parseColor("#2196F3"));
+            paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.electric_blue));
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(3);
             

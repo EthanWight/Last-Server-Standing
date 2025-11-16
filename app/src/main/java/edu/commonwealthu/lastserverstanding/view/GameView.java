@@ -135,7 +135,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
 
         // Initialize separate paint for grid (optimization)
         gridPaint = new Paint();
-        gridPaint.setColor(Color.parseColor("#1F2937"));
+        gridPaint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.grid_line));
         gridPaint.setStrokeWidth(1);
         gridPaint.setStyle(Paint.Style.STROKE);
         gridPaint.setAntiAlias(false); // Grid doesn't need anti-aliasing
@@ -276,7 +276,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
         
         try {
             // Clear screen
-            canvas.drawColor(Color.parseColor("#0D1117")); // Dark background
+            canvas.drawColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.background_deep));
             
             // Save canvas state
             canvas.save();

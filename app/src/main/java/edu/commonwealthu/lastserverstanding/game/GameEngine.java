@@ -298,16 +298,16 @@ public class GameEngine {
 
                 switch (tile) {
                     case PATH:
-                        color = Color.parseColor("#4A5568"); // Gray path
+                        color = ContextCompat.getColor(context, R.color.path_gray);
                         break;
                     case BUILDABLE:
-                        color = Color.parseColor("#2D3748"); // Dark gray walls
+                        color = ContextCompat.getColor(context, R.color.wall_dark_gray);
                         break;
                     case SPAWN:
-                        color = Color.parseColor("#48BB78"); // Green spawn
+                        color = ContextCompat.getColor(context, R.color.spawn_green);
                         break;
                     case DATACENTER:
-                        color = Color.parseColor("#4299E1"); // Blue datacenter
+                        color = ContextCompat.getColor(context, R.color.datacenter_blue);
                         break;
                     case EMPTY:
                     default:

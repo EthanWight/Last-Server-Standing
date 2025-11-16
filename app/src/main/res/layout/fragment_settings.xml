@@ -203,7 +203,7 @@
             android:layout_marginTop="32dp"
             android:backgroundTint="@color/electric_blue"
             android:text="@string/save_settings"
-            android:textColor="#212121"
+            android:textColor="@color/button_text_dark"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

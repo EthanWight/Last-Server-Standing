@@ -26,6 +26,7 @@
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#8B949E</color>
     <color name="text_disabled">#484F58</color>
+    <color name="button_text_dark">#212121</color>
 
     <!-- Standard Colors -->
     <color name="black">#FF000000</color>
@@ -55,6 +56,12 @@
 
     <!-- Grid -->
     <color name="grid_line">#1F2937</color>
+
+    <!-- Map/Game Colors -->
+    <color name="path_gray">#4A5568</color>
+    <color name="wall_dark_gray">#2D3748</color>
+    <color name="spawn_green">#48BB78</color>
+    <color name="datacenter_blue">#4299E1</color>
 
     <!-- Overlay -->
     <color name="overlay_dark">#CC000000</color>
