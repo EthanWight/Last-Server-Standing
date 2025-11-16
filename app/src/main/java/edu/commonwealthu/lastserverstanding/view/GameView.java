@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Choreographer;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -14,22 +15,19 @@ import android.view.SurfaceView;
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
 
 /**
- * Custom SurfaceView for rendering the game at 60 FPS
+ * Custom SurfaceView for rendering the game at 60 FPS using Choreographer
  * Handles all game rendering and input
  */
-public class GameView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
+public class GameView extends SurfaceView implements SurfaceHolder.Callback, Choreographer.FrameCallback {
 
     private static final String TAG = "GameView";
 
     // Removed fixed aspect ratio - use device's natural landscape dimensions
 
-    // Game loop thread
-    private Thread gameThread;
+    // Choreographer for vsync-based rendering
+    private Choreographer choreographer;
     private volatile boolean isRunning;
-    
-    // Target frame rate
-    private static final int TARGET_FPS = 60;
-    private static final long TARGET_FRAME_TIME_NS = 1000000000L / TARGET_FPS; // Use nanoseconds for precision
+    private long lastFrameTimeNanos;
 
     // Game engine reference
     private GameEngine gameEngine;
@@ -41,9 +39,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
 
     // Performance optimization - cache grid
     private boolean gridNeedsRedraw = true;
-    
+    private android.graphics.Bitmap gridCache;
+    private Canvas gridCacheCanvas;
+
     // Grid settings
-    private int gridSize = 64; // Size of each grid cell in pixels
+    private final int gridSize = 64; // Size of each grid cell in pixels
     private int gridWidth;
     private int gridHeight;
     
@@ -59,8 +59,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
 
     // Drag preview
     private boolean showDragPreview = false;
-    private PointF dragPreviewPosition = new PointF();
-    private String dragPreviewTowerType = null;
+    private final PointF dragPreviewPosition = new PointF();
     private int dragPreviewIconRes = 0;
     private boolean isDragPreviewValid = false;
 
@@ -75,9 +74,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     /**
      * Show tower drag preview
      */
-    public void showDragPreview(String towerType, int iconRes) {
+    public void showDragPreview(int iconRes) {
         this.showDragPreview = true;
-        this.dragPreviewTowerType = towerType;
         this.dragPreviewIconRes = iconRes;
     }
 
@@ -86,7 +84,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
      */
     public void hideDragPreview() {
         this.showDragPreview = false;
-        this.dragPreviewTowerType = null;
     }
 
     /**
@@ -103,15 +100,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
      */
     public GameView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+        init();
     }
-    
+
     /**
      * Constructor for programmatic creation
      */
     public GameView(Context context) {
         super(context);
-        init(context);
+        init();
     }
 
     @Override
@@ -128,7 +125,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     /**
      * Initialize the view
      */
-    private void init(Context context) {
+    private void init() {
         // Set up surface holder callbacks
         getHolder().addCallback(this);
 
@@ -162,19 +159,32 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
      * Calculate grid dimensions based on view size
      */
     private void calculateGridDimensions(int width, int height) {
-        gridWidth = width / gridSize;
-        gridHeight = height / gridSize;
+        int newGridWidth = width / gridSize;
+        int newGridHeight = height / gridSize;
+
+        // Check if dimensions changed
+        if (newGridWidth != gridWidth || newGridHeight != gridHeight) {
+            gridWidth = newGridWidth;
+            gridHeight = newGridHeight;
+            gridNeedsRedraw = true; // Mark grid for redraw when dimensions change
+
+            // Clean up old cache
+            if (gridCache != null && !gridCache.isRecycled()) {
+                gridCache.recycle();
+                gridCache = null;
+            }
+        }
     }
     
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
+    public void surfaceCreated(@androidx.annotation.NonNull SurfaceHolder holder) {
         // Start game loop when surface is ready
         calculateGridDimensions(getWidth(), getHeight());
         startGameLoop();
     }
-    
+
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    public void surfaceChanged(@androidx.annotation.NonNull SurfaceHolder holder, int format, int width, int height) {
         int viewWidth = getWidth();
         int viewHeight = getHeight();
 
@@ -189,80 +199,66 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     }
     
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
+    public void surfaceDestroyed(@androidx.annotation.NonNull SurfaceHolder holder) {
         // Stop game loop when surface is destroyed
         stopGameLoop();
+
+        // Clean up grid cache
+        if (gridCache != null && !gridCache.isRecycled()) {
+            gridCache.recycle();
+            gridCache = null;
+        }
+        gridCacheCanvas = null;
     }
     
     /**
-     * Start the game loop thread
+     * Start the game loop using Choreographer
      */
     public void startGameLoop() {
         if (!isRunning) {
             isRunning = true;
-            gameThread = new Thread(this);
-            gameThread.start();
+            choreographer = Choreographer.getInstance();
+            lastFrameTimeNanos = System.nanoTime();
+            choreographer.postFrameCallback(this);
         }
     }
-    
+
     /**
-     * Stop the game loop thread
+     * Stop the game loop
      */
     public void stopGameLoop() {
         isRunning = false;
-        if (gameThread != null) {
-            Thread threadToJoin = gameThread;
-            gameThread = null;
-            try {
-                threadToJoin.join(1000); // Wait max 1 second
-            } catch (InterruptedException e) {
-                Log.w(TAG, "Game loop thread interrupted while stopping", e);
-                Thread.currentThread().interrupt(); // Restore interrupt status
-            }
+        if (choreographer != null) {
+            choreographer.removeFrameCallback(this);
         }
     }
     
     /**
-     * Main game loop - runs at 60 FPS with high precision timing
+     * Choreographer frame callback - called on each vsync (typically 60 FPS)
      */
     @Override
-    public void run() {
-        long lastFrameTime = System.nanoTime();
+    public void doFrame(long frameTimeNanos) {
+        if (!isRunning) {
+            return;
+        }
 
-        while (isRunning) {
-            long startTime = System.nanoTime();
-            long deltaTimeNs = startTime - lastFrameTime;
-            float deltaTime = deltaTimeNs / 1000000000f; // Convert to seconds
+        // Calculate delta time
+        long deltaTimeNs = frameTimeNanos - lastFrameTimeNanos;
+        float deltaTime = deltaTimeNs / 1000000000f; // Convert to seconds
 
-            // Update game state
-            if (gameEngine != null) {
-                gameEngine.update(deltaTime);
-            }
+        // Update game state
+        if (gameEngine != null) {
+            gameEngine.update(deltaTime);
+        }
 
-            // Render frame
-            render();
+        // Render frame
+        render();
 
-            lastFrameTime = startTime;
+        lastFrameTimeNanos = frameTimeNanos;
 
-            // Calculate sleep time for 60 FPS
-            long frameTimeNs = System.nanoTime() - startTime;
-            long sleepTimeNs = TARGET_FRAME_TIME_NS - frameTimeNs;
-
-            if (sleepTimeNs > 0) {
-                // Use a combination of sleep and busy wait for more accurate timing
-                long sleepMs = sleepTimeNs / 1000000L;
-                int sleepNs = (int) (sleepTimeNs % 1000000L);
-
-                try {
-                    if (sleepMs > 0) {
-                        Thread.sleep(sleepMs, sleepNs);
-                    }
-                } catch (InterruptedException e) {
-                    Log.w(TAG, "Game loop sleep interrupted", e);
-                    Thread.currentThread().interrupt(); // Restore interrupt status
-                    break; // Exit loop when interrupted
-                }
-            }
+        // Request next frame
+        if (isRunning && choreographer != null) {
+            choreographer.postFrameCallback(this);
         }
     }
     
@@ -315,21 +311,78 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     }
     
     /**
-     * Draw the game grid (optimized to use pre-configured paint)
+     * Draw the game grid (optimized with caching)
      */
     private void drawGrid() {
-        // Use pre-configured gridPaint for better performance
-        // Draw fewer lines by using larger step size (every 2 or 4 cells) for distant zoom levels
-        int step = cameraZoom < 0.5f ? 4 : (cameraZoom < 0.75f ? 2 : 1);
+        int gridPixelWidth = gridWidth * gridSize;
+        int gridPixelHeight = gridHeight * gridSize;
 
+        // Redraw grid to cache if needed
+        if (gridNeedsRedraw && gridPixelWidth > 0 && gridPixelHeight > 0) {
+            try {
+                // Create bitmap for caching if needed
+                if (gridCache == null || gridCache.isRecycled() ||
+                    gridCache.getWidth() != gridPixelWidth ||
+                    gridCache.getHeight() != gridPixelHeight) {
+
+                    // Clean up old bitmap
+                    if (gridCache != null && !gridCache.isRecycled()) {
+                        gridCache.recycle();
+                    }
+
+                    // Create new bitmap and canvas for grid
+                    gridCache = android.graphics.Bitmap.createBitmap(
+                        gridPixelWidth, gridPixelHeight,
+                        android.graphics.Bitmap.Config.ARGB_8888
+                    );
+                    gridCacheCanvas = new Canvas(gridCache);
+                }
+
+                // Clear cache
+                gridCacheCanvas.drawColor(Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR);
+
+                // Draw grid to cache
+                // Vertical lines
+                for (int x = 0; x <= gridWidth; x++) {
+                    float xPos = x * gridSize;
+                    gridCacheCanvas.drawLine(xPos, 0, xPos, gridPixelHeight, gridPaint);
+                }
+
+                // Horizontal lines
+                for (int y = 0; y <= gridHeight; y++) {
+                    float yPos = y * gridSize;
+                    gridCacheCanvas.drawLine(0, yPos, gridPixelWidth, yPos, gridPaint);
+                }
+
+                gridNeedsRedraw = false;
+            } catch (OutOfMemoryError e) {
+                Log.e(TAG, "Out of memory creating grid cache, falling back to direct draw", e);
+                gridCache = null;
+                gridCacheCanvas = null;
+            }
+        }
+
+        // Draw cached grid or fall back to direct draw
+        if (gridCache != null && !gridCache.isRecycled()) {
+            canvas.drawBitmap(gridCache, 0, 0, null);
+        } else {
+            // Fallback: draw directly if cache failed
+            drawGridDirect();
+        }
+    }
+
+    /**
+     * Fallback method to draw grid directly (if caching fails)
+     */
+    private void drawGridDirect() {
         // Vertical lines
-        for (int x = 0; x <= gridWidth; x += step) {
+        for (int x = 0; x <= gridWidth; x++) {
             float xPos = x * gridSize;
             canvas.drawLine(xPos, 0, xPos, gridHeight * gridSize, gridPaint);
         }
 
         // Horizontal lines
-        for (int y = 0; y <= gridHeight; y += step) {
+        for (int y = 0; y <= gridHeight; y++) {
             float yPos = y * gridSize;
             canvas.drawLine(0, yPos, gridWidth * gridSize, yPos, gridPaint);
         }
@@ -339,21 +392,41 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
      * Draw drag preview of tower being placed
      */
     private void drawDragPreview() {
-        if (dragPreviewPosition == null) return;
+        float radius = gridSize / 2f;
 
-        // Draw semi-transparent circle for tower preview
+        // Draw semi-transparent background circle
         paint.setStyle(Paint.Style.FILL);
-
-        // Set color based on validity (red if invalid, green if valid)
         if (isDragPreviewValid) {
             paint.setColor(Color.argb(100, 0, 255, 0)); // Green with transparency
         } else {
             paint.setColor(Color.argb(100, 255, 0, 0)); // Red with transparency
         }
-
-        // Draw tower circle
-        float radius = gridSize / 2f;
         canvas.drawCircle(dragPreviewPosition.x, dragPreviewPosition.y, radius, paint);
+
+        // Draw tower icon if available
+        if (dragPreviewIconRes != 0) {
+            try {
+                android.graphics.drawable.Drawable drawable = androidx.appcompat.content.res.AppCompatResources.getDrawable(getContext(), dragPreviewIconRes);
+                if (drawable != null) {
+                    // Calculate icon bounds centered on preview position
+                    int iconSize = (int) (gridSize * 0.6f); // Icon is 60% of grid size
+                    int left = (int) (dragPreviewPosition.x - iconSize / 2f);
+                    int top = (int) (dragPreviewPosition.y - iconSize / 2f);
+                    int right = left + iconSize;
+                    int bottom = top + iconSize;
+
+                    drawable.setBounds(left, top, right, bottom);
+
+                    // Set alpha based on validity
+                    drawable.setAlpha(isDragPreviewValid ? 255 : 180);
+
+                    // Draw the icon
+                    drawable.draw(canvas);
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to draw drag preview icon", e);
+            }
+        }
 
         // Draw border
         paint.setStyle(Paint.Style.STROKE);
@@ -391,7 +464,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         PointF touchPoint = new PointF(event.getX(), event.getY());
-        
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 lastTouchPoint.set(touchPoint.x, touchPoint.y);
@@ -404,23 +477,37 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
                 float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
                 if (distance < 20) { // Threshold for tap vs drag
-                    // Handle tap
-                    PointF worldPos = screenToWorld(touchPoint);
-                    if (tapListener != null) {
-                        tapListener.onTap(worldPos);
-                    } else if (gameEngine != null) {
-                        gameEngine.handleTap(worldPos);
-                    }
+                    // Store touch point for performClick to use
+                    lastTouchPoint.set(touchPoint.x, touchPoint.y);
+                    performClick();
                 }
                 return true;
-                
+
             case MotionEvent.ACTION_MOVE:
                 // Handle pan (disabled for now to make tapping easier)
                 // Can re-enable with two-finger pan later
                 return true;
         }
-        
+
         return super.onTouchEvent(event);
+    }
+
+    /**
+     * Handle click for accessibility
+     */
+    @Override
+    public boolean performClick() {
+        super.performClick();
+
+        // Handle tap at last touch point
+        PointF worldPos = screenToWorld(lastTouchPoint);
+        if (tapListener != null) {
+            tapListener.onTap(worldPos);
+        } else if (gameEngine != null) {
+            gameEngine.handleTap(worldPos);
+        }
+
+        return true;
     }
     
     /**
@@ -432,19 +519,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
             (screenPos.y - cameraOffset.y) / cameraZoom
         );
     }
-    
-    /**
-     * Convert world coordinates to grid coordinates
-     */
-    public PointF worldToGrid(PointF worldPos) {
-        return new PointF(
-            (int)(worldPos.x / gridSize),
-            (int)(worldPos.y / gridSize)
-        );
-    }
-    
+
     // Getters
     public int getGridSize() { return gridSize; }
-    public int getGridWidth() { return gridWidth; }
-    public int getGridHeight() { return gridHeight; }
 }

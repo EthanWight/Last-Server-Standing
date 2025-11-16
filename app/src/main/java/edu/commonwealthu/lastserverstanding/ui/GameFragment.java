@@ -374,7 +374,7 @@ public class GameFragment extends Fragment {
                     if (towerIndex < availableTowers.size()) {
                         TowerOption tower = availableTowers.get(towerIndex);
                         selectTower(towerIndex, fab);
-                        gameView.showDragPreview(tower.getType(), tower.getIconResId());
+                        gameView.showDragPreview(tower.getIconResId());
                         updateDragPreview(event.getRawX(), event.getRawY());
                     }
                     return true;
