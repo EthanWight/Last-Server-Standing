@@ -77,6 +77,17 @@
             app:cornerRadius="8dp"
             android:layout_marginTop="16dp" />
 
+        <!-- Load Game Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_load_game"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/load_game"
+            android:textSize="14sp"
+            android:padding="12dp"
+            android:layout_marginTop="8dp" />
+
         <!-- Leaderboard Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_leaderboard"

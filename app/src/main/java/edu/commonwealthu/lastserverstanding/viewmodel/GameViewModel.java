@@ -1,32 +1,35 @@
 package edu.commonwealthu.lastserverstanding.viewmodel;
 
 import android.app.Application;
+
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
+import java.util.List;
+
 import edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity;
 import edu.commonwealthu.lastserverstanding.data.entities.SettingsEntity;
 import edu.commonwealthu.lastserverstanding.data.models.GameState;
 import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
-import java.util.List;
 
 /**
  * ViewModel for managing game data with lifecycle awareness
  */
 public class GameViewModel extends AndroidViewModel {
 
-    private GameRepository repository;
+    private final GameRepository repository;
 
     // LiveData from repository
-    private LiveData<List<SaveGameEntity>> allSaves;
-    private LiveData<SettingsEntity> settings;
+    private final LiveData<List<SaveGameEntity>> allSaves;
+    private final LiveData<SettingsEntity> settings;
 
     // Game state LiveData
-    private MutableLiveData<Integer> currentWave = new MutableLiveData<>(0);
-    private MutableLiveData<Integer> resources = new MutableLiveData<>(500);
-    private MutableLiveData<Integer> health = new MutableLiveData<>(100);
-    private MutableLiveData<Long> score = new MutableLiveData<>(0L);
+    private final MutableLiveData<Integer> currentWave = new MutableLiveData<>(0);
+    private final MutableLiveData<Integer> resources = new MutableLiveData<>(500);
+    private final MutableLiveData<Integer> health = new MutableLiveData<>(100);
+    private final MutableLiveData<Long> score = new MutableLiveData<>(0L);
 
     // Game engine instance (persists across navigation and config changes)
     private GameEngine gameEngine;

@@ -78,9 +78,11 @@ public class GameFragment extends Fragment {
     private boolean continueGame;
     private boolean isNewGame;
     private boolean hasLoadedGame = false;
+    private int saveIdToLoad = -1; // -1 means load latest auto-save
 
     // Key to save state across configuration changes and fragment recreation
     private static final String KEY_HAS_LOADED = "has_loaded_game";
+    private static final String KEY_SAVE_ID = "save_id_to_load";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -89,7 +91,8 @@ public class GameFragment extends Fragment {
         // Restore state from savedInstanceState (survives configuration changes and recreation)
         if (savedInstanceState != null) {
             hasLoadedGame = savedInstanceState.getBoolean(KEY_HAS_LOADED, false);
-            Log.d(TAG, "onCreate - restored hasLoadedGame: " + hasLoadedGame);
+            saveIdToLoad = savedInstanceState.getInt(KEY_SAVE_ID, -1);
+            Log.d(TAG, "onCreate - restored hasLoadedGame: " + hasLoadedGame + ", saveIdToLoad: " + saveIdToLoad);
         }
 
         // Get arguments
@@ -98,7 +101,12 @@ public class GameFragment extends Fragment {
             // Check if this is explicitly a new game
             isNewGame = !continueGame && getArguments().containsKey("continue_game");
 
-            Log.d(TAG, "onCreate - continueGame: " + continueGame + ", isNewGame: " + isNewGame);
+            // Get specific save ID if provided (overrides savedInstanceState)
+            if (getArguments().containsKey("save_id")) {
+                saveIdToLoad = getArguments().getInt("save_id", -1);
+            }
+
+            Log.d(TAG, "onCreate - continueGame: " + continueGame + ", isNewGame: " + isNewGame + ", saveIdToLoad: " + saveIdToLoad);
         }
     }
 
@@ -107,7 +115,8 @@ public class GameFragment extends Fragment {
         super.onSaveInstanceState(outState);
         // Save state so it survives configuration changes and fragment recreation
         outState.putBoolean(KEY_HAS_LOADED, hasLoadedGame);
-        Log.d(TAG, "onSaveInstanceState - saving hasLoadedGame: " + hasLoadedGame);
+        outState.putInt(KEY_SAVE_ID, saveIdToLoad);
+        Log.d(TAG, "onSaveInstanceState - saving hasLoadedGame: " + hasLoadedGame + ", saveIdToLoad: " + saveIdToLoad);
     }
     
     @Nullable
@@ -140,7 +149,19 @@ public class GameFragment extends Fragment {
         gameEngine = viewModel.getGameEngine();
 
         // Set up game event listener
-        gameEngine.setGameListener(this::handleGameOver);
+        gameEngine.setGameListener(new GameEngine.GameListener() {
+            @Override
+            public void onGameOver(int finalWave) {
+                handleGameOver(finalWave);
+            }
+
+            @Override
+            public void onStatsChanged(int wave, int resources, int health, long score) {
+                if (viewModel != null) {
+                    viewModel.updateGameStats(wave, resources, health, score);
+                }
+            }
+        });
 
         // Check if the game engine is already initialized (has active game state)
         // This prevents resetting an active game when returning from settings
@@ -154,7 +175,19 @@ public class GameFragment extends Fragment {
             viewModel.resetGameEngine();
             gameEngine = viewModel.getGameEngine();
             // Re-set the listener after reset
-            gameEngine.setGameListener(this::handleGameOver);
+            gameEngine.setGameListener(new GameEngine.GameListener() {
+                @Override
+                public void onGameOver(int finalWave) {
+                    handleGameOver(finalWave);
+                }
+
+                @Override
+                public void onStatsChanged(int wave, int resources, int health, long score) {
+                    if (viewModel != null) {
+                        viewModel.updateGameStats(wave, resources, health, score);
+                    }
+                }
+            });
             hasLoadedGame = true; // Mark as loaded to prevent re-initialization
             Log.d(TAG, "New game initialized - Wave: " + gameEngine.getCurrentWave() + ", Resources: " + gameEngine.getResources());
         } else if (continueGame && !hasLoadedGame && !isGameAlreadyActive) {
@@ -163,7 +196,19 @@ public class GameFragment extends Fragment {
             viewModel.resetGameEngine();
             gameEngine = viewModel.getGameEngine();
             // Re-set the listener after reset
-            gameEngine.setGameListener(this::handleGameOver);
+            gameEngine.setGameListener(new GameEngine.GameListener() {
+                @Override
+                public void onGameOver(int finalWave) {
+                    handleGameOver(finalWave);
+                }
+
+                @Override
+                public void onStatsChanged(int wave, int resources, int health, long score) {
+                    if (viewModel != null) {
+                        viewModel.updateGameStats(wave, resources, health, score);
+                    }
+                }
+            });
             hasLoadedGame = true; // Will be set to true after loading completes
         } else {
             // Returning from settings or resuming - keep existing game
@@ -242,8 +287,11 @@ public class GameFragment extends Fragment {
         // Initialize available towers
         initializeTowerOptions();
 
-        // Set up HUD update callback
-        setupHUDUpdates();
+        // Set up LiveData observers for HUD
+        setupLiveDataObservers();
+
+        // Set up periodic FPS updates only
+        setupFPSUpdates();
 
         Log.d(TAG, "GameFragment view created");
     }
@@ -405,60 +453,65 @@ public class GameFragment extends Fragment {
     }
     
     /**
-     * Set up periodic HUD updates
+     * Set up LiveData observers for HUD stats
      */
-    private void setupHUDUpdates() {
+    private void setupLiveDataObservers() {
+        // Observe wave changes
+        viewModel.getCurrentWave().observe(getViewLifecycleOwner(), wave -> {
+            if (waveText != null && wave != null) {
+                waveText.setText(String.valueOf(wave));
+
+                // Show/hide next wave button based on wave state
+                if (gameEngine != null && !gameEngine.getWaveManager().isWaveActive() && wave > 0) {
+                    nextWaveFab.setVisibility(View.VISIBLE);
+                } else if (gameEngine != null && gameEngine.getWaveManager().isWaveActive()) {
+                    nextWaveFab.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        // Observe resources changes
+        viewModel.getResources().observe(getViewLifecycleOwner(), resources -> {
+            if (resourcesText != null && resources != null) {
+                resourcesText.setText(String.valueOf(resources));
+            }
+        });
+
+        // Observe health changes
+        viewModel.getHealth().observe(getViewLifecycleOwner(), health -> {
+            if (healthBar != null && health != null) {
+                healthBar.setProgress(health);
+
+                // Update health bar color based on health
+                if (health > 60) {
+                    healthBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.health_high));
+                } else if (health > 30) {
+                    healthBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.health_medium));
+                } else {
+                    healthBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.health_low));
+                }
+            }
+        });
+
+        // Score is observed but not displayed in HUD (shown at game over)
+        // viewModel.getScore().observe(getViewLifecycleOwner(), score -> { ... });
+    }
+
+    /**
+     * Set up periodic FPS updates
+     */
+    private void setupFPSUpdates() {
         hudHandler = new Handler();
         hudUpdater = new Runnable() {
             @Override
             public void run() {
-                if (gameEngine != null && isAdded()) {
-                    updateHUD();
+                if (gameEngine != null && isAdded() && fpsText != null) {
+                    fpsText.setText(String.valueOf(gameEngine.getFPS()));
                     hudHandler.postDelayed(this, HUD_UPDATE_INTERVAL_MS);
                 }
             }
         };
         hudHandler.post(hudUpdater);
-    }
-    
-    /**
-     * Update HUD elements with current game state
-     */
-    private void updateHUD() {
-        if (gameEngine == null) return;
-
-        int currentResources = gameEngine.getResources();
-
-        // Update resources (just the number, icon is in layout)
-        resourcesText.setText(String.valueOf(currentResources));
-
-        // Update health bar
-        int health = gameEngine.getDataCenterHealth();
-        healthBar.setProgress(health);
-
-        // Update health bar color based on health
-        if (health > 60) {
-            healthBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.health_high));
-        } else if (health > 30) {
-            healthBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.health_medium));
-        } else {
-            healthBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.health_low));
-        }
-
-        // Update wave counter (just the number)
-        waveText.setText(String.valueOf(gameEngine.getCurrentWave()));
-
-        // Update FPS counter
-        fpsText.setText(String.valueOf(gameEngine.getFPS()));
-
-        // Show/hide next wave button based on wave state
-        if (!gameEngine.getWaveManager().isWaveActive() && gameEngine.getCurrentWave() > 0) {
-            // Wave is complete, show next wave button
-            nextWaveFab.setVisibility(View.VISIBLE);
-        } else if (gameEngine.getWaveManager().isWaveActive()) {
-            // Wave is active, hide button
-            nextWaveFab.setVisibility(View.GONE);
-        }
     }
 
     /**
@@ -806,7 +859,7 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Load saved game state from most recent auto-save
+     * Load saved game state from most recent auto-save or specific save ID
      */
     private void loadSavedGame() {
         if (viewModel == null) {
@@ -814,8 +867,21 @@ public class GameFragment extends Fragment {
             return;
         }
 
-        // Load the most recent auto-save
-        viewModel.loadLatestAutoSave(new GameRepository.LoadCallback() {
+        // Load specific save by ID if provided, otherwise load latest auto-save
+        if (saveIdToLoad > 0) {
+            Log.d(TAG, "Loading specific save with ID: " + saveIdToLoad);
+            viewModel.loadGame(saveIdToLoad, createLoadCallback());
+        } else {
+            Log.d(TAG, "Loading latest auto-save");
+            viewModel.loadLatestAutoSave(createLoadCallback());
+        }
+    }
+
+    /**
+     * Create a load callback for saved games
+     */
+    private GameRepository.LoadCallback createLoadCallback() {
+        return new GameRepository.LoadCallback() {
             @Override
             public void onSuccess(GameState gameState) {
                 if (gameEngine != null && gameState != null) {
@@ -862,7 +928,7 @@ public class GameFragment extends Fragment {
                     });
                 }
             }
-        });
+        };
     }
 
     /**
@@ -982,7 +1048,19 @@ public class GameFragment extends Fragment {
                     }
 
                     // Set up game event listener
-                    gameEngine.setGameListener(this::handleGameOver);
+                    gameEngine.setGameListener(new GameEngine.GameListener() {
+                        @Override
+                        public void onGameOver(int finalWave) {
+                            handleGameOver(finalWave);
+                        }
+
+                        @Override
+                        public void onStatsChanged(int wave, int resources, int health, long score) {
+                            if (viewModel != null) {
+                                viewModel.updateGameStats(wave, resources, health, score);
+                            }
+                        }
+                    });
 
                     // Mark as loaded to prevent re-initialization
                     hasLoadedGame = true;

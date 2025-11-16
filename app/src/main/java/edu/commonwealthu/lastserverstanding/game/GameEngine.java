@@ -197,6 +197,7 @@ public class GameEngine {
                 // Check if enemy reached end
                 if (enemy.hasReachedEnd()) {
                     dataCenterHealth -= enemy.getDamage();
+                    notifyStatsChanged();
                     enemyIterator.remove();
                     continue;
                 }
@@ -205,6 +206,7 @@ public class GameEngine {
                 if (!enemy.isAlive()) {
                     resources += enemy.getReward();
                     score += enemy.getReward() * 10L;
+                    notifyStatsChanged();
                     enemyIterator.remove();
                 }
             }
@@ -535,6 +537,7 @@ public class GameEngine {
                 towers.add(tower);
             }
             resources -= tower.getCost();
+            notifyStatsChanged();
             return true;
         }
         return false;
@@ -586,6 +589,7 @@ public class GameEngine {
         if (resources >= upgradeCost) {
             if (tower.upgrade()) {
                 resources -= upgradeCost;
+                notifyStatsChanged();
                 return true;
             }
         }
@@ -597,6 +601,7 @@ public class GameEngine {
      */
     public void addResources(int amount) {
         resources += amount;
+        notifyStatsChanged();
     }
     
     /**
@@ -604,8 +609,18 @@ public class GameEngine {
      */
     public void addScore(long amount) {
         score += amount;
+        notifyStatsChanged();
     }
-    
+
+    /**
+     * Notify listener that stats have changed
+     */
+    private void notifyStatsChanged() {
+        if (gameListener != null) {
+            gameListener.onStatsChanged(currentWave, resources, dataCenterHealth, score);
+        }
+    }
+
     /**
      * Handle game over
      */
@@ -627,6 +642,7 @@ public class GameEngine {
     public void startNextWave() {
         waveManager.startNextWave(this);
         currentWave = waveManager.getCurrentWave();
+        notifyStatsChanged();
     }
 
     /**
@@ -708,6 +724,9 @@ public class GameEngine {
                 }
             }
         }
+
+        // Notify that stats have been restored
+        notifyStatsChanged();
     }
 
     /**
@@ -770,6 +789,7 @@ public class GameEngine {
                         boolean upgraded = tower.upgrade();
                         if (upgraded) {
                             resources -= upgradeCost;
+                            notifyStatsChanged();
                             return true;
                         }
                     }
@@ -890,6 +910,10 @@ public class GameEngine {
 
     public void setGameListener(GameListener listener) {
         this.gameListener = listener;
+        // Immediately notify with current stats
+        if (listener != null) {
+            listener.onStatsChanged(currentWave, resources, dataCenterHealth, score);
+        }
     }
 
     /**
@@ -897,5 +921,6 @@ public class GameEngine {
      */
     public interface GameListener {
         void onGameOver(int finalWave);
+        void onStatsChanged(int wave, int resources, int health, long score);
     }
 }

@@ -26,4 +26,15 @@
     <string name="max_level">Max Level</string>
     <string name="not_enough_resources">Not enough resources!</string>
     <string name="tower_upgraded_format">%s upgraded to Level %d!</string>
+
+    <!-- Load Game strings -->
+    <string name="load_game">Load Game</string>
+    <string name="no_saved_games">No saved games found</string>
+    <string name="delete_save">Delete save</string>
+    <string name="wave_format">Wave %d</string>
+    <string name="score_format">Score: %,d</string>
+    <string name="autosave_badge">AUTO</string>
+    <string name="confirm_delete_save">Delete this saved game?</string>
+    <string name="save_deleted">Save deleted</string>
+    <string name="failed_to_load">Failed to load game</string>
 </resources>
