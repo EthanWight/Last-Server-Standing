@@ -18,4 +18,12 @@
     <string name="tower_info">Tower Information</string>
     <string name="locked">Locked</string>
     <string name="background_desc">Background Animation</string>
+
+    <!-- Tower dialog strings -->
+    <string name="tower_name_format">%s Tower</string>
+    <string name="tower_level_format">Level %d</string>
+    <string name="upgrade_button_format">Upgrade - %d resources</string>
+    <string name="max_level">Max Level</string>
+    <string name="not_enough_resources">Not enough resources!</string>
+    <string name="tower_upgraded_format">%s upgraded to Level %d!</string>
 </resources>

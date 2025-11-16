@@ -21,6 +21,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
 
     private static final String TAG = "GameView";
 
+    // Removed fixed aspect ratio - use device's natural landscape dimensions
+
     // Game loop thread
     private Thread gameThread;
     private volatile boolean isRunning;
@@ -47,7 +49,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     
     // Camera
     private PointF cameraOffset;
-    private float cameraZoom = 1.0f;
+    private final float cameraZoom = 1.0f;
     
     // Touch input
     private PointF lastTouchPoint;
@@ -111,6 +113,17 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
         super(context);
         init(context);
     }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+
+        // Use the device's natural dimensions without forcing an aspect ratio
+        Log.d(TAG, "onMeasure: using natural dimensions: " + width + "x" + height);
+        setMeasuredDimension(width, height);
+    }
     
     /**
      * Initialize the view
@@ -162,7 +175,17 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Run
     
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        calculateGridDimensions(width, height);
+        int viewWidth = getWidth();
+        int viewHeight = getHeight();
+
+        // Set the surface to the same size as the view, respecting the aspect ratio.
+        // This is crucial to prevent the canvas from stretching.
+        if (viewWidth > 0 && viewHeight > 0) {
+            holder.setFixedSize(viewWidth, viewHeight);
+        }
+
+        Log.d(TAG, "Surface changed: surface=" + width + "x" + height + ", view=" + viewWidth + "x" + viewHeight + ". Fixed size set.");
+        calculateGridDimensions(viewWidth, viewHeight);
     }
     
     @Override

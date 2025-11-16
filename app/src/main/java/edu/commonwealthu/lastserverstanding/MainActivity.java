@@ -1,5 +1,6 @@
 package edu.commonwealthu.lastserverstanding;
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -19,6 +20,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Force landscape orientation to ensure manifest setting is respected
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 
         Log.d(TAG, "=== Last Server Standing ===");
 
