@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import edu.commonwealthu.lastserverstanding.R;
@@ -34,10 +33,8 @@ public class StatsFragment extends Fragment {
     private RecyclerView leaderboardRecyclerView;
     private CircularProgressIndicator loadingIndicator;
     private View emptyStateView;
-    private MaterialButton backButton;
     private MaterialButton populateTestDataButton;
     private MaterialButton clearDataButton;
-    private MaterialButton reloadButton;
     private LeaderboardAdapter adapter;
 
     @Nullable
@@ -56,10 +53,10 @@ public class StatsFragment extends Fragment {
         leaderboardRecyclerView = view.findViewById(R.id.leaderboard_recycler);
         loadingIndicator = view.findViewById(R.id.loading_indicator);
         emptyStateView = view.findViewById(R.id.empty_state);
-        backButton = view.findViewById(R.id.btn_back);
+        MaterialButton backButton = view.findViewById(R.id.btn_back);
         populateTestDataButton = view.findViewById(R.id.btn_populate_test_data);
         clearDataButton = view.findViewById(R.id.btn_clear_data);
-        reloadButton = view.findViewById(R.id.btn_reload);
+        MaterialButton reloadButton = view.findViewById(R.id.btn_reload);
 
         // Set up RecyclerView with adapter
         adapter = new LeaderboardAdapter();
@@ -67,9 +64,7 @@ public class StatsFragment extends Fragment {
         leaderboardRecyclerView.setAdapter(adapter);
 
         // Set up back button
-        backButton.setOnClickListener(v -> {
-            Navigation.findNavController(v).navigateUp();
-        });
+        backButton.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
 
         // Set up debug buttons
         populateTestDataButton.setOnClickListener(v -> populateTestData());

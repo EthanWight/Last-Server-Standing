@@ -6,13 +6,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+import java.util.Objects;
 
 import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager;
@@ -28,9 +27,44 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
         this.entries = new ArrayList<>();
     }
 
-    public void setEntries(List<FirebaseManager.LeaderboardEntry> entries) {
-        this.entries = entries;
-        notifyDataSetChanged();
+    public void setEntries(List<FirebaseManager.LeaderboardEntry> newEntries) {
+        List<FirebaseManager.LeaderboardEntry> newList = newEntries != null ? newEntries : new ArrayList<>();
+
+        // Use DiffUtil for efficient updates
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return entries.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return newList.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                // Items are the same if they have the same player name and timestamp
+                FirebaseManager.LeaderboardEntry oldEntry = entries.get(oldItemPosition);
+                FirebaseManager.LeaderboardEntry newEntry = newList.get(newItemPosition);
+                return Objects.equals(oldEntry.playerName, newEntry.playerName) &&
+                       oldEntry.timestamp == newEntry.timestamp;
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                FirebaseManager.LeaderboardEntry oldEntry = entries.get(oldItemPosition);
+                FirebaseManager.LeaderboardEntry newEntry = newList.get(newItemPosition);
+
+                // Compare all relevant fields
+                return Objects.equals(oldEntry.playerName, newEntry.playerName) &&
+                       oldEntry.wave == newEntry.wave &&
+                       oldEntry.timestamp == newEntry.timestamp;
+            }
+        });
+
+        this.entries = newList;
+        diffResult.dispatchUpdatesTo(this);
     }
 
     @NonNull
@@ -52,7 +86,7 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
         return entries.size();
     }
 
-    static class LeaderboardViewHolder extends RecyclerView.ViewHolder {
+    public static class LeaderboardViewHolder extends RecyclerView.ViewHolder {
         private final TextView rankText;
         private final TextView playerNameText;
         private final TextView waveText;

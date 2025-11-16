@@ -10,7 +10,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
@@ -73,7 +72,9 @@ public class SavedGamesDialog extends DialogFragment implements SavedGameAdapter
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         // Create a dialog with rounded corners
         Dialog dialog = super.onCreateDialog(savedInstanceState);
-        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
         return dialog;
     }
 
@@ -118,7 +119,7 @@ public class SavedGamesDialog extends DialogFragment implements SavedGameAdapter
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.delete_save)
                 .setMessage(R.string.confirm_delete_save)
-                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                .setPositiveButton(android.R.string.ok, (dialog, which) ->
                     viewModel.deleteSave(save, new GameRepository.DeleteCallback() {
                         @Override
                         public void onSuccess() {
@@ -141,8 +142,8 @@ public class SavedGamesDialog extends DialogFragment implements SavedGameAdapter
                                 );
                             }
                         }
-                    });
-                })
+                    })
+                )
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
     }

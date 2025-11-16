@@ -7,6 +7,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
@@ -36,9 +37,43 @@ public class SavedGameAdapter extends RecyclerView.Adapter<SavedGameAdapter.Save
         this.clickListener = clickListener;
     }
 
-    public void setSavedGames(List<SaveGameEntity> savedGames) {
-        this.savedGames = savedGames != null ? savedGames : new ArrayList<>();
-        notifyDataSetChanged();
+    public void setSavedGames(List<SaveGameEntity> newSavedGames) {
+        List<SaveGameEntity> newList = newSavedGames != null ? newSavedGames : new ArrayList<>();
+
+        // Use DiffUtil for efficient updates
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() {
+                return savedGames.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return newList.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                // Items are the same if they have the same ID
+                return savedGames.get(oldItemPosition).getId() == newList.get(newItemPosition).getId();
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                SaveGameEntity oldSave = savedGames.get(oldItemPosition);
+                SaveGameEntity newSave = newList.get(newItemPosition);
+
+                // Compare all relevant fields
+                return oldSave.getId() == newSave.getId() &&
+                       oldSave.getWave() == newSave.getWave() &&
+                       oldSave.getScore() == newSave.getScore() &&
+                       oldSave.getTimestamp() == newSave.getTimestamp() &&
+                       oldSave.isAutoSave() == newSave.isAutoSave();
+            }
+        });
+
+        this.savedGames = newList;
+        diffResult.dispatchUpdatesTo(this);
     }
 
     @NonNull
@@ -60,7 +95,7 @@ public class SavedGameAdapter extends RecyclerView.Adapter<SavedGameAdapter.Save
         return savedGames.size();
     }
 
-    static class SavedGameViewHolder extends RecyclerView.ViewHolder {
+    public static class SavedGameViewHolder extends RecyclerView.ViewHolder {
         private final TextView waveText;
         private final TextView scoreText;
         private final TextView timestampText;

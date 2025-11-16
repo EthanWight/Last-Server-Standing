@@ -25,11 +25,7 @@ public class MainMenuFragment extends Fragment {
 
     private static final String TAG = "MainMenuFragment";
     private MaterialButton continueButton;
-    private MaterialButton newGameButton;
-    private MaterialButton loadGameButton;
-    private MaterialButton leaderboardButton;
-    private GameViewModel viewModel;
-    
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, 
@@ -42,13 +38,13 @@ public class MainMenuFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialize ViewModel (use activity scope for consistency)
-        viewModel = new ViewModelProvider(requireActivity()).get(GameViewModel.class);
+        GameViewModel viewModel = new ViewModelProvider(requireActivity()).get(GameViewModel.class);
 
         // Initialize views
         continueButton = view.findViewById(R.id.btn_continue);
-        newGameButton = view.findViewById(R.id.btn_new_game);
-        loadGameButton = view.findViewById(R.id.btn_load_game);
-        leaderboardButton = view.findViewById(R.id.btn_leaderboard);
+        MaterialButton newGameButton = view.findViewById(R.id.btn_new_game);
+        MaterialButton loadGameButton = view.findViewById(R.id.btn_load_game);
+        MaterialButton leaderboardButton = view.findViewById(R.id.btn_leaderboard);
         View settingsButton = view.findViewById(R.id.btn_settings);
 
         // Hide continue button initially
@@ -56,9 +52,7 @@ public class MainMenuFragment extends Fragment {
 
         // Observe saved games and show continue button if any exist with progress
         // This observer will automatically update when saves change
-        viewModel.getAllSaves().observe(getViewLifecycleOwner(), saves -> {
-            updateContinueButtonVisibility(saves);
-        });
+        viewModel.getAllSaves().observe(getViewLifecycleOwner(), this::updateContinueButtonVisibility);
 
         // Set up button listeners
         continueButton.setOnClickListener(v -> {
