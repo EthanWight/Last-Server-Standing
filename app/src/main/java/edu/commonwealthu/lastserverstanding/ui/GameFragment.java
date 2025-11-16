@@ -98,6 +98,12 @@ public class GameFragment extends Fragment {
             // Check if this is explicitly a new game
             isNewGame = !continueGame && getArguments().containsKey("continue_game");
 
+            // If new game is explicitly requested, clear hasLoadedGame flag
+            // This ensures new game works even if returning from main menu
+            if (isNewGame) {
+                hasLoadedGame = false;
+            }
+
             Log.d(TAG, "onCreate - continueGame: " + continueGame + ", isNewGame: " + isNewGame);
         }
     }
@@ -158,9 +164,9 @@ public class GameFragment extends Fragment {
         // This prevents resetting an active game when returning from settings
         boolean isGameAlreadyActive = viewModel.hasActiveGame() && gameEngine.getCurrentWave() > 0;
 
-        // Only reset/reload if this is a fresh navigation from main menu AND game isn't already active
-        if (isNewGame && !hasLoadedGame && !isGameAlreadyActive) {
-            // User clicked "New Game" from main menu - ALWAYS start fresh
+        // If user clicked "New Game" from main menu, reset the game
+        // Only reset if we haven't already loaded this session (prevents reset when returning from settings)
+        if (isNewGame && !hasLoadedGame) {
             Log.d(TAG, "New game requested - deleting save and starting fresh");
             deleteAutoSave();
             viewModel.resetGameEngine();
