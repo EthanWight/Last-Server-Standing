@@ -31,7 +31,7 @@
             android:id="@+id/tower_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Firewall"
+            android:text="@string/firewall"
             android:textAppearance="@style/TextAppearance.App.Headline2"
             android:textSize="16sp"
             android:gravity="center"
@@ -45,7 +45,7 @@
             android:id="@+id/tower_level"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Level 1"
+            android:text="@string/level_1"
             android:textSize="12sp"
             android:textColor="@color/warning_yellow"
             android:textStyle="bold"
@@ -56,45 +56,32 @@
             android:layout_marginTop="4dp" />
 
         <!-- Cost -->
-        <LinearLayout
-            android:id="@+id/cost_container"
+        <TextView
+            android:id="@+id/tower_cost"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:text="@string/cost_100"
+            android:textAppearance="@style/TextAppearance.App.Monospace"
+            android:textColor="@color/warning_yellow"
+            app:drawableStartCompat="@drawable/ic_resource"
+            android:drawablePadding="4dp"
             android:gravity="center"
             app:layout_constraintTop_toBottomOf="@id/tower_level"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="8dp">
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/ic_resource"
-                android:contentDescription="@string/cost" />
-
-            <TextView
-                android:id="@+id/tower_cost"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="100"
-                android:textAppearance="@style/TextAppearance.App.Monospace"
-                android:textColor="@color/warning_yellow"
-                android:layout_marginStart="4dp" />
-
-        </LinearLayout>
+            android:layout_marginTop="8dp" />
 
         <!-- Description -->
         <TextView
             android:id="@+id/tower_description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Basic defense tower with high fire rate."
+            android:text="@string/firewall_description"
             android:textSize="12sp"
             android:textColor="@color/text_secondary"
             android:gravity="center"
             android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/cost_container"
+            app:layout_constraintTop_toBottomOf="@id/tower_cost"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -116,7 +103,7 @@
                 style="@style/Widget.App.Chip.Damage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="15"
+                android:text="@string/damage_15"
                 app:chipIcon="@drawable/ic_damage"
                 app:chipIconSize="14dp"
                 android:layout_marginEnd="4dp" />
@@ -127,7 +114,7 @@
                 style="@style/Widget.App.Chip.Range"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="150"
+                android:text="@string/range_150"
                 app:chipIcon="@drawable/ic_range"
                 app:chipIconSize="14dp"
                 android:layout_marginEnd="4dp" />
@@ -138,7 +125,7 @@
                 style="@style/Widget.App.Chip.FireRate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="2.0"
+                android:text="@string/fire_rate_2_0"
                 app:chipIcon="@drawable/ic_fire_rate"
                 app:chipIconSize="14dp" />
 
@@ -149,7 +136,7 @@
             android:id="@+id/btn_upgrade"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Upgrade"
+            android:text="@string/upgrade"
             android:backgroundTint="@color/success_green"
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/stats_container"
@@ -165,7 +152,7 @@
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Close"
+            android:text="@string/close"
             android:textColor="@color/electric_blue"
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/btn_upgrade"

@@ -43,7 +43,6 @@ public class MainMenuFragment extends Fragment {
         // Initialize views
         continueButton = view.findViewById(R.id.btn_continue);
         MaterialButton newGameButton = view.findViewById(R.id.btn_new_game);
-        MaterialButton loadGameButton = view.findViewById(R.id.btn_load_game);
         MaterialButton leaderboardButton = view.findViewById(R.id.btn_leaderboard);
         View settingsButton = view.findViewById(R.id.btn_settings);
 
@@ -69,13 +68,6 @@ public class MainMenuFragment extends Fragment {
             Bundle args = new Bundle();
             args.putBoolean("continue_game", false);
             Navigation.findNavController(v).navigate(R.id.action_menu_to_game, args);
-        });
-
-        loadGameButton.setOnClickListener(v -> {
-            Log.d(TAG, "Load Game button clicked - showing saved games dialog");
-            // Show saved games dialog
-            SavedGamesDialog dialog = new SavedGamesDialog();
-            dialog.show(getParentFragmentManager(), "SavedGamesDialog");
         });
 
         leaderboardButton.setOnClickListener(v -> {

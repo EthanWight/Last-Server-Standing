@@ -23,9 +23,6 @@ public interface SaveGameDao {
     @Query("SELECT * FROM save_games ORDER BY timestamp DESC")
     LiveData<List<SaveGameEntity>> getAllSaves();
 
-    @Query("SELECT * FROM save_games WHERE id = :saveId")
-    SaveGameEntity getSaveByIdSync(int saveId);
-
     @Query("SELECT * FROM save_games WHERE isAutoSave = 1 ORDER BY timestamp DESC LIMIT 1")
     SaveGameEntity getLatestAutoSaveSync();
 

@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,7 +22,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.util.ArrayList;
@@ -63,8 +63,8 @@ public class GameFragment extends Fragment {
     private LinearProgressIndicator healthBar;
     private TextView waveText;
     private TextView fpsText;
-    private FloatingActionButton nextWaveFab;
-    private FloatingActionButton pauseFab;
+    private ImageButton nextWaveFab;
+    private ImageButton pauseFab;
 
     // HUD update handler
     private Handler hudHandler;
@@ -73,16 +73,14 @@ public class GameFragment extends Fragment {
     // Tower selection
     private TowerOption selectedTower;
     private List<TowerOption> availableTowers;
-    private FloatingActionButton selectedFab;
+    private AccessibleImageButton selectedFab;
 
     private boolean continueGame;
     private boolean isNewGame;
     private boolean hasLoadedGame = false;
-    private int saveIdToLoad = -1; // -1 means load latest auto-save
 
     // Key to save state across configuration changes and fragment recreation
     private static final String KEY_HAS_LOADED = "has_loaded_game";
-    private static final String KEY_SAVE_ID = "save_id_to_load";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -91,8 +89,7 @@ public class GameFragment extends Fragment {
         // Restore state from savedInstanceState (survives configuration changes and recreation)
         if (savedInstanceState != null) {
             hasLoadedGame = savedInstanceState.getBoolean(KEY_HAS_LOADED, false);
-            saveIdToLoad = savedInstanceState.getInt(KEY_SAVE_ID, -1);
-            Log.d(TAG, "onCreate - restored hasLoadedGame: " + hasLoadedGame + ", saveIdToLoad: " + saveIdToLoad);
+            Log.d(TAG, "onCreate - restored hasLoadedGame: " + hasLoadedGame);
         }
 
         // Get arguments
@@ -101,12 +98,7 @@ public class GameFragment extends Fragment {
             // Check if this is explicitly a new game
             isNewGame = !continueGame && getArguments().containsKey("continue_game");
 
-            // Get specific save ID if provided (overrides savedInstanceState)
-            if (getArguments().containsKey("save_id")) {
-                saveIdToLoad = getArguments().getInt("save_id", -1);
-            }
-
-            Log.d(TAG, "onCreate - continueGame: " + continueGame + ", isNewGame: " + isNewGame + ", saveIdToLoad: " + saveIdToLoad);
+            Log.d(TAG, "onCreate - continueGame: " + continueGame + ", isNewGame: " + isNewGame);
         }
     }
 
@@ -115,8 +107,7 @@ public class GameFragment extends Fragment {
         super.onSaveInstanceState(outState);
         // Save state so it survives configuration changes and fragment recreation
         outState.putBoolean(KEY_HAS_LOADED, hasLoadedGame);
-        outState.putInt(KEY_SAVE_ID, saveIdToLoad);
-        Log.d(TAG, "onSaveInstanceState - saving hasLoadedGame: " + hasLoadedGame + ", saveIdToLoad: " + saveIdToLoad);
+        Log.d(TAG, "onSaveInstanceState - saving hasLoadedGame: " + hasLoadedGame);
     }
     
     @Nullable
@@ -140,10 +131,10 @@ public class GameFragment extends Fragment {
         fpsText = view.findViewById(R.id.text_fps);
         nextWaveFab = view.findViewById(R.id.fab_next_wave);
         pauseFab = view.findViewById(R.id.fab_pause);
-        FloatingActionButton settingsFab = view.findViewById(R.id.fab_settings);
-        AccessibleFloatingActionButton fabFirewall = view.findViewById(R.id.fab_tower_firewall);
-        AccessibleFloatingActionButton fabHoneypot = view.findViewById(R.id.fab_tower_honeypot);
-        AccessibleFloatingActionButton fabJammer = view.findViewById(R.id.fab_tower_jammer);
+        ImageButton settingsFab = view.findViewById(R.id.fab_settings);
+        AccessibleImageButton fabFirewall = view.findViewById(R.id.fab_tower_firewall);
+        AccessibleImageButton fabHoneypot = view.findViewById(R.id.fab_tower_honeypot);
+        AccessibleImageButton fabJammer = view.findViewById(R.id.fab_tower_jammer);
 
         // Get the game engine first
         gameEngine = viewModel.getGameEngine();
@@ -354,7 +345,7 @@ public class GameFragment extends Fragment {
     /**
      * Set up drag and drop for tower button
      */
-    private void setupTowerDragAndDrop(AccessibleFloatingActionButton fab, int towerIndex) {
+    private void setupTowerDragAndDrop(AccessibleImageButton fab, int towerIndex) {
         // Add click listener for accessibility support
         fab.setOnClickListener(v -> {
             // Simple click selects/deselects the tower
@@ -563,7 +554,7 @@ public class GameFragment extends Fragment {
     /**
      * Select a tower by index
      */
-    private void selectTower(int index, FloatingActionButton fab) {
+    private void selectTower(int index, AccessibleImageButton fab) {
         if (index < 0 || index >= availableTowers.size()) {
             return;
         }
@@ -692,7 +683,7 @@ public class GameFragment extends Fragment {
         com.google.android.material.button.MaterialButton upgradeButton = cardView.findViewById(R.id.btn_upgrade);
         com.google.android.material.button.MaterialButton closeButton = cardView.findViewById(R.id.btn_close);
         View lockOverlay = cardView.findViewById(R.id.lock_overlay);
-        View costContainer = cardView.findViewById(R.id.cost_container);
+        TextView costView = cardView.findViewById(R.id.tower_cost);
 
         // Get tower type name
         String towerType = tower.getType();
@@ -707,8 +698,8 @@ public class GameFragment extends Fragment {
         rangeChip.setText(String.format(Locale.getDefault(), "%.0f", tower.getRange()));
         fireRateChip.setText(String.format(Locale.getDefault(), "%.1f", tower.getFireRate()));
 
-        // Hide cost container and lock overlay for existing towers
-        costContainer.setVisibility(View.GONE);
+        // Hide cost and lock overlay for existing towers
+        costView.setVisibility(View.GONE);
         lockOverlay.setVisibility(View.GONE);
         infoButton.setVisibility(View.GONE);
 
@@ -859,7 +850,7 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Load saved game state from most recent auto-save or specific save ID
+     * Load saved game state from most recent auto-save
      */
     private void loadSavedGame() {
         if (viewModel == null) {
@@ -867,14 +858,8 @@ public class GameFragment extends Fragment {
             return;
         }
 
-        // Load specific save by ID if provided, otherwise load latest auto-save
-        if (saveIdToLoad > 0) {
-            Log.d(TAG, "Loading specific save with ID: " + saveIdToLoad);
-            viewModel.loadGame(saveIdToLoad, createLoadCallback());
-        } else {
-            Log.d(TAG, "Loading latest auto-save");
-            viewModel.loadLatestAutoSave(createLoadCallback());
-        }
+        Log.d(TAG, "Loading latest auto-save");
+        viewModel.loadLatestAutoSave(createLoadCallback());
     }
 
     /**

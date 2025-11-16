@@ -49,13 +49,6 @@ public class GameViewModel extends AndroidViewModel {
     }
 
     /**
-     * Load saved game by ID
-     */
-    public void loadGame(int saveId, GameRepository.LoadCallback callback) {
-        repository.loadGame(saveId, callback);
-    }
-
-    /**
      * Load most recent auto-save
      */
     public void loadLatestAutoSave(GameRepository.LoadCallback callback) {
@@ -63,7 +56,7 @@ public class GameViewModel extends AndroidViewModel {
     }
 
     /**
-     * Delete save
+     * Delete save (for cleaning up autosaves)
      */
     public void deleteSave(SaveGameEntity save, GameRepository.DeleteCallback callback) {
         repository.deleteSave(save, callback);

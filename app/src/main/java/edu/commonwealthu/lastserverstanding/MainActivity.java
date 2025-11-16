@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "=== Last Server Standing ===");
 
         // Use the fragment-based layout
-        setContentView(R.layout.activity_main_updated);
+        setContentView(R.layout.activity_main);
 
         // Set up Navigation Component
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()

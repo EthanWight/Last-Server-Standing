@@ -31,7 +31,7 @@
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Back"
+            android:text="@string/back"
             android:textColor="@color/electric_blue"
             app:layout_constraintTop_toTopOf="@id/title"
             app:layout_constraintBottom_toBottomOf="@id/title"
@@ -42,7 +42,7 @@
             android:id="@+id/profile_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Profile"
+            android:text="@string/profile"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/electric_blue"
@@ -56,20 +56,24 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="Player Name"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:maxLength="32"
+            android:hint="@string/player_name"
             app:boxBackgroundMode="filled"
             app:boxBackgroundColor="@color/surface_elevated"
             app:hintTextColor="@color/text_secondary"
             app:layout_constraintTop_toBottomOf="@id/profile_header"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_max="488dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_player_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
-                android:maxLength="20"
+                android:maxLength="32"
                 android:inputType="textPersonName"
                 android:singleLine="true" />
 
@@ -80,7 +84,7 @@
             android:id="@+id/audio_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Audio"
+            android:text="@string/audio"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/electric_blue"
@@ -110,14 +114,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sound Effects"
+                    android:text="@string/sound_effects"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Enable in-game sound effects"
+                    android:text="@string/sound_effects_description"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp" />
@@ -128,6 +132,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
+                android:contentDescription="@string/toggle_sound_effects"
                 app:thumbTint="@color/switch_thumb"
                 app:trackTint="@color/switch_track" />
         </LinearLayout>
@@ -137,7 +142,7 @@
             android:id="@+id/haptics_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Haptics"
+            android:text="@string/haptics"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/electric_blue"
@@ -167,14 +172,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Vibration"
+                    android:text="@string/vibration"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Enable haptic feedback"
+                    android:text="@string/vibration_description"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp" />
@@ -185,6 +190,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
+                android:contentDescription="@string/toggle_vibration"
                 app:thumbTint="@color/switch_thumb"
                 app:trackTint="@color/switch_track" />
         </LinearLayout>
@@ -192,23 +198,24 @@
         <!-- Save Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_save"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="60dp"
-            android:text="Save Settings"
-            android:textSize="16sp"
-            android:backgroundTint="@color/electric_blue"
             android:layout_marginTop="32dp"
-            app:layout_constraintTop_toBottomOf="@id/vibration_container"
+            android:backgroundTint="@color/electric_blue"
+            android:text="@string/save_settings"
+            android:textColor="#212121"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/vibration_container" />
 
         <!-- Main Menu Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_main_menu"
             style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="60dp"
-            android:text="Main Menu"
+            android:text="@string/main_menu"
             android:textSize="16sp"
             android:textColor="@color/danger_red"
             app:strokeColor="@color/danger_red"

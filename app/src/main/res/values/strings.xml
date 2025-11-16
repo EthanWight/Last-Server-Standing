@@ -37,4 +37,52 @@
     <string name="confirm_delete_save">Delete this saved game?</string>
     <string name="save_deleted">Save deleted</string>
     <string name="failed_to_load">Failed to load game</string>
+    <string name="start_next_wave">Start Next Wave</string>
+    <string name="_500">500</string>
+    <string name="fps">FPS:</string>
+    <string name="_60">60</string>
+    <string name="firewall_tower">Firewall Tower</string>
+    <string name="honeypot_tower">Honeypot Tower</string>
+    <string name="jammer_tower">Jammer Tower</string>
+    <string name="_1">1</string>
+
+    <!-- Settings strings -->
+    <string name="back">Back</string>
+    <string name="profile">Profile</string>
+    <string name="player_name">Player Name</string>
+    <string name="audio">Audio</string>
+    <string name="sound_effects">Sound Effects</string>
+    <string name="sound_effects_description">Enable in-game sound effects</string>
+    <string name="haptics">Haptics</string>
+    <string name="vibration">Vibration</string>
+    <string name="vibration_description">Enable haptic feedback</string>
+    <string name="save_settings">Save Settings</string>
+    <string name="main_menu">Main Menu</string>
+    <string name="toggle_sound_effects">Toggle sound effects</string>
+    <string name="toggle_vibration">Toggle vibration</string>
+
+    <!-- Stats/Leaderboard strings -->
+    <string name="add_test_data">Add Test Data</string>
+    <string name="clear_data">Clear Data</string>
+    <string name="reload">Reload</string>
+    <string name="no_data">No data</string>
+    <string name="no_leaderboard_data">No leaderboard data available</string>
+    <string name="play_games_prompt">Play some games to see your highest waves here!</string>
+    <string name="player_name_placeholder">Player Name</string>
+    <string name="timestamp_placeholder">2 days ago</string>
+    <string name="_10">10</string>
+    <string name="wave_placeholder">Wave 5</string>
+    <string name="score_placeholder">Score: 1,234</string>
+    <string name="date_placeholder">Jan 15, 2025 10:30 AM</string>
+    <string name="close">Close</string>
+    
+    <!-- Tower card strings -->
+    <string name="firewall">Firewall</string>
+    <string name="level_1">Level 1</string>
+    <string name="cost_100">100</string>
+    <string name="firewall_description">Basic defense tower with high fire rate.</string>
+    <string name="damage_15">15</string>
+    <string name="range_150">150</string>
+    <string name="fire_rate_2_0">2.0</string>
+    <string name="upgrade">Upgrade</string>
 </resources>

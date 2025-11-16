@@ -76,35 +76,6 @@ public class GameRepository {
     }
 
     /**
-     * Load game state by ID
-     */
-    public void loadGame(int saveId, LoadCallback callback) {
-        executorService.execute(() -> {
-            try {
-                SaveGameEntity saveEntity = saveGameDao.getSaveByIdSync(saveId);
-
-                if (saveEntity == null) {
-                    if (callback != null) {
-                        callback.onError("Save game not found");
-                    }
-                    return;
-                }
-
-                // Deserialize JSON to GameState
-                GameState gameState = GameState.fromJson(saveEntity.getGameStateJson());
-
-                if (callback != null) {
-                    callback.onSuccess(gameState);
-                }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError("Failed to load game: " + e.getMessage());
-                }
-            }
-        });
-    }
-
-    /**
      * Load most recent auto-save
      */
     public void loadLatestAutoSave(LoadCallback callback) {
@@ -134,7 +105,7 @@ public class GameRepository {
     }
 
     /**
-     * Delete save game
+     * Delete save game (for cleaning up autosaves)
      */
     public void deleteSave(SaveGameEntity save, DeleteCallback callback) {
         executorService.execute(() -> {
