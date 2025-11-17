@@ -209,13 +209,14 @@ public class FirebaseSaveRepository {
                 Log.d(TAG, "Game saved successfully to Firestore: " + documentReference.getId());
 
                 // Submit high score to leaderboard (only updates if wave is higher)
+                Object userIdObj = saveData.get(FIELD_USER_ID);
                 Object waveObj = saveData.get(FIELD_WAVE);
                 Object displayNameObj = saveData.get(FIELD_DISPLAY_NAME); // Use display name with punctuation
 
-                if (waveObj instanceof Integer wave && displayNameObj instanceof String displayName) {
-                    Log.d(TAG, "Submitting wave " + wave + " to leaderboard for player: " + displayName);
+                if (userIdObj instanceof String userId && waveObj instanceof Integer wave && displayNameObj instanceof String displayName) {
+                    Log.d(TAG, "Submitting wave " + wave + " to leaderboard for userId: " + userId + ", player: " + displayName);
 
-                    FirebaseManager.getInstance().submitHighScore(displayName, wave, new FirebaseManager.LeaderboardCallback() {
+                    FirebaseManager.getInstance().submitHighScore(userId, displayName, wave, new FirebaseManager.LeaderboardCallback() {
                         @Override
                         public void onSuccess() {
                             Log.d(TAG, "Leaderboard updated successfully");

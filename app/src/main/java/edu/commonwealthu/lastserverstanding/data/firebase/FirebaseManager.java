@@ -17,6 +17,7 @@ public class FirebaseManager {
 
     private static final String TAG = "FirebaseManager";
     private static final String COLLECTION_LEADERBOARD = "leaderboard";
+    private static final String FIELD_USER_ID = "userId";
     private static final String FIELD_PLAYER_NAME = "playerName";
     private static final String FIELD_WAVE = "wave";
     private static final String FIELD_TIMESTAMP = "timestamp";
@@ -46,8 +47,9 @@ public class FirebaseManager {
     /**
      * Submit highest wave to leaderboard
      * Only updates if this wave is higher than the player's current best
+     * Uses userId as the document ID to prevent duplicates when player changes name
      */
-    public void submitHighScore(String playerName, int wave, LeaderboardCallback callback) {
+    public void submitHighScore(String userId, String playerName, int wave, LeaderboardCallback callback) {
         if (!initialized || firestore == null) {
             Log.w(TAG, "Firebase not initialized, skipping score submission");
             if (callback != null) {
@@ -56,15 +58,15 @@ public class FirebaseManager {
             return;
         }
 
-        Log.d(TAG, "Submitting score to leaderboard: Player=" + playerName + ", Wave=" + wave);
+        Log.d(TAG, "Submitting score to leaderboard: UserId=" + userId + ", Player=" + playerName + ", Wave=" + wave);
 
         try {
-            // Sanitize player name for use as Firestore document ID (remove invalid chars)
-            String sanitizedName = playerName.replaceAll("/", "_");
+            // Use userId as the document ID (no need to sanitize - it's already a valid ID)
+            // This ensures one entry per device, even if player changes their name
 
             // Check if player already has a score
             firestore.collection(COLLECTION_LEADERBOARD)
-                .document(sanitizedName)
+                .document(userId)
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     LeaderboardEntry existingEntry = snapshot.exists() ?
@@ -73,15 +75,16 @@ public class FirebaseManager {
                     // Only update if new wave is higher than existing, or no entry exists
                     if (existingEntry == null || wave > existingEntry.wave) {
                         Map<String, Object> entryData = new HashMap<>();
+                        entryData.put(FIELD_USER_ID, userId);
                         entryData.put(FIELD_PLAYER_NAME, playerName);
                         entryData.put(FIELD_WAVE, wave);
                         entryData.put(FIELD_TIMESTAMP, System.currentTimeMillis());
 
-                        Log.d(TAG, "Writing score to Firestore for player: " + sanitizedName +
-                                   (existingEntry != null ? " (updating from wave " + existingEntry.wave + ")" : " (new entry)"));
+                        Log.d(TAG, "Writing score to Firestore for userId: " + userId +
+                                   (existingEntry != null ? " (updating from wave " + existingEntry.wave + " as '" + existingEntry.playerName + "')" : " (new entry)"));
 
                         firestore.collection(COLLECTION_LEADERBOARD)
-                            .document(sanitizedName)
+                            .document(userId)
                             .set(entryData)
                             .addOnSuccessListener(aVoid -> {
                                 Log.d(TAG, "✓ Score successfully written to Firestore: " + playerName + " - Wave " + wave);
@@ -189,7 +192,8 @@ public class FirebaseManager {
      * Leaderboard entry model
      */
     public static class LeaderboardEntry {
-        public String playerName;
+        public String userId;       // Firebase anonymous auth user ID (used as document ID)
+        public String playerName;   // Display name for the player
         public int wave;
         public long timestamp;
 
@@ -199,7 +203,8 @@ public class FirebaseManager {
         }
 
         @SuppressWarnings("unused")
-        public LeaderboardEntry(String playerName, int wave, long timestamp) {
+        public LeaderboardEntry(String userId, String playerName, int wave, long timestamp) {
+            this.userId = userId;
             this.playerName = playerName;
             this.wave = wave;
             this.timestamp = timestamp;

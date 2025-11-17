@@ -23,6 +23,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +76,8 @@ public class GameFragment extends Fragment {
     private TowerOption selectedTower;
     private List<TowerOption> availableTowers;
     private AccessibleImageButton selectedFab;
+    private boolean isDragging = false;
+    private TowerOption draggedTower = null;
 
     private boolean continueGame;
     private boolean isNewGame;
@@ -354,6 +358,12 @@ public class GameFragment extends Fragment {
     private void setupTowerDragAndDrop(AccessibleImageButton fab, int towerIndex) {
         // Add click listener for accessibility support
         fab.setOnClickListener(v -> {
+            // Ignore click if it's from a drag operation
+            if (isDragging) {
+                isDragging = false;
+                return;
+            }
+
             // Simple click selects/deselects the tower
             if (selectedTower != null && selectedFab == fab) {
                 deselectTower();
@@ -368,9 +378,10 @@ public class GameFragment extends Fragment {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     // Start drag
+                    isDragging = true;
                     if (towerIndex < availableTowers.size()) {
                         TowerOption tower = availableTowers.get(towerIndex);
-                        selectTower(towerIndex, fab);
+                        draggedTower = tower;
                         gameView.showDragPreview(tower.getIconResId());
                         updateDragPreview(event.getRawX(), event.getRawY());
                     }
@@ -386,8 +397,7 @@ public class GameFragment extends Fragment {
                     // Drop tower
                     gameView.hideDragPreview();
                     handleTowerDrop(event.getRawX(), event.getRawY());
-                    // Always deselect when finger is lifted
-                    deselectTower();
+                    draggedTower = null;
                     // Call performClick for accessibility
                     v.performClick();
                     return true;
@@ -793,16 +803,19 @@ public class GameFragment extends Fragment {
             return;
         }
 
+        // Use draggedTower if available (from drag operation), otherwise use selectedTower (from click)
+        TowerOption towerToPlace = draggedTower != null ? draggedTower : selectedTower;
+
         // No existing tower, proceed with placement
-        if (selectedTower == null) {
+        if (towerToPlace == null) {
             Log.d(TAG, "No tower selected - tap ignored");
             return;
         }
 
         // Check if player can afford the tower
-        if (gameEngine.getResources() < selectedTower.getCost()) {
+        if (gameEngine.getResources() < towerToPlace.getCost()) {
             Toast.makeText(requireContext(),
-                    "Not enough resources! Need " + selectedTower.getCost(),
+                    "Not enough resources! Need " + towerToPlace.getCost(),
                     Toast.LENGTH_SHORT).show();
             return;
         }
@@ -810,7 +823,7 @@ public class GameFragment extends Fragment {
         try {
             // Create and place the tower based on type
             boolean placed = false;
-            switch (selectedTower.getType()) {
+            switch (towerToPlace.getType()) {
                 case "Firewall":
                     Log.d(TAG, "Creating Firewall tower at " + worldPosition);
                     FirewallTower firewallTower = new FirewallTower(worldPosition);
@@ -827,13 +840,13 @@ public class GameFragment extends Fragment {
                     placed = gameEngine.addTower(jammerTower);
                     break;
                 default:
-                    Log.e(TAG, "Unknown tower type: " + selectedTower.getType());
+                    Log.e(TAG, "Unknown tower type: " + towerToPlace.getType());
             }
 
             if (placed) {
                 Log.d(TAG, String.format(Locale.getDefault(), "Tower placed successfully at (%.0f, %.0f)", worldPosition.x, worldPosition.y));
                 Toast.makeText(requireContext(),
-                        selectedTower.getName() + " placed!",
+                        towerToPlace.getName() + " placed!",
                         Toast.LENGTH_SHORT).show();
             } else {
                 Log.w(TAG, "Tower placement failed - invalid spot");
@@ -979,22 +992,22 @@ public class GameFragment extends Fragment {
             // Get the final score from game engine
             long finalScore = gameEngine != null ? gameEngine.getScore() : 0;
 
-            // Submit score to Firebase
-            edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager.getInstance()
-                    .submitHighScore(playerName, finalWave, new edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager.LeaderboardCallback() {
-                        @Override
-                        public void onSuccess() {
-                            Log.d(TAG, "Score submitted successfully to leaderboard - Player: " + playerName + ", Wave: " + finalWave);
-                            if (isAdded()) {
-                                Toast.makeText(requireContext(),
-                                    "Score submitted to leaderboard!",
-                                    Toast.LENGTH_SHORT).show();
-                            }
-                        }
+            // Ensure user is authenticated and get userId for leaderboard submission
+            FirebaseAuth auth = FirebaseAuth.getInstance();
+            FirebaseUser currentUser = auth.getCurrentUser();
 
-                        @Override
-                        public void onError(String message) {
-                            Log.e(TAG, "Failed to submit score: " + message);
+            if (currentUser != null) {
+                // User already authenticated, submit score
+                submitScoreToLeaderboard(currentUser.getUid(), playerName, finalWave);
+            } else {
+                // Need to authenticate anonymously first
+                auth.signInAnonymously()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && auth.getCurrentUser() != null) {
+                            String userId = auth.getCurrentUser().getUid();
+                            submitScoreToLeaderboard(userId, playerName, finalWave);
+                        } else {
+                            Log.e(TAG, "Failed to authenticate for leaderboard submission");
                             if (isAdded()) {
                                 Toast.makeText(requireContext(),
                                     "Warning: Failed to submit score to leaderboard",
@@ -1002,10 +1015,39 @@ public class GameFragment extends Fragment {
                             }
                         }
                     });
+            }
 
             // Show game over dialog
             showGameOverDialog(finalWave, finalScore);
         });
+    }
+
+    /**
+     * Submit score to leaderboard with userId
+     */
+    private void submitScoreToLeaderboard(String userId, String playerName, int wave) {
+        edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager.getInstance()
+            .submitHighScore(userId, playerName, wave, new edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager.LeaderboardCallback() {
+                @Override
+                public void onSuccess() {
+                    Log.d(TAG, "Score submitted successfully to leaderboard - UserId: " + userId + ", Player: " + playerName + ", Wave: " + wave);
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(),
+                            "Score submitted to leaderboard!",
+                            Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onError(String message) {
+                    Log.e(TAG, "Failed to submit score: " + message);
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(),
+                            "Warning: Failed to submit score to leaderboard",
+                            Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
     }
 
     /**

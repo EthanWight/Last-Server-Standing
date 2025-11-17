@@ -719,19 +719,30 @@ public class GameEngine {
      */
     private Tower createTowerFromData(edu.commonwealthu.lastserverstanding.data.models.GameState.TowerData data) {
         PointF pos = new PointF(data.x, data.y);
+        Tower tower;
 
-        // For now, only support FirewallTower (expand later)
-        if ("Firewall".equals(data.type)) {
-            edu.commonwealthu.lastserverstanding.model.towers.FirewallTower tower = new edu.commonwealthu.lastserverstanding.model.towers.FirewallTower(pos);
-            // Upgrade to saved level
-            for (int i = 1; i < data.level; i++) {
-                tower.upgrade();
-            }
-            tower.setCorrupted(data.isCorrupted);
-            return tower;
+        // Create tower based on type
+        switch (data.type) {
+            case "Firewall":
+                tower = new edu.commonwealthu.lastserverstanding.model.towers.FirewallTower(pos);
+                break;
+            case "Honeypot":
+                tower = new edu.commonwealthu.lastserverstanding.model.towers.HoneypotTower(pos);
+                break;
+            case "Jammer":
+                tower = new edu.commonwealthu.lastserverstanding.model.towers.JammerTower(pos);
+                break;
+            default:
+                // Unknown tower type - skip it
+                return null;
         }
 
-        return null;
+        // Upgrade to saved level
+        for (int i = 1; i < data.level; i++) {
+            tower.upgrade();
+        }
+        tower.setCorrupted(data.isCorrupted);
+        return tower;
     }
 
     /**
