@@ -326,18 +326,16 @@ public class GameEngine {
      * Get tower icon resource ID based on type
      */
     private int getTowerIconResource(String towerType) {
-        switch (towerType) {
-            case "Firewall":
-                return R.drawable.ic_tower_firewall;
-            case "Honeypot":
-                return R.drawable.ic_tower_honeypot;
-            case "Jammer":
-                return R.drawable.ic_tower_jammer;
-            default:
+        return switch (towerType) {
+            case "Firewall" -> R.drawable.ic_tower_firewall;
+            case "Honeypot" -> R.drawable.ic_tower_honeypot;
+            case "Jammer" -> R.drawable.ic_tower_jammer;
+            default -> {
                 // Unknown tower type, log warning and use firewall as fallback
                 android.util.Log.w("GameEngine", "Unknown tower type: " + towerType);
-                return R.drawable.ic_tower_firewall;
-        }
+                yield R.drawable.ic_tower_firewall;
+            }
+        };
     }
 
     /**
@@ -688,6 +686,9 @@ public class GameEngine {
         dataCenterHealth = state.dataCenterHealth;
         previousHealth = state.dataCenterHealth; // Initialize to avoid false alert on load
         score = state.score;
+
+        // Restore wave manager state to match saved wave
+        waveManager.restoreWaveState(state.currentWave);
 
         // Restore towers
         synchronized (towers) {

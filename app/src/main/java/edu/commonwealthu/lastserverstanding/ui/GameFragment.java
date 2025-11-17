@@ -206,7 +206,7 @@ public class GameFragment extends Fragment {
                     }
                 }
             });
-            hasLoadedGame = true; // Will be set to true after loading completes
+            // DON'T set hasLoadedGame here - it will be set after loadSavedGame() completes
         } else {
             // Returning from settings or resuming - keep existing game
             Log.d(TAG, "Resuming existing game - Wave: " + gameEngine.getCurrentWave() +

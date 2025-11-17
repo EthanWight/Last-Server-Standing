@@ -196,4 +196,17 @@ public class WaveManager {
     // Getters
     public int getCurrentWave() { return currentWave; }
     public boolean isWaveActive() { return isWaveActive; }
+
+    /**
+     * Restore wave state from saved game
+     * @param wave The wave number to restore
+     */
+    public void restoreWaveState(int wave) {
+        this.currentWave = wave;
+        this.isWaveActive = false; // Wave is paused when loading
+        this.enemiesSpawnedThisWave = 0;
+        this.timeSinceLastSpawn = 0;
+        // Restore difficulty multiplier for the current wave
+        this.difficultyMultiplier = 1.0f + (wave - 1) * DIFFICULTY_INCREASE_PER_WAVE;
+    }
 }

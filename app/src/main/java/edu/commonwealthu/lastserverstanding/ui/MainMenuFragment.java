@@ -98,17 +98,24 @@ public class MainMenuFragment extends Fragment {
      * Check Firebase for autosaves and update continue button visibility
      */
     private void checkForFirebaseSave(GameViewModel viewModel) {
-        Log.d(TAG, "Checking Firebase for autosaves...");
+        Log.d(TAG, "==========================================");
+        Log.d(TAG, "checkForFirebaseSave: START");
+        Log.d(TAG, "==========================================");
 
         viewModel.loadLatestAutoSave(new GameRepository.LoadCallback() {
             @Override
             public void onSuccess(edu.commonwealthu.lastserverstanding.data.models.GameState gameState) {
+                Log.d(TAG, "checkForFirebaseSave: onSuccess callback received");
+                Log.d(TAG, "checkForFirebaseSave: gameState != null? " + (gameState != null));
+
                 // Found a save - show continue button if it has progress
                 if (gameState != null && gameState.currentWave > 0) {
-                    Log.d(TAG, "✓ Found Firebase autosave - Wave: " + gameState.currentWave);
+                    Log.d(TAG, "checkForFirebaseSave: ✓✓✓ SHOWING CONTINUE BUTTON");
+                    Log.d(TAG, "checkForFirebaseSave: Wave: " + gameState.currentWave + ", Score: " + gameState.score);
                     continueButton.setVisibility(View.VISIBLE);
+                    Log.d(TAG, "checkForFirebaseSave: Button visibility set to VISIBLE");
                 } else {
-                    Log.d(TAG, "✗ Autosave has no progress (wave 0)");
+                    Log.d(TAG, "checkForFirebaseSave: ✗ Autosave has no progress (wave 0)");
                     continueButton.setVisibility(View.GONE);
                 }
             }
@@ -116,9 +123,12 @@ public class MainMenuFragment extends Fragment {
             @Override
             public void onError(String error) {
                 // No save found or error - hide continue button
-                Log.d(TAG, "No Firebase autosave found: " + error);
+                Log.e(TAG, "checkForFirebaseSave: ✗✗✗ ERROR - Hiding continue button");
+                Log.e(TAG, "checkForFirebaseSave: Error message: " + error);
                 continueButton.setVisibility(View.GONE);
             }
         });
+
+        Log.d(TAG, "checkForFirebaseSave: Load request sent, waiting for callback...");
     }
 }
