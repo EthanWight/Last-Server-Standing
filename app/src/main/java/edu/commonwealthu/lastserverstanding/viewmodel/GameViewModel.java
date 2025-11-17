@@ -6,9 +6,6 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import java.util.List;
-
-import edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity;
 import edu.commonwealthu.lastserverstanding.data.entities.SettingsEntity;
 import edu.commonwealthu.lastserverstanding.data.models.GameState;
 import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
@@ -22,7 +19,6 @@ public class GameViewModel extends AndroidViewModel {
     private final GameRepository repository;
 
     // LiveData from repository
-    private final LiveData<List<SaveGameEntity>> allSaves;
     private final LiveData<SettingsEntity> settings;
 
     // Game state LiveData
@@ -37,7 +33,6 @@ public class GameViewModel extends AndroidViewModel {
     public GameViewModel(Application application) {
         super(application);
         repository = new GameRepository(application);
-        allSaves = repository.getAllSaves();
         settings = repository.getSettings();
     }
 
@@ -56,10 +51,10 @@ public class GameViewModel extends AndroidViewModel {
     }
 
     /**
-     * Delete save (for cleaning up autosaves)
+     * Delete autosave from Firebase
      */
-    public void deleteSave(SaveGameEntity save, GameRepository.DeleteCallback callback) {
-        repository.deleteSave(save, callback);
+    public void deleteAutoSave(GameRepository.DeleteCallback callback) {
+        repository.deleteAutoSave(callback);
     }
 
     /**
@@ -67,6 +62,13 @@ public class GameViewModel extends AndroidViewModel {
      */
     public void updateSettings(SettingsEntity settings) {
         repository.updateSettings(settings);
+    }
+
+    /**
+     * Refresh player name for Firebase saves
+     */
+    public void refreshPlayerName() {
+        repository.refreshPlayerName();
     }
 
     /**
@@ -80,7 +82,6 @@ public class GameViewModel extends AndroidViewModel {
     }
 
     // Getters for LiveData
-    public LiveData<List<SaveGameEntity>> getAllSaves() { return allSaves; }
     public LiveData<SettingsEntity> getSettings() { return settings; }
     public LiveData<Integer> getCurrentWave() { return currentWave; }
     public LiveData<Integer> getResources() { return resources; }

@@ -753,33 +753,27 @@ public class GameFragment extends Fragment {
      * Get tower icon resource by type
      */
     private int getTowerIconResource(String towerType) {
-        switch (towerType) {
-            case "Firewall":
-                return R.drawable.ic_tower_firewall;
-            case "Honeypot":
-                return R.drawable.ic_tower_honeypot;
-            case "Jammer":
-                return R.drawable.ic_tower_jammer;
-            default:
+        return switch (towerType) {
+            case "Firewall" -> R.drawable.ic_tower_firewall;
+            case "Honeypot" -> R.drawable.ic_tower_honeypot;
+            case "Jammer" -> R.drawable.ic_tower_jammer;
+            default -> {
                 Log.w(TAG, "Unknown tower type: " + towerType + ", using Firewall icon as default");
-                return R.drawable.ic_tower_firewall;
-        }
+                yield R.drawable.ic_tower_firewall;
+            }
+        };
     }
 
     /**
      * Get tower description by type
      */
     private String getTowerDescription(String towerType) {
-        switch (towerType) {
-            case "Firewall":
-                return "Basic defense tower with high fire rate. Good all-around tower for early game.";
-            case "Honeypot":
-                return "Slows enemies and deals damage over time. Effective for controlling enemy movement.";
-            case "Jammer":
-                return "Fast attack speed with wide range. Best for hitting multiple targets.";
-            default:
-                return "Unknown tower type.";
-        }
+        return switch (towerType) {
+            case "Firewall" -> "Basic defense tower with high fire rate. Good all-around tower for early game.";
+            case "Honeypot" -> "Slows enemies and deals damage over time. Effective for controlling enemy movement.";
+            case "Jammer" -> "Fast attack speed with wide range. Best for hitting multiple targets.";
+            default -> "Unknown tower type.";
+        };
     }
 
     /**
@@ -876,6 +870,27 @@ public class GameFragment extends Fragment {
             @Override
             public void onSuccess(GameState gameState) {
                 if (gameEngine != null && gameState != null) {
+                    // Check if the saved game is a game-over state (0 health)
+                    if (gameState.dataCenterHealth <= 0) {
+                        Log.d(TAG, "Saved game was game-over state. Starting fresh game instead.");
+                        hasLoadedGame = true;
+
+                        if (isAdded()) {
+                            requireActivity().runOnUiThread(() -> {
+                                Toast.makeText(requireContext(),
+                                        "Previous game ended at Wave " + gameState.currentWave + ". Starting new game.",
+                                        Toast.LENGTH_LONG).show();
+
+                                // Delete the old save and start fresh
+                                deleteAutoSave();
+                                gameEngine.setPaused(true);
+                                updatePauseButton();
+                                nextWaveFab.setVisibility(View.VISIBLE);
+                            });
+                        }
+                        return;
+                    }
+
                     // Restore the game state to the engine
                     gameEngine.restoreGameState(gameState);
                     hasLoadedGame = true; // Mark as loaded to prevent re-initialization
@@ -930,31 +945,16 @@ public class GameFragment extends Fragment {
             return;
         }
 
-        // Delete auto-save by loading and deleting it (use observeOnce to avoid leak)
-        viewModel.getAllSaves().observe(getViewLifecycleOwner(), new androidx.lifecycle.Observer<>() {
+        // Delete auto-save from Firebase
+        viewModel.deleteAutoSave(new GameRepository.DeleteCallback() {
             @Override
-            public void onChanged(java.util.List<edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity> saves) {
-                // Remove observer immediately after first callback
-                viewModel.getAllSaves().removeObserver(this);
+            public void onSuccess() {
+                Log.d(TAG, "Firebase auto-save deleted successfully");
+            }
 
-                if (saves != null) {
-                    for (int i = 0; i < saves.size(); i++) {
-                        if (saves.get(i).isAutoSave()) {
-                            final int index = i;
-                            viewModel.deleteSave(saves.get(i), new GameRepository.DeleteCallback() {
-                                @Override
-                                public void onSuccess() {
-                                    Log.d(TAG, "Auto-save " + index + " deleted");
-                                }
-
-                                @Override
-                                public void onError(String error) {
-                                    Log.e(TAG, "Failed to delete auto-save: " + error);
-                                }
-                            });
-                        }
-                    }
-                }
+            @Override
+            public void onError(String error) {
+                Log.e(TAG, "Failed to delete Firebase auto-save: " + error);
             }
         });
     }
@@ -968,8 +968,9 @@ public class GameFragment extends Fragment {
         requireActivity().runOnUiThread(() -> {
             Log.d(TAG, "Game Over! Final Wave: " + finalWave);
 
-            // Delete auto-save to prevent continuing a dead game
-            deleteAutoSave();
+            // Keep the auto-save in database for record-keeping
+            // The game state is preserved so users can see their final stats
+            // Note: When continuing, the load logic will detect 0 health and start fresh
 
             // Get player name from SharedPreferences or use default
             android.content.SharedPreferences prefs = requireContext().getSharedPreferences("game_prefs", android.content.Context.MODE_PRIVATE);

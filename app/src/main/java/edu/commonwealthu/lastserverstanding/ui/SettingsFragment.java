@@ -134,6 +134,9 @@ public class SettingsFragment extends Fragment {
 
         // Save via ViewModel
         viewModel.updateSettings(currentSettings);
+        
+        // Refresh player name in Firebase repository for save continuity
+        viewModel.refreshPlayerName();
 
         // Show confirmation
         Toast.makeText(requireContext(), "Settings saved", Toast.LENGTH_SHORT).show();

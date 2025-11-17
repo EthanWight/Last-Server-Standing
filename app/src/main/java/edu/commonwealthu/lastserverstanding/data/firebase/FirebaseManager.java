@@ -110,65 +110,6 @@ public class FirebaseManager {
     }
 
     /**
-     * Populate Firebase with sample test data
-     * This is for testing/debugging purposes
-     */
-    public void populateTestData(LeaderboardCallback callback) {
-        // Create sample entries with different timestamps
-        long now = System.currentTimeMillis();
-        LeaderboardEntry[] testEntries = {
-            new LeaderboardEntry("CyberDefender", 25, now - 86400000),      // 1 day ago
-            new LeaderboardEntry("FirewallPro", 20, now - 172800000),       // 2 days ago
-            new LeaderboardEntry("HackerHunter", 18, now - 259200000),      // 3 days ago
-            new LeaderboardEntry("SecurityExpert", 15, now - 345600000),    // 4 days ago
-            new LeaderboardEntry("TowerMaster", 12, now - 432000000),       // 5 days ago
-            new LeaderboardEntry("CodeWarrior", 10, now - 518400000),       // 6 days ago
-            new LeaderboardEntry("PixelDefender", 8, now - 604800000),      // 7 days ago
-            new LeaderboardEntry("GameHero", 7, now - 691200000),           // 8 days ago
-            new LeaderboardEntry("WaveRider", 5, now - 777600000),          // 9 days ago
-            new LeaderboardEntry("Beginner", 3, now - 864000000)            // 10 days ago
-        };
-
-        // Submit all test entries
-        final int[] successCount = {0};
-        final int[] errorCount = {0};
-
-        for (LeaderboardEntry entry : testEntries) {
-            String entryId = leaderboardRef.push().getKey();
-            if (entryId != null) {
-                leaderboardRef.child(entryId).setValue(entry)
-                    .addOnSuccessListener(aVoid -> {
-                        successCount[0]++;
-                        if (successCount[0] + errorCount[0] == testEntries.length) {
-                            if (errorCount[0] == 0) {
-                                callback.onSuccess();
-                            } else {
-                                callback.onError("Some entries failed: " + errorCount[0] + " errors");
-                            }
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        errorCount[0]++;
-                        if (successCount[0] + errorCount[0] == testEntries.length) {
-                            callback.onError("Failed to populate test data: " + errorCount[0] + " errors");
-                        }
-                    });
-            } else {
-                errorCount[0]++;
-            }
-        }
-    }
-
-    /**
-     * Clear all leaderboard data (for testing)
-     */
-    public void clearLeaderboard(LeaderboardCallback callback) {
-        leaderboardRef.removeValue()
-            .addOnSuccessListener(aVoid -> callback.onSuccess())
-            .addOnFailureListener(e -> callback.onError(e.getMessage()));
-    }
-
-    /**
      * Get top players by highest wave reached
      */
     public void getTopScores(int limit, LeaderboardFetchCallback callback) {

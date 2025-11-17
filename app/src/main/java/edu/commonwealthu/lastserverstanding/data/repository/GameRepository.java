@@ -4,7 +4,6 @@ import android.app.Application;
 
 import androidx.lifecycle.LiveData;
 
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,15 +17,16 @@ import edu.commonwealthu.lastserverstanding.data.models.GameState;
 /**
  * Repository for managing data operations
  * Provides clean API between ViewModels and data sources
+ * Now uses Firebase for cloud-based autosaves
  */
 public class GameRepository {
 
     private final SaveGameDao saveGameDao;
     private final SettingsDao settingsDao;
     private final ExecutorService executorService;
+    private final FirebaseSaveRepository firebaseSaveRepository;
 
     // LiveData
-    private final LiveData<List<SaveGameEntity>> allSaves;
     private final LiveData<SettingsEntity> settings;
 
     public GameRepository(Application application) {
@@ -34,8 +34,8 @@ public class GameRepository {
         saveGameDao = db.saveGameDao();
         settingsDao = db.settingsDao();
         executorService = Executors.newFixedThreadPool(2);
+        firebaseSaveRepository = new FirebaseSaveRepository();
 
-        allSaves = saveGameDao.getAllSaves();
         settings = settingsDao.getSettings();
 
         // Initialize default settings if needed
@@ -44,82 +44,101 @@ public class GameRepository {
 
     /**
      * Save game state
+     * Autosaves go to Firebase (cloud), manual saves go to local Room database
      */
     public void saveGame(GameState gameState, boolean isAutoSave, SaveCallback callback) {
-        executorService.execute(() -> {
-            try {
-                // If this is an auto-save, delete previous auto-saves first
-                if (isAutoSave) {
-                    saveGameDao.deleteAllAutoSaves();
+        if (isAutoSave) {
+            // Use Firebase for autosaves - persists even when app is killed
+            firebaseSaveRepository.saveGame(gameState, true, new FirebaseSaveRepository.SaveCallback() {
+                @Override
+                public void onSuccess(String saveId) {
+                    if (callback != null) {
+                        callback.onSuccess(saveId.hashCode()); // Convert string ID to int for compatibility
+                    }
                 }
 
-                String json = gameState.toJson();
-                SaveGameEntity entity = new SaveGameEntity(
-                    System.currentTimeMillis(),
-                    json,
-                    isAutoSave,
-                    gameState.currentWave,
-                    gameState.score
-                );
-
-                long id = saveGameDao.insert(entity);
-
-                if (callback != null) {
-                    callback.onSuccess((int)id);
+                @Override
+                public void onError(String error) {
+                    if (callback != null) {
+                        callback.onError(error);
+                    }
                 }
-            } catch (Exception e) {
-                if (callback != null) {
-                    callback.onError(e.getMessage());
+            });
+        } else {
+            // Use Room database for manual saves (if needed in the future)
+            executorService.execute(() -> {
+                try {
+                    String json = gameState.toJson();
+                    SaveGameEntity entity = new SaveGameEntity(
+                        System.currentTimeMillis(),
+                        json,
+                        false, // Manual save, not auto-save
+                        gameState.currentWave,
+                        gameState.score
+                    );
+
+                    long id = saveGameDao.insert(entity);
+
+                    if (callback != null) {
+                        callback.onSuccess((int)id);
+                    }
+                } catch (Exception e) {
+                    if (callback != null) {
+                        callback.onError(e.getMessage());
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     /**
-     * Load most recent auto-save
+     * Load most recent auto-save from Firebase
      */
     public void loadLatestAutoSave(LoadCallback callback) {
-        executorService.execute(() -> {
-            try {
-                SaveGameEntity saveEntity = saveGameDao.getLatestAutoSaveSync();
-
-                if (saveEntity == null) {
-                    if (callback != null) {
-                        callback.onError("No auto-save found");
-                    }
-                    return;
-                }
-
-                // Deserialize JSON to GameState
-                GameState gameState = GameState.fromJson(saveEntity.getGameStateJson());
-
+        firebaseSaveRepository.loadLatestAutoSave(new FirebaseSaveRepository.LoadCallback() {
+            @Override
+            public void onSuccess(GameState gameState) {
                 if (callback != null) {
                     callback.onSuccess(gameState);
                 }
-            } catch (Exception e) {
+            }
+
+            @Override
+            public void onError(String error) {
                 if (callback != null) {
-                    callback.onError("Failed to load auto-save: " + e.getMessage());
+                    callback.onError(error);
                 }
             }
         });
     }
 
     /**
-     * Delete save game (for cleaning up autosaves)
+     * Delete autosave from Firebase
      */
-    public void deleteSave(SaveGameEntity save, DeleteCallback callback) {
-        executorService.execute(() -> {
-            try {
-                saveGameDao.delete(save);
+    public void deleteAutoSave(DeleteCallback callback) {
+        firebaseSaveRepository.deleteAutoSave(new FirebaseSaveRepository.DeleteCallback() {
+            @Override
+            public void onSuccess() {
                 if (callback != null) {
                     callback.onSuccess();
                 }
-            } catch (Exception e) {
+            }
+
+            @Override
+            public void onError(String error) {
                 if (callback != null) {
-                    callback.onError(e.getMessage());
+                    callback.onError(error);
                 }
             }
         });
+    }
+
+    /**
+     * Refresh player name for Firebase saves
+     * Call this when the player changes their name in settings
+     */
+    public void refreshPlayerName() {
+        firebaseSaveRepository.refreshPlayerName();
     }
 
     /**
@@ -142,10 +161,6 @@ public class GameRepository {
     }
 
     // LiveData getters
-    public LiveData<List<SaveGameEntity>> getAllSaves() {
-        return allSaves;
-    }
-
     public LiveData<SettingsEntity> getSettings() {
         return settings;
     }

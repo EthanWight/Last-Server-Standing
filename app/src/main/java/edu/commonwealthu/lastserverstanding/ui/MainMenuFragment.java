@@ -15,6 +15,7 @@ import androidx.navigation.Navigation;
 import com.google.android.material.button.MaterialButton;
 
 import edu.commonwealthu.lastserverstanding.R;
+import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
 import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
 /**
@@ -25,10 +26,11 @@ public class MainMenuFragment extends Fragment {
 
     private static final String TAG = "MainMenuFragment";
     private MaterialButton continueButton;
+    private GameViewModel viewModel;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, 
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_main_menu, container, false);
     }
@@ -38,7 +40,7 @@ public class MainMenuFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialize ViewModel (use activity scope for consistency)
-        GameViewModel viewModel = new ViewModelProvider(requireActivity()).get(GameViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(GameViewModel.class);
 
         // Initialize views
         continueButton = view.findViewById(R.id.btn_continue);
@@ -49,9 +51,8 @@ public class MainMenuFragment extends Fragment {
         // Hide continue button initially
         continueButton.setVisibility(View.GONE);
 
-        // Observe saved games and show continue button if any exist with progress
-        // This observer will automatically update when saves change
-        viewModel.getAllSaves().observe(getViewLifecycleOwner(), this::updateContinueButtonVisibility);
+        // Check Firebase for autosaves to show/hide continue button
+        checkForFirebaseSave(viewModel);
 
         // Set up button listeners
         continueButton.setOnClickListener(v -> {
@@ -84,39 +85,40 @@ public class MainMenuFragment extends Fragment {
         // startBackgroundAnimation(view);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Refresh continue button when returning to main menu
+        if (viewModel != null) {
+            checkForFirebaseSave(viewModel);
+        }
+    }
+
     /**
-     * Update continue button visibility based on saved games
+     * Check Firebase for autosaves and update continue button visibility
      */
-    private void updateContinueButtonVisibility(java.util.List<edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity> saves) {
-        if (saves == null) {
-            Log.d(TAG, "Saves is null - hiding continue button");
-            continueButton.setVisibility(View.GONE);
-            return;
-        }
+    private void checkForFirebaseSave(GameViewModel viewModel) {
+        Log.d(TAG, "Checking Firebase for autosaves...");
 
-        Log.d(TAG, "Checking saved games - count: " + saves.size());
-
-        // Check if any saves have actual progress (wave > 0)
-        boolean hasValidSaves = false;
-
-        for (int i = 0; i < saves.size(); i++) {
-            int wave = saves.get(i).getWave();
-            boolean isAutoSave = saves.get(i).isAutoSave();
-            Log.d(TAG, "  Save " + i + " - Wave: " + wave + ", AutoSave: " + isAutoSave);
-
-            // Check if save has any meaningful progress (wave > 0)
-            if (wave > 0) {
-                hasValidSaves = true;
-                Log.d(TAG, "  ✓ Found valid save with wave " + wave);
-                break;
+        viewModel.loadLatestAutoSave(new GameRepository.LoadCallback() {
+            @Override
+            public void onSuccess(edu.commonwealthu.lastserverstanding.data.models.GameState gameState) {
+                // Found a save - show continue button if it has progress
+                if (gameState != null && gameState.currentWave > 0) {
+                    Log.d(TAG, "✓ Found Firebase autosave - Wave: " + gameState.currentWave);
+                    continueButton.setVisibility(View.VISIBLE);
+                } else {
+                    Log.d(TAG, "✗ Autosave has no progress (wave 0)");
+                    continueButton.setVisibility(View.GONE);
+                }
             }
-        }
 
-        if (!hasValidSaves && !saves.isEmpty()) {
-            Log.d(TAG, "  ✗ No valid saves found (all saves have wave 0)");
-        }
-
-        Log.d(TAG, "Continue button visibility: " + (hasValidSaves ? "VISIBLE" : "GONE"));
-        continueButton.setVisibility(hasValidSaves ? View.VISIBLE : View.GONE);
+            @Override
+            public void onError(String error) {
+                // No save found or error - hide continue button
+                Log.d(TAG, "No Firebase autosave found: " + error);
+                continueButton.setVisibility(View.GONE);
+            }
+        });
     }
 }
