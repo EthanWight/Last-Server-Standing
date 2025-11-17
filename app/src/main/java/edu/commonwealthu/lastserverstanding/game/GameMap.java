@@ -124,9 +124,10 @@ public class GameMap {
 
     /**
      * Get the path that enemies should follow
+     * Returns unmodifiable view to avoid defensive copy allocation
      */
     public List<PointF> getEnemyPath() {
-        return new ArrayList<>(pathPoints);
+        return java.util.Collections.unmodifiableList(pathPoints);
     }
 
     /**

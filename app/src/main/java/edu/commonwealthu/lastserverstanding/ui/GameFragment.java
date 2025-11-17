@@ -307,15 +307,16 @@ public class GameFragment extends Fragment {
                 return;
             }
 
-            // If game is paused, resume
-            if (isPaused) {
+            // If game is paused AND wave is active, resume
+            // (If paused but no wave active, fall through to start wave instead)
+            if (isPaused && isWaveActive) {
                 gameEngine.setPaused(false);
                 Toast.makeText(requireContext(), "Game resumed!", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Game resumed");
                 return;
             }
 
-            // Otherwise, start the next wave
+            // Otherwise, start the next wave (and unpause if needed)
             // Auto-save before starting next wave (if there's progress)
             if (gameEngine.getCurrentWave() > 0) {
                 saveGameState();
@@ -331,6 +332,35 @@ public class GameFragment extends Fragment {
                 Toast.LENGTH_SHORT).show();
 
             Log.d(TAG, "Wave " + gameEngine.getCurrentWave() + " started");
+        }
+
+        // Update button icon after state change
+        updatePlayPauseButton();
+    }
+
+    /**
+     * Update play/pause button icon based on game state
+     */
+    private void updatePlayPauseButton() {
+        if (gameEngine != null && nextWaveFab != null) {
+            boolean isWaveActive = gameEngine.getWaveManager().isWaveActive();
+            boolean isPaused = gameEngine.isPaused();
+
+            // Show pause icon if wave is active and not paused
+            // Show play icon in all other cases
+            if (isWaveActive && !isPaused) {
+                nextWaveFab.setImageResource(R.drawable.ic_pause);
+                nextWaveFab.setContentDescription("Pause game");
+            } else {
+                nextWaveFab.setImageResource(R.drawable.ic_play_arrow);
+                // If paused AND wave is active, show "Resume"
+                // Otherwise (paused with no wave, or not paused with no wave), show "Start next wave"
+                if (isPaused && isWaveActive) {
+                    nextWaveFab.setContentDescription("Resume game");
+                } else {
+                    nextWaveFab.setContentDescription("Start next wave");
+                }
+            }
         }
     }
 
@@ -501,6 +531,7 @@ public class GameFragment extends Fragment {
             public void run() {
                 if (gameEngine != null && isAdded() && fpsText != null) {
                     fpsText.setText(String.valueOf(gameEngine.getFPS()));
+                    updatePlayPauseButton(); // Keep play/pause icon in sync
                     hudHandler.postDelayed(this, HUD_UPDATE_INTERVAL_MS);
                 }
             }
@@ -1192,6 +1223,9 @@ public class GameFragment extends Fragment {
                     ", Resources: " + gameEngine.getResources() +
                     ", Paused: " + gameEngine.isPaused());
         }
+
+        // Update play/pause button to reflect current state
+        updatePlayPauseButton();
     }
 
     @Override

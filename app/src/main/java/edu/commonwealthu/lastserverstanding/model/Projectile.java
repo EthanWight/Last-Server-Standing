@@ -8,7 +8,7 @@ import android.graphics.PointF;
 public class Projectile {
     private final String id;
     private final PointF position;
-    private PointF velocity;
+    private final PointF velocity;
     private final Enemy target;
     private final float damage;
     private final float speed;
@@ -25,6 +25,7 @@ public class Projectile {
     public Projectile(String id, PointF start, Enemy target, float damage, float speed, StatusEffect statusEffect) {
         this.id = id;
         this.position = new PointF(start.x, start.y);
+        this.velocity = new PointF(0, 0); // Initialize velocity once
         this.target = target;
         this.damage = damage;
         this.speed = speed;
@@ -77,21 +78,21 @@ public class Projectile {
     }
     
     /**
-     * Calculate velocity toward target
+     * Calculate velocity toward target (reuses velocity PointF to avoid allocation)
      */
     private void updateVelocity() {
         PointF targetPos = target.getPosition();
         float dx = targetPos.x - position.x;
         float dy = targetPos.y - position.y;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
-        
+
         if (distance > 0) {
-            velocity = new PointF(
-                (dx / distance) * speed,
-                (dy / distance) * speed
-            );
+            // Reuse velocity object instead of creating new one
+            velocity.x = (dx / distance) * speed;
+            velocity.y = (dy / distance) * speed;
         } else {
-            velocity = new PointF(0, 0);
+            velocity.x = 0;
+            velocity.y = 0;
         }
     }
     

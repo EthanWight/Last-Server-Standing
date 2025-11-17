@@ -104,21 +104,16 @@ public abstract class Enemy {
     }
     
     /**
-     * Calculate speed after applying status effects
+     * Calculate speed after applying status effects (optimized single-pass)
      */
     private float getEffectiveSpeed() {
         float effectiveSpeed = speed;
 
-        // Check for stun first (overrides other effects)
+        // Single loop to check all effects (stun overrides slow)
         for (StatusEffect effect : statusEffects) {
             if (effect.getType() == StatusEffect.Type.STUN) {
                 return 0; // Completely immobilized
-            }
-        }
-
-        // Apply slow effects
-        for (StatusEffect effect : statusEffects) {
-            if (effect.getType() == StatusEffect.Type.SLOW) {
+            } else if (effect.getType() == StatusEffect.Type.SLOW) {
                 effectiveSpeed *= (1 - effect.getStrength());
             }
         }
@@ -126,11 +121,14 @@ public abstract class Enemy {
     }
     
     /**
-     * Apply and update status effects
+     * Apply and update status effects (optimized with iterator)
      */
     private void applyStatusEffects(float deltaTime) {
-        List<StatusEffect> expiredEffects = new ArrayList<>();
-        for (StatusEffect effect : statusEffects) {
+        // Use iterator to remove expired effects without temporary list
+        java.util.Iterator<StatusEffect> iterator = statusEffects.iterator();
+        while (iterator.hasNext()) {
+            StatusEffect effect = iterator.next();
+
             // Apply burn damage
             if (effect.getType() == StatusEffect.Type.BURN) {
                 float burnDamage = effect.getStrength() * deltaTime;
@@ -139,10 +137,9 @@ public abstract class Enemy {
 
             effect.update(deltaTime);
             if (effect.isExpired()) {
-                expiredEffects.add(effect);
+                iterator.remove(); // Remove directly via iterator
             }
         }
-        statusEffects.removeAll(expiredEffects);
     }
     
     /**

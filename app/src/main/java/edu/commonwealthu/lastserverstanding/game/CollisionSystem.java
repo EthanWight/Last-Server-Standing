@@ -21,11 +21,16 @@ public class CollisionSystem {
     private final int gridWidth;
     private final int gridHeight;
     
-    // Grid cells containing entities
-    private final Map<String, List<Tower>> towerGrid;
-    private final Map<String, List<Enemy>> enemyGrid;
-    private final Map<String, List<Projectile>> projectileGrid;
-    
+    // Grid cells containing entities (using Long keys to avoid string allocation)
+    private final Map<Long, List<Tower>> towerGrid;
+    private final Map<Long, List<Enemy>> enemyGrid;
+    private final Map<Long, List<Projectile>> projectileGrid;
+
+    // Object pools for ArrayLists (reduce per-frame allocations)
+    private final List<List<Tower>> towerListPool;
+    private final List<List<Enemy>> enemyListPool;
+    private final List<List<Projectile>> projectileListPool;
+
     /**
      * Constructor
      * @param worldWidth Width of game world in pixels
@@ -36,10 +41,14 @@ public class CollisionSystem {
         this.cellSize = cellSize;
         this.gridWidth = (worldWidth / cellSize) + 1;
         this.gridHeight = (worldHeight / cellSize) + 1;
-        
+
         towerGrid = new HashMap<>();
         enemyGrid = new HashMap<>();
         projectileGrid = new HashMap<>();
+
+        towerListPool = new ArrayList<>();
+        enemyListPool = new ArrayList<>();
+        projectileListPool = new ArrayList<>();
     }
     
     /**
@@ -47,27 +56,56 @@ public class CollisionSystem {
      * Should be called each frame
      */
     public void update(List<Tower> towers, List<Enemy> enemies, List<Projectile> projectiles) {
-        // Clear previous frame's data
+        // Return lists to pool and clear grids
+        for (List<Tower> list : towerGrid.values()) {
+            list.clear();
+            towerListPool.add(list);
+        }
         towerGrid.clear();
+
+        for (List<Enemy> list : enemyGrid.values()) {
+            list.clear();
+            enemyListPool.add(list);
+        }
         enemyGrid.clear();
+
+        for (List<Projectile> list : projectileGrid.values()) {
+            list.clear();
+            projectileListPool.add(list);
+        }
         projectileGrid.clear();
-        
-        // Insert towers into grid
+
+        // Insert towers into grid (use pooled lists)
         for (Tower tower : towers) {
-            String cellKey = getCellKey(tower.getPosition());
-            towerGrid.computeIfAbsent(cellKey, k -> new ArrayList<>()).add(tower);
+            long cellKey = getCellKey(tower.getPosition());
+            List<Tower> list = towerGrid.get(cellKey);
+            if (list == null) {
+                list = towerListPool.isEmpty() ? new ArrayList<>() : towerListPool.remove(towerListPool.size() - 1);
+                towerGrid.put(cellKey, list);
+            }
+            list.add(tower);
         }
-        
-        // Insert enemies into grid
+
+        // Insert enemies into grid (use pooled lists)
         for (Enemy enemy : enemies) {
-            String cellKey = getCellKey(enemy.getPosition());
-            enemyGrid.computeIfAbsent(cellKey, k -> new ArrayList<>()).add(enemy);
+            long cellKey = getCellKey(enemy.getPosition());
+            List<Enemy> list = enemyGrid.get(cellKey);
+            if (list == null) {
+                list = enemyListPool.isEmpty() ? new ArrayList<>() : enemyListPool.remove(enemyListPool.size() - 1);
+                enemyGrid.put(cellKey, list);
+            }
+            list.add(enemy);
         }
-        
-        // Insert projectiles into grid
+
+        // Insert projectiles into grid (use pooled lists)
         for (Projectile projectile : projectiles) {
-            String cellKey = getCellKey(projectile.getPosition());
-            projectileGrid.computeIfAbsent(cellKey, k -> new ArrayList<>()).add(projectile);
+            long cellKey = getCellKey(projectile.getPosition());
+            List<Projectile> list = projectileGrid.get(cellKey);
+            if (list == null) {
+                list = projectileListPool.isEmpty() ? new ArrayList<>() : projectileListPool.remove(projectileListPool.size() - 1);
+                projectileGrid.put(cellKey, list);
+            }
+            list.add(projectile);
         }
     }
     
@@ -79,13 +117,13 @@ public class CollisionSystem {
      */
     public List<Enemy> getEnemiesInRange(PointF position, float range) {
         List<Enemy> result = new ArrayList<>();
-        
+
         // Calculate which cells to check based on range
-        List<String> cellsToCheck = getCellsInRange(position, range);
-        
+        List<Long> cellsToCheck = getCellsInRange(position, range);
+
         float rangeSquared = range * range;
-        
-        for (String cellKey : cellsToCheck) {
+
+        for (Long cellKey : cellsToCheck) {
             List<Enemy> cellEnemies = enemyGrid.get(cellKey);
             if (cellEnemies != null) {
                 for (Enemy enemy : cellEnemies) {
@@ -95,7 +133,7 @@ public class CollisionSystem {
                 }
             }
         }
-        
+
         return result;
     }
     
@@ -127,33 +165,36 @@ public class CollisionSystem {
     }
     
     /**
-     * Get all grid cells within range of a position
+     * Get all grid cells within range of a position (returns long keys)
      */
-    private List<String> getCellsInRange(PointF position, float range) {
-        List<String> cells = new ArrayList<>();
-        
+    private List<Long> getCellsInRange(PointF position, float range) {
+        List<Long> cells = new ArrayList<>();
+
         int centerX = (int) (position.x / cellSize);
         int centerY = (int) (position.y / cellSize);
         int cellRadius = (int) Math.ceil(range / cellSize);
-        
+
         for (int x = centerX - cellRadius; x <= centerX + cellRadius; x++) {
             for (int y = centerY - cellRadius; y <= centerY + cellRadius; y++) {
                 if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight) {
-                    cells.add(x + "," + y);
+                    // Encode x and y into a single long
+                    cells.add(((long) x << 32) | (y & 0xFFFFFFFFL));
                 }
             }
         }
-        
+
         return cells;
     }
     
     /**
-     * Get cell key for a position
+     * Get cell key for a position (uses long to avoid string allocation)
+     * Encodes x and y coordinates into a single long value
      */
-    private String getCellKey(PointF position) {
+    private long getCellKey(PointF position) {
         int x = (int) (position.x / cellSize);
         int y = (int) (position.y / cellSize);
-        return x + "," + y;
+        // Encode x and y into a single long: upper 32 bits = x, lower 32 bits = y
+        return ((long) x << 32) | (y & 0xFFFFFFFFL);
     }
     
     /**

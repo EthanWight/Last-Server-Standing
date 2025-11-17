@@ -77,6 +77,28 @@ public class GameEngine {
     // Object pooling for performance (reduce GC)
     private final Rect tempRect = new Rect();
 
+    // Reusable lists for rendering (avoid allocation per frame)
+    private final List<Tower> renderTowersCopy = new ArrayList<>();
+    private final List<Enemy> renderEnemiesCopy = new ArrayList<>();
+    private final List<Projectile> renderProjectilesCopy = new ArrayList<>();
+
+    // Reusable lists for batched tile rendering (store grid coordinates as longs)
+    private final List<Long> pathTiles = new ArrayList<>();
+    private final List<Long> buildableTiles = new ArrayList<>();
+    private final List<Long> spawnTiles = new ArrayList<>();
+    private final List<Long> datacenterTiles = new ArrayList<>();
+
+    // Cached rendering resources (avoid per-frame allocation/lookup)
+    private static final android.graphics.ColorFilter CORRUPTION_FILTER =
+        new android.graphics.PorterDuffColorFilter(
+            android.graphics.Color.RED,
+            android.graphics.PorterDuff.Mode.MULTIPLY);
+
+    private int pathColor;
+    private int wallColor;
+    private int spawnColor;
+    private int datacenterColor;
+
     /**
      * Constructor
      */
@@ -118,6 +140,14 @@ public class GameEngine {
      */
     public void setContext(Context context) {
         this.context = context;
+
+        // Cache color values to avoid per-frame resource lookups
+        if (context != null) {
+            pathColor = androidx.core.content.ContextCompat.getColor(context, R.color.path_gray);
+            wallColor = androidx.core.content.ContextCompat.getColor(context, R.color.wall_dark_gray);
+            spawnColor = androidx.core.content.ContextCompat.getColor(context, R.color.spawn_green);
+            datacenterColor = androidx.core.content.ContextCompat.getColor(context, R.color.datacenter_blue);
+        }
     }
 
     /**
@@ -246,40 +276,41 @@ public class GameEngine {
         renderMap(canvas, paint);
 
         // Create defensive copies to avoid ConcurrentModificationException
-        // when UI thread modifies collections while render thread is iterating
-        List<Tower> towersCopy;
-        List<Enemy> enemiesCopy;
-        List<Projectile> projectilesCopy;
+        // Reuse pre-allocated lists instead of creating new ones each frame
+        renderTowersCopy.clear();
+        renderEnemiesCopy.clear();
+        renderProjectilesCopy.clear();
 
         synchronized (towers) {
-            towersCopy = new ArrayList<>(towers);
+            renderTowersCopy.addAll(towers);
         }
         synchronized (enemies) {
-            enemiesCopy = new ArrayList<>(enemies);
+            renderEnemiesCopy.addAll(enemies);
         }
         synchronized (projectiles) {
-            projectilesCopy = new ArrayList<>(projectiles);
+            renderProjectilesCopy.addAll(projectiles);
         }
 
         // Draw towers
         paint.setStyle(Paint.Style.FILL);
-        for (Tower tower : towersCopy) {
-            drawTower(canvas, paint, tower);
+        for (int i = 0; i < renderTowersCopy.size(); i++) {
+            drawTower(canvas, paint, renderTowersCopy.get(i));
         }
 
         // Draw enemies
-        for (Enemy enemy : enemiesCopy) {
-            drawEnemy(canvas, paint, enemy);
+        for (int i = 0; i < renderEnemiesCopy.size(); i++) {
+            drawEnemy(canvas, paint, renderEnemiesCopy.get(i));
         }
 
         // Draw projectiles
-        for (Projectile projectile : projectilesCopy) {
-            drawProjectile(canvas, paint, projectile);
+        for (int i = 0; i < renderProjectilesCopy.size(); i++) {
+            drawProjectile(canvas, paint, renderProjectilesCopy.get(i));
         }
     }
 
     /**
      * Render the game map with different colors for different tile types
+     * Optimized to batch paint operations by color
      */
     private void renderMap(Canvas canvas, Paint paint) {
         if (gameMap == null) {
@@ -291,30 +322,80 @@ public class GameEngine {
         float offsetX = gameMap.getOffsetX();
         float offsetY = gameMap.getOffsetY();
 
+        // Clear reusable lists
+        pathTiles.clear();
+        buildableTiles.clear();
+        spawnTiles.clear();
+        datacenterTiles.clear();
+
+        // First pass: categorize tiles by type (store grid coordinates as long)
         for (int y = 0; y < gameMap.getHeight(); y++) {
             for (int x = 0; x < gameMap.getWidth(); x++) {
                 TileType tile = gameMap.getTileAt(x, y);
-                int color;
+
+                if (tile == TileType.EMPTY) {
+                    continue; // Don't draw empty tiles
+                }
+
+                // Encode grid coordinates as single long (no allocation!)
+                long coords = ((long) x << 32) | (y & 0xFFFFFFFFL);
 
                 switch (tile) {
                     case PATH:
-                        color = ContextCompat.getColor(context, R.color.path_gray);
+                        pathTiles.add(coords);
                         break;
                     case BUILDABLE:
-                        color = ContextCompat.getColor(context, R.color.wall_dark_gray);
+                        buildableTiles.add(coords);
                         break;
                     case SPAWN:
-                        color = ContextCompat.getColor(context, R.color.spawn_green);
+                        spawnTiles.add(coords);
                         break;
                     case DATACENTER:
-                        color = ContextCompat.getColor(context, R.color.datacenter_blue);
+                        datacenterTiles.add(coords);
                         break;
-                    case EMPTY:
-                    default:
-                        continue; // Don't draw empty tiles
                 }
+            }
+        }
 
-                paint.setColor(color);
+        // Second pass: draw all tiles of each type with single color set (use cached colors)
+        if (!pathTiles.isEmpty()) {
+            paint.setColor(pathColor);
+            for (long coords : pathTiles) {
+                int x = (int) (coords >> 32);
+                int y = (int) coords;
+                float left = x * gridSize + offsetX;
+                float top = y * gridSize + offsetY;
+                canvas.drawRect(left, top, left + gridSize, top + gridSize, paint);
+            }
+        }
+
+        if (!buildableTiles.isEmpty()) {
+            paint.setColor(wallColor);
+            for (long coords : buildableTiles) {
+                int x = (int) (coords >> 32);
+                int y = (int) coords;
+                float left = x * gridSize + offsetX;
+                float top = y * gridSize + offsetY;
+                canvas.drawRect(left, top, left + gridSize, top + gridSize, paint);
+            }
+        }
+
+        if (!spawnTiles.isEmpty()) {
+            paint.setColor(spawnColor);
+            for (long coords : spawnTiles) {
+                int x = (int) (coords >> 32);
+                int y = (int) coords;
+                float left = x * gridSize + offsetX;
+                float top = y * gridSize + offsetY;
+                canvas.drawRect(left, top, left + gridSize, top + gridSize, paint);
+            }
+        }
+
+        if (!datacenterTiles.isEmpty()) {
+            paint.setColor(datacenterColor);
+            for (long coords : datacenterTiles) {
+                int x = (int) (coords >> 32);
+                int y = (int) coords;
                 float left = x * gridSize + offsetX;
                 float top = y * gridSize + offsetY;
                 canvas.drawRect(left, top, left + gridSize, top + gridSize, paint);
@@ -394,10 +475,9 @@ public class GameEngine {
                     (int) (pos.y + halfSize)
             );
 
-            // Apply corruption tint if corrupted
+            // Apply corruption tint if corrupted (use cached filter)
             if (tower.isCorrupted()) {
-                paint.setColorFilter(new android.graphics.PorterDuffColorFilter(
-                        Color.RED, android.graphics.PorterDuff.Mode.MULTIPLY));
+                paint.setColorFilter(CORRUPTION_FILTER);
             }
 
             canvas.drawBitmap(icon, null, tempRect, paint);
