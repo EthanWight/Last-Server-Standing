@@ -292,17 +292,36 @@ public class GameFragment extends Fragment {
     }
     
     /**
-     * Start the next wave
+     * Start the next wave, pause, or resume
      */
     private void startNextWave() {
         if (gameEngine != null) {
+            boolean isWaveActive = gameEngine.getWaveManager().isWaveActive();
+            boolean isPaused = gameEngine.isPaused();
+
+            // If wave is active and not paused, pause the game
+            if (isWaveActive && !isPaused) {
+                gameEngine.setPaused(true);
+                Toast.makeText(requireContext(), "Game paused", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Game paused");
+                return;
+            }
+
+            // If game is paused, resume
+            if (isPaused) {
+                gameEngine.setPaused(false);
+                Toast.makeText(requireContext(), "Game resumed!", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Game resumed");
+                return;
+            }
+
+            // Otherwise, start the next wave
             // Auto-save before starting next wave (if there's progress)
             if (gameEngine.getCurrentWave() > 0) {
                 saveGameState();
             }
 
             gameEngine.startNextWave();
-            nextWaveFab.setVisibility(View.GONE);
 
             // Auto-unpause the game when starting a wave
             gameEngine.setPaused(false);
@@ -316,16 +335,14 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Open settings menu (game pauses automatically)
+     * Open settings menu
      */
     private void openSettings() {
         if (gameEngine != null) {
-            // Pause the game (it will resume when we come back)
-            gameEngine.setPaused(true);
-
+            // Don't manually pause - the game loop will naturally pause when fragment pauses
             // Navigate to settings (game engine persists in ViewModel)
             Navigation.findNavController(requireView()).navigate(R.id.action_game_to_settings);
-            Log.d(TAG, "Navigating to settings - game paused");
+            Log.d(TAG, "Navigating to settings");
         }
     }
 
@@ -434,11 +451,15 @@ public class GameFragment extends Fragment {
             if (waveText != null && wave != null) {
                 waveText.setText(String.valueOf(wave));
 
-                // Show/hide next wave button based on wave state
-                if (gameEngine != null && !gameEngine.getWaveManager().isWaveActive() && wave > 0) {
-                    nextWaveFab.setVisibility(View.VISIBLE);
-                } else if (gameEngine != null && gameEngine.getWaveManager().isWaveActive()) {
-                    nextWaveFab.setVisibility(View.GONE);
+                // Always show button once game has started (wave > 0)
+                // Button will toggle between: Start Wave / Pause / Resume
+                if (gameEngine != null) {
+                    if (wave > 0) {
+                        nextWaveFab.setVisibility(View.VISIBLE);
+                    } else if (wave == 0) {
+                        // Show for initial wave start
+                        nextWaveFab.setVisibility(View.VISIBLE);
+                    }
                 }
             }
         });
