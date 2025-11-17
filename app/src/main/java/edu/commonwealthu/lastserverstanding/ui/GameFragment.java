@@ -66,7 +66,6 @@ public class GameFragment extends Fragment {
     private TextView waveText;
     private TextView fpsText;
     private ImageButton nextWaveFab;
-    private ImageButton pauseFab;
 
     // HUD update handler
     private Handler hudHandler;
@@ -140,7 +139,6 @@ public class GameFragment extends Fragment {
         waveText = view.findViewById(R.id.text_wave);
         fpsText = view.findViewById(R.id.text_fps);
         nextWaveFab = view.findViewById(R.id.fab_next_wave);
-        pauseFab = view.findViewById(R.id.fab_pause);
         ImageButton settingsFab = view.findViewById(R.id.fab_settings);
         AccessibleImageButton fabFirewall = view.findViewById(R.id.fab_tower_firewall);
         AccessibleImageButton fabHoneypot = view.findViewById(R.id.fab_tower_honeypot);
@@ -257,7 +255,6 @@ public class GameFragment extends Fragment {
 
                     // Start game paused so player can place initial towers
                     gameEngine.setPaused(true);
-                    updatePauseButton();
                     Log.d(TAG, "Game initialized - paused for tower placement");
 
                     // Show next wave button for player to start wave 1
@@ -270,9 +267,6 @@ public class GameFragment extends Fragment {
 
         // Set up next wave button
         nextWaveFab.setOnClickListener(v -> startNextWave());
-
-        // Set up pause button
-        pauseFab.setOnClickListener(v -> togglePause());
 
         // Set up settings button
         settingsFab.setOnClickListener(v -> openSettings());
@@ -312,7 +306,6 @@ public class GameFragment extends Fragment {
 
             // Auto-unpause the game when starting a wave
             gameEngine.setPaused(false);
-            updatePauseButton();
 
             Toast.makeText(requireContext(),
                 "Wave " + gameEngine.getCurrentWave() + " started!",
@@ -323,28 +316,12 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Toggle pause state
-     */
-    private void togglePause() {
-        if (gameEngine != null) {
-            boolean isPaused = gameEngine.isPaused();
-            gameEngine.setPaused(!isPaused);
-            updatePauseButton();
-
-            String message = isPaused ? "Game resumed" : "Game paused";
-            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-            Log.d(TAG, message);
-        }
-    }
-
-    /**
      * Open settings menu (game pauses automatically)
      */
     private void openSettings() {
         if (gameEngine != null) {
             // Pause the game (it will resume when we come back)
             gameEngine.setPaused(true);
-            updatePauseButton();
 
             // Navigate to settings (game engine persists in ViewModel)
             Navigation.findNavController(requireView()).navigate(R.id.action_game_to_settings);
@@ -448,17 +425,6 @@ public class GameFragment extends Fragment {
         handleTowerPlacement(worldPos);
     }
 
-    /**
-     * Update pause button icon based on game state
-     */
-    private void updatePauseButton() {
-        if (gameEngine != null && pauseFab != null) {
-            boolean isPaused = gameEngine.isPaused();
-            int iconRes = isPaused ? R.drawable.ic_play_arrow : R.drawable.ic_pause;
-            pauseFab.setImageResource(iconRes);
-        }
-    }
-    
     /**
      * Set up LiveData observers for HUD stats
      */
@@ -897,7 +863,6 @@ public class GameFragment extends Fragment {
                                 // Delete the old save and start fresh
                                 deleteAutoSave();
                                 gameEngine.setPaused(true);
-                                updatePauseButton();
                                 nextWaveFab.setVisibility(View.VISIBLE);
                             });
                         }
@@ -915,7 +880,6 @@ public class GameFragment extends Fragment {
                         requireActivity().runOnUiThread(() -> {
                             // Set pause state
                             gameEngine.setPaused(true);
-                            updatePauseButton();
 
                             // Show next wave button if wave is complete
                             if (!gameEngine.getWaveManager().isWaveActive()) {
@@ -942,7 +906,6 @@ public class GameFragment extends Fragment {
 
                         // Set up for new game
                         gameEngine.setPaused(true);
-                        updatePauseButton();
                         nextWaveFab.setVisibility(View.VISIBLE);
                     });
                 }
@@ -1101,7 +1064,6 @@ public class GameFragment extends Fragment {
 
                     // Start paused for tower placement
                     gameEngine.setPaused(true);
-                    updatePauseButton();
                     nextWaveFab.setVisibility(View.VISIBLE);
 
                     Log.d(TAG, "New game started after game over");
@@ -1202,9 +1164,6 @@ public class GameFragment extends Fragment {
         if (hudHandler != null && hudUpdater != null) {
             hudHandler.post(hudUpdater);
         }
-
-        // Update pause button to reflect current state
-        updatePauseButton();
 
         // Log current game state
         if (gameEngine != null) {
