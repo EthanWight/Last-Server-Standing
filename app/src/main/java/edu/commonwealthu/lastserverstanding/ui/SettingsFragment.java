@@ -17,8 +17,8 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import edu.commonwealthu.lastserverstanding.R;
-import edu.commonwealthu.lastserverstanding.data.entities.SettingsEntity;
 import edu.commonwealthu.lastserverstanding.data.models.GameState;
+import edu.commonwealthu.lastserverstanding.data.models.Settings;
 import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
 import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
@@ -36,7 +36,7 @@ public class SettingsFragment extends Fragment {
     private SwitchMaterial soundSwitch;
     private SwitchMaterial vibrationSwitch;
 
-    private SettingsEntity currentSettings;
+    private Settings currentSettings;
 
     @Nullable
     @Override
@@ -99,7 +99,7 @@ public class SettingsFragment extends Fragment {
                 vibrationSwitch.setChecked(settings.isVibrationEnabled());
             } else {
                 // Use defaults if no settings exist
-                currentSettings = new SettingsEntity();
+                currentSettings = new Settings();
                 soundSwitch.setChecked(true);
                 vibrationSwitch.setChecked(true);
             }
@@ -125,7 +125,7 @@ public class SettingsFragment extends Fragment {
         Log.d(TAG, "Player name saved: " + playerName);
 
         if (currentSettings == null) {
-            currentSettings = new SettingsEntity();
+            currentSettings = new Settings();
         }
 
         // Update settings from UI

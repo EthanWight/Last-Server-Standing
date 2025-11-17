@@ -1,94 +1,69 @@
 package edu.commonwealthu.lastserverstanding.data.repository;
 
-import android.app.Application;
-
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import edu.commonwealthu.lastserverstanding.data.GameDatabase;
-import edu.commonwealthu.lastserverstanding.data.dao.SaveGameDao;
-import edu.commonwealthu.lastserverstanding.data.dao.SettingsDao;
-import edu.commonwealthu.lastserverstanding.data.entities.SaveGameEntity;
-import edu.commonwealthu.lastserverstanding.data.entities.SettingsEntity;
 import edu.commonwealthu.lastserverstanding.data.models.GameState;
+import edu.commonwealthu.lastserverstanding.data.models.Settings;
 
 /**
  * Repository for managing data operations
  * Provides clean API between ViewModels and data sources
- * Now uses Firebase for cloud-based autosaves
+ * Now uses Firebase for cloud-based autosaves and settings
  */
 public class GameRepository {
 
-    private final SaveGameDao saveGameDao;
-    private final SettingsDao settingsDao;
     private final ExecutorService executorService;
     private final FirebaseSaveRepository firebaseSaveRepository;
+    private final FirebaseSettingsRepository firebaseSettingsRepository;
 
     // LiveData
-    private final LiveData<SettingsEntity> settings;
+    private final MutableLiveData<Settings> settings;
 
-    public GameRepository(Application application) {
-        GameDatabase db = GameDatabase.getInstance(application);
-        saveGameDao = db.saveGameDao();
-        settingsDao = db.settingsDao();
+    public GameRepository() {
         executorService = Executors.newFixedThreadPool(2);
         firebaseSaveRepository = new FirebaseSaveRepository();
+        firebaseSettingsRepository = new FirebaseSettingsRepository();
 
-        settings = settingsDao.getSettings();
+        // Initialize settings LiveData with defaults
+        settings = new MutableLiveData<>(new Settings());
 
-        // Initialize default settings if needed
-        initializeDefaultSettings();
+        // Load settings from Firebase
+        loadSettings();
     }
 
     /**
-     * Save game state
-     * Autosaves go to Firebase (cloud), manual saves go to local Room database
+     * Load settings from Firebase
+     */
+    private void loadSettings() {
+        firebaseSettingsRepository.loadSettings((soundEnabled, vibrationEnabled) -> {
+            Settings loadedSettings = new Settings(soundEnabled, vibrationEnabled);
+            settings.postValue(loadedSettings);
+        });
+    }
+
+    /**
+     * Save game state to Firebase
      */
     public void saveGame(GameState gameState, boolean isAutoSave, SaveCallback callback) {
-        if (isAutoSave) {
-            // Use Firebase for autosaves - persists even when app is killed
-            firebaseSaveRepository.saveGame(gameState, true, new FirebaseSaveRepository.SaveCallback() {
-                @Override
-                public void onSuccess(String saveId) {
-                    if (callback != null) {
-                        callback.onSuccess(saveId.hashCode()); // Convert string ID to int for compatibility
-                    }
+        firebaseSaveRepository.saveGame(gameState, isAutoSave, new FirebaseSaveRepository.SaveCallback() {
+            @Override
+            public void onSuccess(String saveId) {
+                if (callback != null) {
+                    callback.onSuccess(saveId.hashCode()); // Convert string ID to int for compatibility
                 }
+            }
 
-                @Override
-                public void onError(String error) {
-                    if (callback != null) {
-                        callback.onError(error);
-                    }
+            @Override
+            public void onError(String error) {
+                if (callback != null) {
+                    callback.onError(error);
                 }
-            });
-        } else {
-            // Use Room database for manual saves (if needed in the future)
-            executorService.execute(() -> {
-                try {
-                    String json = gameState.toJson();
-                    SaveGameEntity entity = new SaveGameEntity(
-                        System.currentTimeMillis(),
-                        json,
-                        false, // Manual save, not auto-save
-                        gameState.currentWave,
-                        gameState.score
-                    );
-
-                    long id = saveGameDao.insert(entity);
-
-                    if (callback != null) {
-                        callback.onSuccess((int)id);
-                    }
-                } catch (Exception e) {
-                    if (callback != null) {
-                        callback.onError(e.getMessage());
-                    }
-                }
-            });
-        }
+            }
+        });
     }
 
     /**
@@ -144,24 +119,28 @@ public class GameRepository {
     /**
      * Update settings
      */
-    public void updateSettings(SettingsEntity settings) {
-        executorService.execute(() -> settingsDao.update(settings));
-    }
+    public void updateSettings(Settings newSettings) {
+        firebaseSettingsRepository.saveSettings(
+            newSettings.isSoundEnabled(),
+            newSettings.isVibrationEnabled(),
+            new FirebaseSettingsRepository.SaveCallback() {
+                @Override
+                public void onSuccess() {
+                    // Update local LiveData
+                    settings.postValue(newSettings);
+                }
 
-    /**
-     * Initialize default settings if not exists
-     */
-    private void initializeDefaultSettings() {
-        executorService.execute(() -> {
-            SettingsEntity existing = settingsDao.getSettingsSync();
-            if (existing == null) {
-                settingsDao.insert(new SettingsEntity());
+                @Override
+                public void onError(String error) {
+                    // Could notify UI about error, but for now just log
+                    android.util.Log.e("GameRepository", "Failed to save settings: " + error);
+                }
             }
-        });
+        );
     }
 
     // LiveData getters
-    public LiveData<SettingsEntity> getSettings() {
+    public LiveData<Settings> getSettings() {
         return settings;
     }
 

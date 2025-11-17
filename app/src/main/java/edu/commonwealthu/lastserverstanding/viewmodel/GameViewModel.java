@@ -6,8 +6,8 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import edu.commonwealthu.lastserverstanding.data.entities.SettingsEntity;
 import edu.commonwealthu.lastserverstanding.data.models.GameState;
+import edu.commonwealthu.lastserverstanding.data.models.Settings;
 import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
 
@@ -19,7 +19,7 @@ public class GameViewModel extends AndroidViewModel {
     private final GameRepository repository;
 
     // LiveData from repository
-    private final LiveData<SettingsEntity> settings;
+    private final LiveData<Settings> settings;
 
     // Game state LiveData
     private final MutableLiveData<Integer> currentWave = new MutableLiveData<>(0);
@@ -32,7 +32,7 @@ public class GameViewModel extends AndroidViewModel {
 
     public GameViewModel(Application application) {
         super(application);
-        repository = new GameRepository(application);
+        repository = new GameRepository();
         settings = repository.getSettings();
     }
 
@@ -60,7 +60,7 @@ public class GameViewModel extends AndroidViewModel {
     /**
      * Update settings
      */
-    public void updateSettings(SettingsEntity settings) {
+    public void updateSettings(Settings settings) {
         repository.updateSettings(settings);
     }
 
@@ -82,11 +82,10 @@ public class GameViewModel extends AndroidViewModel {
     }
 
     // Getters for LiveData
-    public LiveData<SettingsEntity> getSettings() { return settings; }
+    public LiveData<Settings> getSettings() { return settings; }
     public LiveData<Integer> getCurrentWave() { return currentWave; }
     public LiveData<Integer> getResources() { return resources; }
     public LiveData<Integer> getHealth() { return health; }
-    public LiveData<Long> getScore() { return score; }
 
     /**
      * Get or create the game engine instance

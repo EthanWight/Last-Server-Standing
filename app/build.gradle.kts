@@ -41,10 +41,6 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
 
-    // Room Database
-    implementation(libs.room.runtime)
-    annotationProcessor(libs.room.compiler)
-
     // Lifecycle components (ViewModel, LiveData)
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.lifecycle.livedata)
