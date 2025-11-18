@@ -160,6 +160,13 @@ public class GameFragment extends Fragment {
                     viewModel.updateGameStats(wave, resources, health, score);
                 }
             }
+
+            @Override
+            public void onWaveComplete(int waveNumber) {
+                // Auto-save when wave completes
+                saveGameState();
+                Log.d(TAG, "Auto-saved after completing wave " + waveNumber);
+            }
         });
 
         // Check if the game engine is already initialized (has active game state)
@@ -186,6 +193,12 @@ public class GameFragment extends Fragment {
                         viewModel.updateGameStats(wave, resources, health, score);
                     }
                 }
+
+                @Override
+                public void onWaveComplete(int waveNumber) {
+                    saveGameState();
+                    Log.d(TAG, "Auto-saved after completing wave " + waveNumber);
+                }
             });
             hasLoadedGame = true; // Mark as loaded to prevent re-initialization
             Log.d(TAG, "New game initialized - Wave: " + gameEngine.getCurrentWave() + ", Resources: " + gameEngine.getResources());
@@ -206,6 +219,12 @@ public class GameFragment extends Fragment {
                     if (viewModel != null) {
                         viewModel.updateGameStats(wave, resources, health, score);
                     }
+                }
+
+                @Override
+                public void onWaveComplete(int waveNumber) {
+                    saveGameState();
+                    Log.d(TAG, "Auto-saved after completing wave " + waveNumber);
                 }
             });
             // DON'T set hasLoadedGame here - it will be set after loadSavedGame() completes
@@ -369,6 +388,11 @@ public class GameFragment extends Fragment {
      */
     private void openSettings() {
         if (gameEngine != null) {
+            // Auto-save before going to settings
+            if (gameEngine.getCurrentWave() > 0) {
+                saveGameState();
+            }
+
             // Don't manually pause - the game loop will naturally pause when fragment pauses
             // Navigate to settings (game engine persists in ViewModel)
             Navigation.findNavController(requireView()).navigate(R.id.action_game_to_settings);
@@ -1083,7 +1107,16 @@ public class GameFragment extends Fragment {
                 .setPositiveButton("Main Menu", (dialog, which) -> {
                     // Clear the game engine to prevent continuing
                     viewModel.resetGameEngine();
-                    Navigation.findNavController(requireView()).navigateUp();
+
+                    // Navigate back to main menu using the defined action
+                    if (isAdded() && getView() != null) {
+                        try {
+                            Navigation.findNavController(requireView()).navigate(R.id.action_game_to_menu);
+                            Log.d(TAG, "Navigated to main menu from game over");
+                        } catch (Exception e) {
+                            Log.e(TAG, "Navigation to main menu failed: " + e.getMessage(), e);
+                        }
+                    }
                 })
                 .setNegativeButton("New Game", (dialog, which) -> {
                     // Reset game and start fresh
@@ -1108,6 +1141,12 @@ public class GameFragment extends Fragment {
                             if (viewModel != null) {
                                 viewModel.updateGameStats(wave, resources, health, score);
                             }
+                        }
+
+                        @Override
+                        public void onWaveComplete(int waveNumber) {
+                            saveGameState();
+                            Log.d(TAG, "Auto-saved after completing wave " + waveNumber);
                         }
                     });
 
@@ -1194,11 +1233,19 @@ public class GameFragment extends Fragment {
             public void onSuccess(int saveId) {
                 Log.d(TAG, "Auto-save successful - Wave: " +
                         gameState.currentWave + ", SaveID: " + saveId);
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), "Game saved (Wave " + gameState.currentWave + ")",
+                            Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onError(String error) {
                 Log.e(TAG, "Failed to auto-save game: " + error);
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), "Save failed: " + error,
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

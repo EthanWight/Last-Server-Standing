@@ -977,10 +977,20 @@ public class GameEngine {
     }
 
     /**
+     * Notify listener that a wave has been completed
+     */
+    public void notifyWaveComplete(int waveNumber) {
+        if (gameListener != null) {
+            gameListener.onWaveComplete(waveNumber);
+        }
+    }
+
+    /**
      * Interface for game event callbacks
      */
     public interface GameListener {
         void onGameOver(int finalWave);
         void onStatsChanged(int wave, int resources, int health, long score);
+        void onWaveComplete(int waveNumber);
     }
 }

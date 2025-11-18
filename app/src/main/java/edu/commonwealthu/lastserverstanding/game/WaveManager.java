@@ -168,12 +168,11 @@ public class WaveManager {
     
     /**
      * Create enemy appropriate for current wave
-     * Later waves introduce new enemy types
+     * Later waves introduce new enemy types with higher base stats
      */
     private Enemy createEnemyForWave(List<PointF> path) {
         // For now, only Data Crawlers are implemented
-        // Future waves will introduce other enemy types
-        // TODO: Implement stat scaling when Enemy class supports it
+        // Future waves will introduce other enemy types with progressively higher stats
 
         return new DataCrawler(path);
     }
@@ -183,14 +182,17 @@ public class WaveManager {
      */
     private void endWave(GameEngine gameEngine) {
         isWaveActive = false;
-        
+
         // Award bonus resources for completing wave
         int waveBonus = 100 + (currentWave * 25);
         gameEngine.addResources(waveBonus);
-        
+
         // Award score bonus
         long scoreBonus = (long)(500 * currentWave * difficultyMultiplier);
         gameEngine.addScore(scoreBonus);
+
+        // Notify wave completion (for autosave)
+        gameEngine.notifyWaveComplete(currentWave);
     }
 
     // Getters

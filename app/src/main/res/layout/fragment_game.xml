@@ -5,6 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Background Animation - Matrix-style Binary Rain -->
+    <edu.commonwealthu.lastserverstanding.view.BinaryRainView
+        android:id="@+id/background_animation_game"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.5"
+        android:contentDescription="@string/background_desc" />
+
     <!-- GameView Container -->
     <FrameLayout
         android:id="@+id/game_view_container"

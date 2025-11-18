@@ -81,8 +81,7 @@ public class MainMenuFragment extends Fragment {
             Navigation.findNavController(v).navigate(R.id.action_menu_to_settings);
         });
 
-        // TODO: Implement background animation
-        // startBackgroundAnimation(view);
+        // Background animation (BinaryRainView) starts automatically when attached to window
     }
 
     @Override
