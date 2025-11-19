@@ -18,10 +18,6 @@ public class Projectile {
     private static final float MAX_TRAVEL_DISTANCE = 2000f; // Remove if travels too far
     private static final float HIT_RADIUS_SQUARED = 625f; // 25 pixel hit radius (25^2)
 
-    public Projectile(String id, PointF start, Enemy target, float damage, float speed) {
-        this(id, start, target, damage, speed, null);
-    }
-
     public Projectile(String id, PointF start, Enemy target, float damage, float speed, StatusEffect statusEffect) {
         this.id = id;
         this.position = new PointF(start.x, start.y);

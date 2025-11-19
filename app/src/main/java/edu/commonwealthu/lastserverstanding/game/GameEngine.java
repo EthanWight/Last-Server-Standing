@@ -23,6 +23,7 @@ import java.util.Map;
 import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.model.Enemy;
 import edu.commonwealthu.lastserverstanding.model.Projectile;
+import edu.commonwealthu.lastserverstanding.model.StatusEffect;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
 /**
@@ -70,11 +71,14 @@ public class GameEngine {
     private final Map<String, Bitmap> towerIcons;
     // Enemy icon cache
     private final Map<String, Bitmap> enemyIcons;
+    // Data center goal icon
+    private Bitmap dataCenterIcon;
     private Context context;
 
     // Settings
     private boolean vibrationEnabled = true;
     private boolean soundEnabled = true;
+    private boolean showTowerRanges = true;
 
     // Object pooling for performance (reduce GC)
     private final Rect tempRect = new Rect();
@@ -278,6 +282,9 @@ public class GameEngine {
         // Draw map first (underneath everything)
         renderMap(canvas, paint);
 
+        // Draw data center goals
+        drawGoals(canvas, paint);
+
         // Create defensive copies to avoid ConcurrentModificationException
         // Reuse pre-allocated lists instead of creating new ones each frame
         renderTowersCopy.clear();
@@ -292,6 +299,13 @@ public class GameEngine {
         }
         synchronized (projectiles) {
             renderProjectilesCopy.addAll(projectiles);
+        }
+
+        // Draw tower ranges first (underneath towers) if enabled
+        if (showTowerRanges) {
+            for (int i = 0; i < renderTowersCopy.size(); i++) {
+                drawTowerRange(canvas, paint, renderTowersCopy.get(i));
+            }
         }
 
         // Draw towers
@@ -493,6 +507,85 @@ public class GameEngine {
     }
 
     /**
+     * Load and cache data center goal icon
+     * Converts vector drawable to bitmap for rendering
+     */
+    private Bitmap getDataCenterIcon() {
+        if (dataCenterIcon == null && context != null) {
+            try {
+                // Load the data center drawable
+                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_datacenter);
+
+                if (drawable != null) {
+                    // Create a larger bitmap for the goal icon (more visible)
+                    int size = 96; // Larger icon for goal visibility
+                    Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(bitmap);
+
+                    // Set the bounds and draw
+                    drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+                    drawable.draw(canvas);
+
+                    dataCenterIcon = bitmap;
+                }
+            } catch (Exception e) {
+                // If loading fails, set to null
+                dataCenterIcon = null;
+            }
+        }
+        return dataCenterIcon;
+    }
+
+    /**
+     * Draw data center icon at the map exit/goal position
+     */
+    private void drawGoals(Canvas canvas, Paint paint) {
+        if (gameMap == null) return;
+
+        Bitmap icon = getDataCenterIcon();
+        if (icon == null) return;
+
+        PointF dataCenterPos = gameMap.getDataCenterPoint();
+        if (dataCenterPos == null) return;
+
+        // Calculate position to center the icon on the data center tile
+        float left = dataCenterPos.x - icon.getWidth() / 2f;
+        float top = dataCenterPos.y - icon.getHeight() / 2f;
+
+        // Draw the data center icon
+        canvas.drawBitmap(icon, left, top, paint);
+    }
+
+    /**
+     * Draw tower range indicator (semi-transparent circle)
+     */
+    private void drawTowerRange(Canvas canvas, Paint paint, Tower tower) {
+        if (tower == null) return;
+        PointF pos = tower.getPosition();
+        if (pos == null) return;
+
+        // Save current paint state
+        int originalColor = paint.getColor();
+        Paint.Style originalStyle = paint.getStyle();
+
+        // Draw range circle with semi-transparent fill
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.argb(30, 100, 200, 255)); // Light blue, 30% opacity
+        canvas.drawCircle(pos.x, pos.y, tower.getRange(), paint);
+
+        // Draw range circle border
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(2);
+        paint.setColor(Color.argb(80, 100, 200, 255)); // Light blue, 80% opacity
+        canvas.drawCircle(pos.x, pos.y, tower.getRange(), paint);
+
+        // Restore paint state
+        paint.setColor(originalColor);
+        paint.setStyle(originalStyle);
+        paint.setStrokeWidth(1);
+    }
+
+    /**
      * Draw a tower with its icon (optimized to reduce object allocation)
      */
     private void drawTower(Canvas canvas, Paint paint, Tower tower) {
@@ -558,6 +651,9 @@ public class GameEngine {
             canvas.drawCircle(pos.x, pos.y, 15, paint);
         }
 
+        // Draw status effect animations
+        drawStatusEffects(canvas, paint, enemy);
+
         // Draw health bar above the enemy
         paint.setColor(Color.GREEN);
         float healthBarWidth = 30 * enemy.getHealthPercentage();
@@ -568,6 +664,132 @@ public class GameEngine {
             pos.y - 25,
             paint
         );
+    }
+
+    /**
+     * Draw status effect animations around an enemy
+     */
+    private void drawStatusEffects(Canvas canvas, Paint paint, Enemy enemy) {
+        if (enemy == null) return;
+        PointF pos = enemy.getPosition();
+        if (pos == null) return;
+
+        List<StatusEffect> effects = enemy.getStatusEffects();
+        if (effects == null || effects.isEmpty()) return;
+
+        // Save current paint settings
+        int originalColor = paint.getColor();
+        Paint.Style originalStyle = paint.getStyle();
+        float originalStrokeWidth = paint.getStrokeWidth();
+
+        // Check for each effect type and draw appropriate animation
+        for (StatusEffect effect : effects) {
+            switch (effect.getType()) {
+                case BURN:
+                    drawBurnEffect(canvas, paint, pos);
+                    break;
+                case SLOW:
+                    drawSlowEffect(canvas, paint, pos);
+                    break;
+                case STUN:
+                    drawStunEffect(canvas, paint, pos);
+                    break;
+            }
+        }
+
+        // Restore paint settings
+        paint.setColor(originalColor);
+        paint.setStyle(originalStyle);
+        paint.setStrokeWidth(originalStrokeWidth);
+    }
+
+    /**
+     * Draw burn effect (fire particles)
+     */
+    private void drawBurnEffect(Canvas canvas, Paint paint, PointF pos) {
+        paint.setStyle(Paint.Style.FILL);
+        long time = System.currentTimeMillis();
+
+        // Animated fire particles rising up
+        for (int i = 0; i < 4; i++) {
+            float angle = (float) ((time / 100.0 + i * 90) % 360);
+            float radius = 20 + (float) Math.sin(time / 200.0 + i) * 5;
+            float offsetY = -10 - (float) ((time / 50.0 + i * 10) % 20);
+
+            float x = pos.x + (float) Math.cos(Math.toRadians(angle)) * (radius / 2);
+            float y = pos.y + offsetY;
+
+            // Gradient from red to orange to yellow
+            int alpha = (int) (100 + Math.sin(time / 100.0 + i) * 50);
+            paint.setColor(Color.argb(alpha, 255, 100 + i * 30, 0));
+            canvas.drawCircle(x, y, 3 - i * 0.5f, paint);
+        }
+    }
+
+    /**
+     * Draw slow effect (ice crystals)
+     */
+    private void drawSlowEffect(Canvas canvas, Paint paint, PointF pos) {
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(2);
+        long time = System.currentTimeMillis();
+
+        // Rotating ice crystals
+        for (int i = 0; i < 6; i++) {
+            float angle = (float) ((time / 30.0 + i * 60) % 360);
+            float radius = 18 + (float) Math.sin(time / 300.0) * 3;
+
+            float x1 = pos.x + (float) Math.cos(Math.toRadians(angle)) * radius;
+            float y1 = pos.y + (float) Math.sin(Math.toRadians(angle)) * radius;
+
+            // Draw ice crystal lines
+            int alpha = 150;
+            paint.setColor(Color.argb(alpha, 100, 200, 255));
+            canvas.drawLine(pos.x, pos.y, x1, y1, paint);
+
+            // Draw small circles at the end
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawCircle(x1, y1, 2, paint);
+            paint.setStyle(Paint.Style.STROKE);
+        }
+    }
+
+    /**
+     * Draw stun effect (electric sparks)
+     */
+    private void drawStunEffect(Canvas canvas, Paint paint, PointF pos) {
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(2);
+        long time = System.currentTimeMillis();
+
+        // Electric lightning bolts
+        for (int i = 0; i < 5; i++) {
+            float angle = (float) ((time / 20.0 + i * 72) % 360);
+            float radius = 22;
+
+            // Jagged lightning effect
+            float prevX = pos.x;
+            float prevY = pos.y;
+
+            for (int j = 0; j < 3; j++) {
+                float segmentAngle = angle + (float) (Math.random() * 30 - 15);
+                float segmentRadius = radius * (j + 1) / 3;
+                float x = pos.x + (float) Math.cos(Math.toRadians(segmentAngle)) * segmentRadius;
+                float y = pos.y + (float) Math.sin(Math.toRadians(segmentAngle)) * segmentRadius;
+
+                int alpha = (int) (150 + Math.sin(time / 50.0 + i) * 100);
+                paint.setColor(Color.argb(alpha, 255, 255, 100));
+                canvas.drawLine(prevX, prevY, x, y, paint);
+
+                prevX = x;
+                prevY = y;
+            }
+        }
+
+        // Outer glow
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.argb(50, 255, 255, 150));
+        canvas.drawCircle(pos.x, pos.y, 25, paint);
     }
     
     /**
@@ -1028,6 +1250,13 @@ public class GameEngine {
      */
     public void setSoundEnabled(boolean enabled) {
         this.soundEnabled = enabled;
+    }
+
+    /**
+     * Set tower range visibility from settings
+     */
+    public void setShowTowerRanges(boolean enabled) {
+        this.showTowerRanges = enabled;
     }
 
     // Getters and Setters

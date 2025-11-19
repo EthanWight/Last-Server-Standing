@@ -180,6 +180,13 @@ public abstract class Enemy {
     public void addStatusEffect(StatusEffect effect) {
         statusEffects.add(effect);
     }
+
+    /**
+     * Get active status effects
+     */
+    public List<StatusEffect> getStatusEffects() {
+        return statusEffects;
+    }
     
     /**
      * Check if enemy has reached the end of its path

@@ -1,30 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
-                android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+    <!-- Centered data center icon for launcher (scaled and positioned for safe zone) -->
+    <group
+        android:translateX="30"
+        android:translateY="30">
+
+        <!-- Server rack outer frame -->
+        <path
+            android:fillColor="#1E3A8A"
+            android:pathData="M8,4 L40,4 L40,44 L8,44 Z"/>
+
+        <!-- Server rack inner background -->
+        <path
+            android:fillColor="#2563EB"
+            android:pathData="M10,6 L38,6 L38,42 L10,42 Z"/>
+
+        <!-- Server 1 (top) -->
+        <path
+            android:fillColor="#3B82F6"
+            android:pathData="M12,8 L36,8 L36,13 L12,13 Z"/>
+        <path
+            android:fillColor="#60A5FA"
+            android:pathData="M14,9.5 L16,9.5 L16,11.5 L14,11.5 Z"/>
+        <path
+            android:fillColor="#22C55E"
+            android:pathData="M18,10 L19,10 L19,11 L18,11 Z"/>
+        <path
+            android:fillColor="#EF4444"
+            android:pathData="M20,10 L21,10 L21,11 L20,11 Z"/>
+
+        <!-- Server 2 -->
+        <path
+            android:fillColor="#3B82F6"
+            android:pathData="M12,15 L36,15 L36,20 L12,20 Z"/>
+        <path
+            android:fillColor="#60A5FA"
+            android:pathData="M14,16.5 L16,16.5 L16,18.5 L14,18.5 Z"/>
+        <path
+            android:fillColor="#22C55E"
+            android:pathData="M18,17 L19,17 L19,18 L18,18 Z"/>
+        <path
+            android:fillColor="#22C55E"
+            android:pathData="M20,17 L21,17 L21,18 L20,18 Z"/>
+
+        <!-- Server 3 -->
+        <path
+            android:fillColor="#3B82F6"
+            android:pathData="M12,22 L36,22 L36,27 L12,27 Z"/>
+        <path
+            android:fillColor="#60A5FA"
+            android:pathData="M14,23.5 L16,23.5 L16,25.5 L14,25.5 Z"/>
+        <path
+            android:fillColor="#22C55E"
+            android:pathData="M18,24 L19,24 L19,25 L18,24 Z"/>
+        <path
+            android:fillColor="#FBBF24"
+            android:pathData="M20,24 L21,24 L21,25 L20,25 Z"/>
+
+        <!-- Server 4 -->
+        <path
+            android:fillColor="#3B82F6"
+            android:pathData="M12,29 L36,29 L36,34 L12,34 Z"/>
+        <path
+            android:fillColor="#60A5FA"
+            android:pathData="M14,30.5 L16,30.5 L16,32.5 L14,32.5 Z"/>
+        <path
+            android:fillColor="#22C55E"
+            android:pathData="M18,31 L19,31 L19,32 L18,32 Z"/>
+        <path
+            android:fillColor="#22C55E"
+            android:pathData="M20,31 L21,31 L21,32 L20,32 Z"/>
+
+        <!-- Server 5 (bottom) -->
+        <path
+            android:fillColor="#3B82F6"
+            android:pathData="M12,36 L36,36 L36,41 L12,41 Z"/>
+        <path
+            android:fillColor="#60A5FA"
+            android:pathData="M14,37.5 L16,37.5 L16,39.5 L14,39.5 Z"/>
+        <path
+            android:fillColor="#22C55E"
+            android:pathData="M18,38 L19,38 L19,39 L18,39 Z"/>
+        <path
+            android:fillColor="#22C55E"
+            android:pathData="M20,38 L21,38 L21,39 L20,39 Z"/>
+
+        <!-- Connection ports/lights on right side -->
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M30,10 L31.5,10 L31.5,11 L30,11 Z"/>
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M32.5,10 L34,10 L34,11 L32.5,11 Z"/>
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M30,17 L31.5,17 L31.5,18 L30,18 Z"/>
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M32.5,17 L34,17 L34,18 L32.5,18 Z"/>
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M30,24 L31.5,24 L31.5,25 L30,25 Z"/>
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M32.5,24 L34,24 L34,25 L32.5,25 Z"/>
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M30,31 L31.5,31 L31.5,32 L30,32 Z"/>
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M32.5,31 L34,31 L34,32 L32.5,32 Z"/>
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M30,38 L31.5,38 L31.5,39 L30,39 Z"/>
+        <path
+            android:fillColor="#10B981"
+            android:pathData="M32.5,38 L34,38 L34,39 L32.5,39 Z"/>
+    </group>
 </vector>

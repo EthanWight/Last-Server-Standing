@@ -243,8 +243,10 @@ public class GameFragment extends Fragment {
             if (settings != null && gameEngine != null) {
                 gameEngine.setSoundEnabled(settings.isSoundEnabled());
                 gameEngine.setVibrationEnabled(settings.isVibrationEnabled());
+                gameEngine.setShowTowerRanges(settings.isShowTowerRanges());
                 Log.d(TAG, "Settings updated - Sound: " + settings.isSoundEnabled() +
-                        ", Vibration: " + settings.isVibrationEnabled());
+                        ", Vibration: " + settings.isVibrationEnabled() +
+                        ", Tower Ranges: " + settings.isShowTowerRanges());
             }
         });
 
@@ -879,10 +881,15 @@ public class GameFragment extends Fragment {
         }
 
         // Check if player can afford the tower
-        if (gameEngine.getResources() < towerToPlace.getCost()) {
+        int currentResources = gameEngine.getResources();
+        int towerCost = towerToPlace.getCost();
+        if (currentResources < towerCost) {
+            int needed = towerCost - currentResources;
             Toast.makeText(requireContext(),
-                    "Not enough resources! Need " + towerToPlace.getCost(),
-                    Toast.LENGTH_SHORT).show();
+                    String.format(Locale.getDefault(),
+                            "%s costs %d resources\nYou have %d (need %d more)",
+                            towerToPlace.getName(), towerCost, currentResources, needed),
+                    Toast.LENGTH_LONG).show();
             return;
         }
 

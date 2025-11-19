@@ -69,15 +69,15 @@ public abstract class Tower {
     
     /**
      * Get the cost to upgrade this tower to the next level
-     * Exponential cost scaling: cost * (1.5 ^ level)
+     * Exponential cost scaling: cost * (2.0 ^ level)
      * @return upgrade cost, or 0 if already at max level
      */
     public int getUpgradeCost() {
         if (level >= 5) {
             return 0; // Already at max level
         }
-        // Exponential cost: base_cost * (1.5^level)
-        return (int)(cost * Math.pow(1.5, level));
+        // Exponential cost: base_cost * (2.0^level) - more expensive upgrades
+        return (int)(cost * Math.pow(2.0, level));
     }
     
     /**

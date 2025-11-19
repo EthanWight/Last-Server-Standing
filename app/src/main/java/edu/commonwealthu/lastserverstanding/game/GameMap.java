@@ -146,6 +146,8 @@ public class GameMap {
     public void setSpawnPoint(int x, int y) { this.spawnPoint = gridToWorld(x, y); }
     public void setDataCenterPoint(int x, int y) { this.dataCenterPoint = gridToWorld(x, y); }
 
+    public PointF getDataCenterPoint() { return dataCenterPoint; }
+
     /**
      * Create a butterfly-shaped map with a beautiful symmetric design
      * The path traces through both wings of the butterfly

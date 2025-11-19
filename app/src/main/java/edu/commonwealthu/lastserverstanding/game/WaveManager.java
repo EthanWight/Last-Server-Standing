@@ -54,10 +54,9 @@ public class WaveManager {
         spawnPoints.add(new PointF(50, 150));
         spawnPoints.add(new PointF(50, 300));
         spawnPoints.add(new PointF(50, 450));
-        
-        // Default goal points (right side of screen)
-        goalPoints.add(new PointF(1200, 200));
-        goalPoints.add(new PointF(1200, 400));
+
+        // Default goal point (single data center location - right side, centered)
+        goalPoints.add(new PointF(1200, 360));
     }
     
     /**
@@ -131,9 +130,14 @@ public class WaveManager {
             // Use the predefined path from the map
             path = map.getEnemyPath();
         } else {
-            // Fallback to old path generation
+            // Fallback to path generation using map's data center if available
             PointF spawnPoint = spawnPoints.get(random.nextInt(spawnPoints.size()));
-            PointF goalPoint = goalPoints.get(random.nextInt(goalPoints.size()));
+            PointF goalPoint;
+            if (map != null && map.getDataCenterPoint() != null) {
+                goalPoint = map.getDataCenterPoint();
+            } else {
+                goalPoint = goalPoints.isEmpty() ? new PointF(1200, 360) : goalPoints.get(random.nextInt(goalPoints.size()));
+            }
             path = generatePath(spawnPoint, goalPoint, gameEngine);
         }
 

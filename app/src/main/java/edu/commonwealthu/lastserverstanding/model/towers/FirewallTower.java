@@ -28,7 +28,7 @@ public class FirewallTower extends Tower {
             15f, // damage
             150f, // range
             2.0f, // fireRate (2 attacks per second)
-            100 // cost
+            200 // cost (doubled from 100)
         );
         this.penetration = 0.0f; // No penetration at level 1
     }
@@ -53,18 +53,8 @@ public class FirewallTower extends Tower {
         StatusEffect burnEffect = new StatusEffect(
             StatusEffect.Type.BURN,
             damage * 0.5f, // Burn DPS (50% of direct damage)
-            2.0f           // 2 seconds duration
+            2.5f           // 2.5 seconds duration
         );
-
-        // Create stun effect (brief immobilization)
-        StatusEffect stunEffect = new StatusEffect(
-            StatusEffect.Type.STUN,
-            1.0f,  // Full stun
-            0.3f   // 0.3 seconds duration
-        );
-
-        // Alternate between burn and stun (could be random or level-based)
-        StatusEffect effect = (System.currentTimeMillis() % 2 == 0) ? burnEffect : stunEffect;
 
         return new Projectile(
             UUID.randomUUID().toString(),
@@ -72,7 +62,7 @@ public class FirewallTower extends Tower {
             target,
             damage,
             400f, // Projectile speed
-            effect
+            burnEffect
         );
     }
 

@@ -25,7 +25,7 @@ public class JammerTower extends Tower {
             10f, // damage (lower damage)
             200f, // range (wider range)
             3.0f, // fireRate (3 attacks per second - very fast!)
-            200 // cost
+            400 // cost (doubled from 200)
         );
     }
 

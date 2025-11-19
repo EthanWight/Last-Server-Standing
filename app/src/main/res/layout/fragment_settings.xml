@@ -195,6 +195,64 @@
                 app:trackTint="@color/switch_track" />
         </LinearLayout>
 
+        <!-- Display Section -->
+        <TextView
+            android:id="@+id/display_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/display"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/electric_blue"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/vibration_container"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Tower Ranges Switch -->
+        <LinearLayout
+            android:id="@+id/tower_ranges_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:background="@drawable/bg_hud_element"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/display_header"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tower_ranges"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tower_ranges_description"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_tower_ranges"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:contentDescription="@string/toggle_tower_ranges"
+                app:thumbTint="@color/switch_thumb"
+                app:trackTint="@color/switch_track" />
+        </LinearLayout>
+
         <!-- Save Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_save"
@@ -207,7 +265,7 @@
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/vibration_container" />
+            app:layout_constraintTop_toBottomOf="@id/tower_ranges_container" />
 
         <!-- Main Menu Button -->
         <com.google.android.material.button.MaterialButton

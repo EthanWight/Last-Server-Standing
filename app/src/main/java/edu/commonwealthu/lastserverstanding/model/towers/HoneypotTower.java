@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import java.util.UUID;
 
 import edu.commonwealthu.lastserverstanding.model.Projectile;
+import edu.commonwealthu.lastserverstanding.model.StatusEffect;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
 /**
@@ -24,7 +25,7 @@ public class HoneypotTower extends Tower {
             25f, // damage
             120f, // range
             1.5f, // fireRate (1.5 attacks per second)
-            150 // cost
+            300 // cost (doubled from 150)
         );
     }
 
@@ -43,12 +44,21 @@ public class HoneypotTower extends Tower {
         }
 
         lastFireTime = System.currentTimeMillis();
+
+        // Create slow effect (honeypot slows enemies)
+        StatusEffect slowEffect = new StatusEffect(
+            StatusEffect.Type.SLOW,
+            0.5f,  // 50% speed reduction
+            3.0f   // 3 seconds duration
+        );
+
         return new Projectile(
             UUID.randomUUID().toString(),
             new PointF(position.x, position.y),
             target,
             damage,
-            350f // Projectile speed (slower than firewall)
+            350f, // Projectile speed (slower than firewall)
+            slowEffect
         );
     }
 

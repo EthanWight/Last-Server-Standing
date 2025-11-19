@@ -57,6 +57,10 @@
     <string name="haptics">Haptics</string>
     <string name="vibration">Vibration</string>
     <string name="vibration_description">Enable haptic feedback</string>
+    <string name="display">Display</string>
+    <string name="tower_ranges">Tower Ranges</string>
+    <string name="tower_ranges_description">Show attack range circles for towers</string>
+    <string name="toggle_tower_ranges">Toggle tower range indicators</string>
     <string name="save_settings">Save Settings</string>
     <string name="main_menu">Main Menu</string>
     <string name="toggle_sound_effects">Toggle sound effects</string>

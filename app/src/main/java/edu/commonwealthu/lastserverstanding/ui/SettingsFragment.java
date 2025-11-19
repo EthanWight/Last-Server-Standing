@@ -35,6 +35,7 @@ public class SettingsFragment extends Fragment {
     private com.google.android.material.textfield.TextInputEditText playerNameEdit;
     private SwitchMaterial soundSwitch;
     private SwitchMaterial vibrationSwitch;
+    private SwitchMaterial towerRangesSwitch;
 
     private Settings currentSettings;
 
@@ -57,6 +58,7 @@ public class SettingsFragment extends Fragment {
         playerNameEdit = view.findViewById(R.id.edit_player_name);
         soundSwitch = view.findViewById(R.id.switch_sound);
         vibrationSwitch = view.findViewById(R.id.switch_vibration);
+        towerRangesSwitch = view.findViewById(R.id.switch_tower_ranges);
         MaterialButton saveButton = view.findViewById(R.id.btn_save);
         MaterialButton backButton = view.findViewById(R.id.btn_back);
         MaterialButton mainMenuButton = view.findViewById(R.id.btn_main_menu);
@@ -97,11 +99,13 @@ public class SettingsFragment extends Fragment {
                 currentSettings = settings;
                 soundSwitch.setChecked(settings.isSoundEnabled());
                 vibrationSwitch.setChecked(settings.isVibrationEnabled());
+                towerRangesSwitch.setChecked(settings.isShowTowerRanges());
             } else {
                 // Use defaults if no settings exist
                 currentSettings = new Settings();
                 soundSwitch.setChecked(true);
                 vibrationSwitch.setChecked(true);
+                towerRangesSwitch.setChecked(true);
             }
         });
     }
@@ -131,6 +135,7 @@ public class SettingsFragment extends Fragment {
         // Update settings from UI
         currentSettings.setSoundEnabled(soundSwitch.isChecked());
         currentSettings.setVibrationEnabled(vibrationSwitch.isChecked());
+        currentSettings.setShowTowerRanges(towerRangesSwitch.isChecked());
 
         // Save via ViewModel
         viewModel.updateSettings(currentSettings);
