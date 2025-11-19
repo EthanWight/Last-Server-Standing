@@ -13,9 +13,6 @@ Once the server falls, the network collapses — so defend it at all costs!
 - Tower-defense style gameplay  
 - Incoming waves of bugs, viruses, and trojans  
 - Increasing difficulty and enemy variety  
-- Intuitive controls and clean UI  
-- Smooth optimized performance for most Android devices  
-- (Add more features as your game grows)
 
 ---
 
