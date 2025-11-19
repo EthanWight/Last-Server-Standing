@@ -22,7 +22,7 @@ public class JammerTower extends Tower {
             UUID.randomUUID().toString(),
             position,
             1,  // level
-            10f, // damage (lower damage)
+            6f, // damage (reduced from 10 for difficulty)
             200f, // range (wider range)
             3.0f, // fireRate (3 attacks per second - very fast!)
             400 // cost (doubled from 200)

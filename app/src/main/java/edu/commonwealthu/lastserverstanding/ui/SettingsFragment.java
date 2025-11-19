@@ -62,6 +62,7 @@ public class SettingsFragment extends Fragment {
         MaterialButton saveButton = view.findViewById(R.id.btn_save);
         MaterialButton backButton = view.findViewById(R.id.btn_back);
         MaterialButton mainMenuButton = view.findViewById(R.id.btn_main_menu);
+        View infoContainer = view.findViewById(R.id.info_container);
 
         // Load player name from SharedPreferences
         loadPlayerName();
@@ -73,6 +74,7 @@ public class SettingsFragment extends Fragment {
         saveButton.setOnClickListener(v -> saveSettings());
         backButton.setOnClickListener(v -> Navigation.findNavController(v).navigateUp());
         mainMenuButton.setOnClickListener(v -> goToMainMenu());
+        infoContainer.setOnClickListener(v -> showGameInfo());
     }
 
     /**
@@ -210,6 +212,28 @@ public class SettingsFragment extends Fragment {
             // No progress to save, just navigate
             Log.d(TAG, "No game progress to save - returning to menu");
             Navigation.findNavController(requireView()).navigate(R.id.action_settings_to_menu);
+        }
+    }
+
+    /**
+     * Show game info dialog with tower and enemy information
+     */
+    private void showGameInfo() {
+        // Create dialog
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setView(R.layout.dialog_game_info)
+                .create();
+
+        // Show dialog
+        dialog.show();
+
+        // Set up close button after dialog is shown
+        if (dialog.getWindow() != null) {
+            View dialogView = dialog.getWindow().getDecorView();
+            MaterialButton closeButton = dialogView.findViewById(R.id.btn_close);
+            if (closeButton != null) {
+                closeButton.setOnClickListener(v -> dialog.dismiss());
+            }
         }
     }
 }

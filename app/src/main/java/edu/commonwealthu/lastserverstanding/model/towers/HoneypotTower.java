@@ -22,7 +22,7 @@ public class HoneypotTower extends Tower {
             UUID.randomUUID().toString(),
             position,
             1,  // level
-            25f, // damage
+            15f, // damage (reduced from 25 for difficulty)
             120f, // range
             1.5f, // fireRate (1.5 attacks per second)
             300 // cost (doubled from 150)

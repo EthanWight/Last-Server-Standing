@@ -90,9 +90,9 @@ public abstract class Tower {
             level++;
             totalInvestment += upgradeCost; // Track total investment
             // Increase stats
-            damage *= 1.5f;
-            range *= 1.25f;
-            fireRate *= 1.25f;
+            damage *= 1.2f;
+            range *= 1.1f;
+            fireRate *= 1.2f;
             return true;
         }
         return false;

@@ -86,8 +86,25 @@
     <string name="level_1">Level 1</string>
     <string name="cost_100">100</string>
     <string name="firewall_description">Basic defense tower with high fire rate.</string>
-    <string name="damage_15">15</string>
+    <string name="damage_15">9</string>
     <string name="range_150">150</string>
     <string name="fire_rate_2_0">2.0</string>
     <string name="upgrade">Upgrade</string>
+
+    <!-- Info Section strings -->
+    <string name="game_info">Game Info</string>
+    <string name="view_info">View Info</string>
+    <string name="game_info_description">Learn about towers and enemies</string>
+    <string name="towers">Towers</string>
+    <string name="enemies">Enemies</string>
+
+    <!-- Tower Info Descriptions -->
+    <string name="firewall_tower_info"><b>Firewall Tower</b>\n\nCost: 200\nDamage: 9\nRange: 150\nFire Rate: 2.0/sec\n\n<b>Ability:</b> Applies a burn effect that deals damage over time (50% of direct damage for 2.5 seconds). Gains penetration chance with upgrades, potentially damaging multiple enemies.</string>
+    <string name="honeypot_tower_info"><b>Honeypot Tower</b>\n\nCost: 300\nDamage: 15\nRange: 120\nFire Rate: 1.5/sec\n\n<b>Ability:</b> Slows enemy movement by 50% for 3 seconds. Excellent for controlling enemy movement and creating choke points.</string>
+    <string name="jammer_tower_info"><b>Jammer Tower</b>\n\nCost: 400\nDamage: 6\nRange: 200\nFire Rate: 3.0/sec\n\n<b>Ability:</b> Stuns enemies for 0.5 seconds with very fast attack speed. Wide range makes it ideal for covering large areas and hitting multiple targets.</string>
+
+    <!-- Enemy Info Descriptions -->
+    <string name="data_crawler_info"><b>Data Crawler</b>\n\nHealth: 50\nSpeed: 120\nReward: 5 resources\nDamage: 5\n\n<b>Description:</b> Fast-moving web scraping bots with low health. They move quickly but are easy to destroy. Good for farming early resources.</string>
+    <string name="virus_bot_info"><b>Virus Bot</b>\n\nHealth: 100\nSpeed: 100\nReward: 10 resources\nDamage: 10\n\n<b>Description:</b> Virus-infected systems with moderate health and speed. Appears starting from wave 5. A balanced threat that requires attention.</string>
+    <string name="trojan_horse_info"><b>Trojan Horse</b>\n\nHealth: 200\nSpeed: 80\nReward: 20 resources\nDamage: 20\n\n<b>Description:</b> Sophisticated malware systems that are slow but extremely tanky. Appears starting from wave 10. Requires concentrated fire from multiple towers.</string>
 </resources>

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/background_deep"
+    android:fillViewport="true"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/game_info"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/electric_blue"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Towers Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/towers"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Firewall Tower -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="@color/surface_elevated"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/firewall_tower_info"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:padding="16dp"
+                android:lineSpacingMultiplier="1.2" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Honeypot Tower -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="@color/surface_elevated"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/honeypot_tower_info"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:padding="16dp"
+                android:lineSpacingMultiplier="1.2" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Jammer Tower -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/surface_elevated"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/jammer_tower_info"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:padding="16dp"
+                android:lineSpacingMultiplier="1.2" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/text_secondary"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:alpha="0.3" />
+
+        <!-- Enemies Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/enemies"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Data Crawler -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="@color/surface_elevated"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/data_crawler_info"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:padding="16dp"
+                android:lineSpacingMultiplier="1.2" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Virus Bot -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="@color/surface_elevated"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/virus_bot_info"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:padding="16dp"
+                android:lineSpacingMultiplier="1.2" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Trojan Horse -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="@color/surface_elevated"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/trojan_horse_info"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:padding="16dp"
+                android:lineSpacingMultiplier="1.2" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Close Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_close"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/close"
+            android:textColor="@color/button_text_dark"
+            android:backgroundTint="@color/electric_blue"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+</ScrollView>
