@@ -44,15 +44,22 @@ cd Last-Server-Standing
 ---
 
 ### **3. Set Up a Device or Emulator**
-### Using an Emulator
+#### Using an Emulator
 - Open AVD Manager
 - Create a virtual device (e.g., Pixel 4, API 29+)
 - Launch the emulator
 
-###Using a Physical Device
+#### Using a Physical Device
 - Enable Developer Options
 - Turn on USB Debugging
 - Connect via USB cable
 - Select your device as the run target
+
+### **4. Build & Run the Game**
+Click the Run ▶️ button, or press:
+```
+Shift + F10
+```
+Android Studio will build, install, and launch the game.
 
 
