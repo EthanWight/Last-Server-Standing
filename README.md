@@ -31,3 +31,28 @@ Once the server falls, the network collapses — so defend it at all costs!
 ```bash
 git clone https://github.com/EthanWight/Last-Server-Standing.git
 cd Last-Server-Standing
+```
+
+---
+
+### **2. Open the Project in Android Studio**
+1. Open Android Studio
+2. Click File → Open...
+3. Select the project folder
+4. Wait for Gradle to finish syncing
+
+---
+
+### **3. Set Up a Device or Emulator**
+### Using an Emulator
+- Open AVD Manager
+- Create a virtual device (e.g., Pixel 4, API 29+)
+- Launch the emulator
+
+###Using a Physical Device
+- Enable Developer Options
+- Turn on USB Debugging
+- Connect via USB cable
+- Select your device as the run target
+
+
