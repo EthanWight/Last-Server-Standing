@@ -77,6 +77,18 @@ public abstract class Enemy {
     public abstract String getType();
 
     /**
+     * Get the enemy's color for rendering
+     * @return Color value (use android.graphics.Color constants)
+     */
+    public abstract int getColor();
+
+    /**
+     * Get the enemy's icon resource ID for rendering
+     * @return Drawable resource ID
+     */
+    public abstract int getIconResId();
+
+    /**
      * Move enemy along its path
      */
     private void move(float deltaTime) {

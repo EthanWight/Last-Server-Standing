@@ -8,6 +8,8 @@ import java.util.Random;
 
 import edu.commonwealthu.lastserverstanding.model.Enemy;
 import edu.commonwealthu.lastserverstanding.model.enemies.DataCrawler;
+import edu.commonwealthu.lastserverstanding.model.enemies.TrojanHorse;
+import edu.commonwealthu.lastserverstanding.model.enemies.VirusBot;
 
 /**
  * Wave manager handles enemy spawning with progressive difficulty
@@ -168,13 +170,44 @@ public class WaveManager {
     
     /**
      * Create enemy appropriate for current wave
-     * Later waves introduce new enemy types with higher base stats
+     * Enemy variety increases with wave progression:
+     * - Waves 1-4: Data Crawlers (red) only
+     * - Waves 5-9: Data Crawlers and Virus Bots (blue)
+     * - Wave 10+: All three types with increasing difficulty
      */
     private Enemy createEnemyForWave(List<PointF> path) {
-        // For now, only Data Crawlers are implemented
-        // Future waves will introduce other enemy types with progressively higher stats
+        // Waves 1-4: Only Data Crawlers (basic red enemies)
+        if (currentWave < 5) {
+            return new DataCrawler(path);
+        }
 
-        return new DataCrawler(path);
+        // Waves 5-9: Introduce Virus Bots (blue)
+        if (currentWave < 10) {
+            // 70% Data Crawlers, 30% Virus Bots
+            int roll = random.nextInt(100);
+            if (roll < 70) {
+                return new DataCrawler(path);
+            } else {
+                return new VirusBot(path);
+            }
+        }
+
+        // Wave 10+: All three enemy types
+        // Distribution shifts toward stronger enemies as waves progress
+        int roll = random.nextInt(100);
+
+        // Calculate distribution based on wave (higher waves = more strong enemies)
+        int crawlerChance = Math.max(20, 60 - (currentWave - 10) * 2); // Decreases from 60% to 20%
+        int virusBotChance = 30; // Remains steady at 30%
+        // Trojan Horse gets the remaining percentage (increases from 10% to 50%)
+
+        if (roll < crawlerChance) {
+            return new DataCrawler(path);
+        } else if (roll < crawlerChance + virusBotChance) {
+            return new VirusBot(path);
+        } else {
+            return new TrojanHorse(path);
+        }
     }
     
     /**

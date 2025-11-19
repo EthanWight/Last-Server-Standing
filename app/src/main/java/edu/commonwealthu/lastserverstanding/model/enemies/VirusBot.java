@@ -10,49 +10,49 @@ import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.model.Enemy;
 
 /**
- * Data Crawler - Fast, low health enemy
- * Represents web scraping bots
+ * Virus Bot - Medium health, moderate speed enemy
+ * Appears starting from wave 5
+ * Represents virus-infected systems
  */
-public class DataCrawler extends Enemy {
-    
+public class VirusBot extends Enemy {
+
     /**
      * Constructor with default stats
      */
-    public DataCrawler(List<PointF> path) {
+    public VirusBot(List<PointF> path) {
         super(
             UUID.randomUUID().toString(),
             path,
-            50f,  // maxHealth - low health
-            120f, // speed - fast movement
-            5,    // reward - reduced for balance
-            5     // damage to data center
+            100f,  // maxHealth - double the Data Crawler
+            100f,  // speed - slightly slower than Data Crawler
+            10,    // reward - reduced for balance
+            10     // damage to data center - double the Data Crawler
         );
     }
-    
+
     @Override
     protected void updateSpecific(float deltaTime) {
-        // Data Crawlers don't have special behavior during update
-        // They just move fast along their path
+        // Virus Bots don't have special behavior during update
     }
-    
+
     @Override
     public String getType() {
-        return "Data Crawler";
+        return "Virus Bot";
     }
 
     @Override
     public int getColor() {
-        return Color.RED;
+        return Color.BLUE;
     }
 
     @Override
     public int getIconResId() {
-        return R.drawable.ic_enemy_bug;
+        return R.drawable.ic_enemy_virus;
     }
 
     @Override
     protected void onDeath() {
         super.onDeath();
-        // Could add particle effect or sound here later
+        // Could add special death effect here later
     }
 }

@@ -160,6 +160,20 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp" />
 
+        <!-- Delete Button -->
+        <ImageButton
+            android:id="@+id/btn_delete"
+            style="@style/Widget.App.Button.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_delete"
+            android:contentDescription="@string/delete_tower"
+            android:padding="12dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:visibility="gone" />
+
         <!-- Info Button -->
         <ImageButton
             android:id="@+id/btn_info"

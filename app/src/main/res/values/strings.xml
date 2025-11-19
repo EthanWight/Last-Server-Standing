@@ -16,6 +16,7 @@
     <string name="tower_icon">Tower Icon</string>
     <string name="cost">Cost</string>
     <string name="tower_info">Tower Information</string>
+    <string name="delete_tower">Delete Tower</string>
     <string name="locked">Locked</string>
     <string name="background_desc">Background Animation</string>
 

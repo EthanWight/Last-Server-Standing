@@ -82,8 +82,8 @@ public class FirewallTower extends Tower {
     }
     
     @Override
-    public boolean upgrade() {
-        boolean upgraded = super.upgrade();
+    public boolean upgrade(int upgradeCost) {
+        boolean upgraded = super.upgrade(upgradeCost);
         if (upgraded) {
             // Increase penetration with each level
             penetration = Math.min(penetration + 0.15f, 0.6f);

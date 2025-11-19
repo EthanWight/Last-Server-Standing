@@ -23,6 +23,7 @@ public abstract class Tower {
     
     // Economy
     protected int cost;
+    protected int totalInvestment; // Total resources invested (base cost + upgrades)
 
     // Current target
     protected Enemy target;
@@ -44,6 +45,7 @@ public abstract class Tower {
         this.range = range;
         this.fireRate = fireRate;
         this.cost = cost;
+        this.totalInvestment = cost; // Initialize with base cost
         this.isCorrupted = false;
         this.lastFireTime = 0;
     }
@@ -80,11 +82,13 @@ public abstract class Tower {
     
     /**
      * Upgrade tower to next level
+     * @param upgradeCost The cost paid for this upgrade
      * @return true if upgrade successful
      */
-    public boolean upgrade() {
+    public boolean upgrade(int upgradeCost) {
         if (level < 5) {
             level++;
+            totalInvestment += upgradeCost; // Track total investment
             // Increase stats
             damage *= 1.5f;
             range *= 1.25f;
@@ -124,6 +128,7 @@ public abstract class Tower {
     public int getCost() { return cost; }
     public Enemy getTarget() { return target; }
     public boolean isCorrupted() { return isCorrupted; }
+    public int getTotalInvestment() { return totalInvestment; }
 
     public void setTarget(Enemy target) { this.target = target; }
     public void setCorrupted(boolean corrupted) { this.isCorrupted = corrupted; }

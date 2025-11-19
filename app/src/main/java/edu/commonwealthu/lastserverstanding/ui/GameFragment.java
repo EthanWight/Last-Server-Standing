@@ -336,10 +336,8 @@ public class GameFragment extends Fragment {
             }
 
             // Otherwise, start the next wave (and unpause if needed)
-            // Auto-save before starting next wave (if there's progress)
-            if (gameEngine.getCurrentWave() > 0) {
-                saveGameState();
-            }
+            // Note: Auto-save happens when wave completes (onWaveComplete callback)
+            // No need to save again here to avoid duplicate save toasts
 
             gameEngine.startNextWave();
 
@@ -738,6 +736,7 @@ public class GameFragment extends Fragment {
         com.google.android.material.chip.Chip rangeChip = cardView.findViewById(R.id.chip_range);
         com.google.android.material.chip.Chip fireRateChip = cardView.findViewById(R.id.chip_fire_rate);
         View infoButton = cardView.findViewById(R.id.btn_info);
+        android.widget.ImageButton deleteButton = cardView.findViewById(R.id.btn_delete);
         com.google.android.material.button.MaterialButton upgradeButton = cardView.findViewById(R.id.btn_upgrade);
         com.google.android.material.button.MaterialButton closeButton = cardView.findViewById(R.id.btn_close);
         View lockOverlay = cardView.findViewById(R.id.lock_overlay);
@@ -761,8 +760,9 @@ public class GameFragment extends Fragment {
         lockOverlay.setVisibility(View.GONE);
         infoButton.setVisibility(View.GONE);
 
-        // Show upgrade button
+        // Show upgrade, delete, and close buttons
         upgradeButton.setVisibility(View.VISIBLE);
+        deleteButton.setVisibility(View.VISIBLE);
         closeButton.setVisibility(View.VISIBLE);
 
         int upgradeCost = tower.getUpgradeCost();
@@ -793,6 +793,30 @@ public class GameFragment extends Fragment {
                         getString(R.string.not_enough_resources),
                         Toast.LENGTH_SHORT).show();
             }
+        });
+
+        // Set up delete button
+        deleteButton.setOnClickListener(v -> {
+            // Show confirmation dialog
+            int totalInvestment = tower.getTotalInvestment();
+            int refundAmount = totalInvestment / 2;
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Tower")
+                    .setMessage("Delete this tower?\n\nTotal Investment: " + totalInvestment + " resources\nRefund (50%): " + refundAmount + " resources")
+                    .setPositiveButton("Delete", (confirmDialog, which) -> {
+                        if (gameEngine.removeTower(tower)) {
+                            Toast.makeText(requireContext(),
+                                    "Tower deleted. Refunded " + refundAmount + " resources.",
+                                    Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                        } else {
+                            Toast.makeText(requireContext(),
+                                    "Failed to delete tower",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
         });
 
         // Set up close button

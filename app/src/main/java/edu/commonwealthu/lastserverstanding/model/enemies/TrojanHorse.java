@@ -10,49 +10,50 @@ import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.model.Enemy;
 
 /**
- * Data Crawler - Fast, low health enemy
- * Represents web scraping bots
+ * Trojan Horse - High health, slow but tanky enemy
+ * Appears starting from wave 10
+ * Represents sophisticated malware systems
  */
-public class DataCrawler extends Enemy {
-    
+public class TrojanHorse extends Enemy {
+
     /**
      * Constructor with default stats
      */
-    public DataCrawler(List<PointF> path) {
+    public TrojanHorse(List<PointF> path) {
         super(
             UUID.randomUUID().toString(),
             path,
-            50f,  // maxHealth - low health
-            120f, // speed - fast movement
-            5,    // reward - reduced for balance
-            5     // damage to data center
+            200f,  // maxHealth - 4x the Data Crawler
+            80f,   // speed - slower but very tanky
+            20,    // reward - reduced for balance
+            20     // damage to data center - 4x the Data Crawler
         );
     }
-    
+
     @Override
     protected void updateSpecific(float deltaTime) {
-        // Data Crawlers don't have special behavior during update
-        // They just move fast along their path
+        // Trojan Horses are slow but resilient
+        // No special behavior during update
     }
-    
+
     @Override
     public String getType() {
-        return "Data Crawler";
+        return "Trojan Horse";
     }
 
     @Override
     public int getColor() {
-        return Color.RED;
+        return Color.GREEN;
     }
 
     @Override
     public int getIconResId() {
-        return R.drawable.ic_enemy_bug;
+        return R.drawable.ic_enemy_horse;
     }
 
     @Override
     protected void onDeath() {
         super.onDeath();
-        // Could add particle effect or sound here later
+        // Could add explosion effect or spawn mini enemies here later
     }
 }

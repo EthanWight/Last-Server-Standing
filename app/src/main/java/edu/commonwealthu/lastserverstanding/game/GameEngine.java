@@ -68,6 +68,8 @@ public class GameEngine {
 
     // Tower icon cache
     private final Map<String, Bitmap> towerIcons;
+    // Enemy icon cache
+    private final Map<String, Bitmap> enemyIcons;
     private Context context;
 
     // Settings
@@ -104,6 +106,7 @@ public class GameEngine {
      */
     public GameEngine() {
         towerIcons = new HashMap<>();
+        enemyIcons = new HashMap<>();
         towers = new ArrayList<>();
         enemies = new ArrayList<>();
         projectiles = new ArrayList<>();
@@ -455,6 +458,41 @@ public class GameEngine {
     }
 
     /**
+     * Load and cache enemy icon
+     * Converts vector drawables to bitmaps for rendering
+     */
+    private Bitmap getEnemyIcon(Enemy enemy) {
+        String enemyType = enemy.getType();
+        if (!enemyIcons.containsKey(enemyType) && context != null) {
+            try {
+                int resourceId = enemy.getIconResId();
+
+                // Load the drawable (works for both vector and bitmap drawables)
+                Drawable drawable = ContextCompat.getDrawable(context, resourceId);
+
+                if (drawable != null) {
+                    // Create bitmap and canvas
+                    Bitmap bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(bitmap);
+
+                    // Set the bounds and draw
+                    drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+                    drawable.draw(canvas);
+
+                    enemyIcons.put(enemyType, bitmap);
+                } else {
+                    // If drawable is null, cache null to avoid repeated attempts
+                    enemyIcons.put(enemyType, null);
+                }
+            } catch (Exception e) {
+                // If loading fails, cache null to avoid repeated attempts
+                enemyIcons.put(enemyType, null);
+            }
+        }
+        return enemyIcons.get(enemyType);
+    }
+
+    /**
      * Draw a tower with its icon (optimized to reduce object allocation)
      */
     private void drawTower(Canvas canvas, Paint paint, Tower tower) {
@@ -493,25 +531,41 @@ public class GameEngine {
     }
     
     /**
-     * Draw an enemy (placeholder - will be enhanced later)
+     * Draw an enemy with its icon
      */
     private void drawEnemy(Canvas canvas, Paint paint, Enemy enemy) {
         if (enemy == null) return;
         PointF pos = enemy.getPosition();
         if (pos == null) return;
-        
-        // Draw enemy body
-        paint.setColor(Color.RED);
-        canvas.drawCircle(pos.x, pos.y, 15, paint);
-        
-        // Draw health bar
+
+        // Get enemy icon
+        Bitmap icon = getEnemyIcon(enemy);
+
+        if (icon != null) {
+            // Draw icon centered on position - reuse tempRect to avoid allocation
+            int halfSize = icon.getWidth() / 2;
+            tempRect.set(
+                    (int) (pos.x - halfSize),
+                    (int) (pos.y - halfSize),
+                    (int) (pos.x + halfSize),
+                    (int) (pos.y + halfSize)
+            );
+
+            canvas.drawBitmap(icon, null, tempRect, paint);
+        } else {
+            // Fallback to circle if icon not available
+            paint.setColor(enemy.getColor());
+            canvas.drawCircle(pos.x, pos.y, 15, paint);
+        }
+
+        // Draw health bar above the enemy
         paint.setColor(Color.GREEN);
         float healthBarWidth = 30 * enemy.getHealthPercentage();
         canvas.drawRect(
-            pos.x - 15, 
-            pos.y - 25, 
-            pos.x - 15 + healthBarWidth, 
-            pos.y - 20, 
+            pos.x - 15,
+            pos.y - 30,
+            pos.x - 15 + healthBarWidth,
+            pos.y - 25,
             paint
         );
     }
@@ -606,6 +660,29 @@ public class GameEngine {
     }
 
     /**
+     * Remove a tower from the game and refund partial resources
+     * @param tower The tower to remove
+     * @return true if tower was successfully removed
+     */
+    public boolean removeTower(Tower tower) {
+        if (tower == null) {
+            return false;
+        }
+
+        synchronized (towers) {
+            if (towers.remove(tower)) {
+                // Refund 50% of total investment (base cost + all upgrades)
+                int refund = tower.getTotalInvestment() / 2;
+                resources += refund;
+                notifyStatsChanged();
+                android.util.Log.d("GameEngine", "Tower removed, refunded " + refund + " resources (50% of " + tower.getTotalInvestment() + " total investment)");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Add an enemy to the game
      */
     public void addEnemy(Enemy enemy) {
@@ -649,7 +726,7 @@ public class GameEngine {
         }
 
         if (resources >= upgradeCost) {
-            if (tower.upgrade()) {
+            if (tower.upgrade(upgradeCost)) {
                 resources -= upgradeCost;
                 notifyStatsChanged();
                 return true;
@@ -819,7 +896,8 @@ public class GameEngine {
 
         // Upgrade to saved level
         for (int i = 1; i < data.level; i++) {
-            tower.upgrade();
+            int upgradeCost = tower.getUpgradeCost();
+            tower.upgrade(upgradeCost);
         }
         tower.setCorrupted(data.isCorrupted);
         return tower;
@@ -862,7 +940,7 @@ public class GameEngine {
                 if (Math.abs(towerGrid.x - gridPos.x) < 0.5f && Math.abs(towerGrid.y - gridPos.y) < 0.5f) {
                     int upgradeCost = tower.getUpgradeCost();
                     if (resources >= upgradeCost) {
-                        boolean upgraded = tower.upgrade();
+                        boolean upgraded = tower.upgrade(upgradeCost);
                         if (upgraded) {
                             resources -= upgradeCost;
                             notifyStatsChanged();
