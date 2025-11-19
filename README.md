@@ -66,6 +66,6 @@ Android Studio will build, install, and launch the game.
 
 ---
 
-### **🐛 Known Issues**
+## **🐛 Known Issues**
 - UI scaling inconsistent on smaller screens
 - FPS drops during high enemy counts
