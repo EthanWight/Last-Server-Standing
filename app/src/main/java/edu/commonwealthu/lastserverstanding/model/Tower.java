@@ -28,9 +28,6 @@ public abstract class Tower {
     // Current target
     protected Enemy target;
 
-    // Status
-    protected boolean isCorrupted;
-
     // Timing for attack rate
     protected long lastFireTime;
 
@@ -46,7 +43,6 @@ public abstract class Tower {
         this.fireRate = fireRate;
         this.cost = cost;
         this.totalInvestment = cost; // Initialize with base cost
-        this.isCorrupted = false;
         this.lastFireTime = 0;
     }
     
@@ -127,9 +123,7 @@ public abstract class Tower {
     public float getFireRate() { return fireRate; }
     public int getCost() { return cost; }
     public Enemy getTarget() { return target; }
-    public boolean isCorrupted() { return isCorrupted; }
     public int getTotalInvestment() { return totalInvestment; }
 
     public void setTarget(Enemy target) { this.target = target; }
-    public void setCorrupted(boolean corrupted) { this.isCorrupted = corrupted; }
 }

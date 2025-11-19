@@ -880,41 +880,56 @@ public class GameFragment extends Fragment {
             return;
         }
 
-        // Check if player can afford the tower
-        int currentResources = gameEngine.getResources();
-        int towerCost = towerToPlace.getCost();
-        if (currentResources < towerCost) {
-            int needed = towerCost - currentResources;
-            Toast.makeText(requireContext(),
-                    String.format(Locale.getDefault(),
-                            "%s costs %d resources\nYou have %d (need %d more)",
-                            towerToPlace.getName(), towerCost, currentResources, needed),
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-
         try {
             // Create and place the tower based on type
-            boolean placed = false;
+            Tower towerToAdd = null;
             switch (towerToPlace.getType()) {
                 case "Firewall":
                     Log.d(TAG, "Creating Firewall tower at " + worldPosition);
-                    FirewallTower firewallTower = new FirewallTower(worldPosition);
-                    placed = gameEngine.addTower(firewallTower);
+                    towerToAdd = new FirewallTower(worldPosition);
                     break;
                 case "Honeypot":
                     Log.d(TAG, "Creating Honeypot tower at " + worldPosition);
-                    HoneypotTower honeypotTower = new HoneypotTower(worldPosition);
-                    placed = gameEngine.addTower(honeypotTower);
+                    towerToAdd = new HoneypotTower(worldPosition);
                     break;
                 case "Jammer":
                     Log.d(TAG, "Creating Jammer tower at " + worldPosition);
-                    JammerTower jammerTower = new JammerTower(worldPosition);
-                    placed = gameEngine.addTower(jammerTower);
+                    towerToAdd = new JammerTower(worldPosition);
                     break;
                 default:
                     Log.e(TAG, "Unknown tower type: " + towerToPlace.getType());
             }
+
+            if (towerToAdd == null) {
+                Toast.makeText(requireContext(),
+                        "Error: Unknown tower type",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Check if placement location is valid
+            if (!gameEngine.isValidTowerPlacement(worldPosition)) {
+                Toast.makeText(requireContext(),
+                        "Invalid spot! Place towers on walls only.",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Check if player can afford the tower
+            int currentResources = gameEngine.getResources();
+            int towerCost = towerToAdd.getCost();
+            if (currentResources < towerCost) {
+                int needed = towerCost - currentResources;
+                Toast.makeText(requireContext(),
+                        String.format(Locale.getDefault(),
+                                "Cannot afford %s!\nCosts %d resources (you have %d)\nNeed %d more",
+                                towerToPlace.getName(), towerCost, currentResources, needed),
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            // Try to add the tower
+            boolean placed = gameEngine.addTower(towerToAdd);
 
             if (placed) {
                 Log.d(TAG, String.format(Locale.getDefault(), "Tower placed successfully at (%.0f, %.0f)", worldPosition.x, worldPosition.y));
@@ -922,10 +937,19 @@ public class GameFragment extends Fragment {
                         towerToPlace.getName() + " placed!",
                         Toast.LENGTH_SHORT).show();
             } else {
-                Log.w(TAG, "Tower placement failed - invalid spot");
-                Toast.makeText(requireContext(),
-                        "Invalid spot! Place towers on walls only.",
-                        Toast.LENGTH_SHORT).show();
+                // Check why placement failed
+                if (gameEngine.getResources() < towerCost) {
+                    int needed = towerCost - gameEngine.getResources();
+                    Toast.makeText(requireContext(),
+                            String.format(Locale.getDefault(),
+                                    "Cannot afford %s!\nCosts %d resources (you have %d)\nNeed %d more",
+                                    towerToPlace.getName(), towerCost, gameEngine.getResources(), needed),
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(requireContext(),
+                            "Invalid spot! Place towers on walls only.",
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         } catch (Exception e) {
             Log.e(TAG, "Error placing tower", e);
@@ -1136,6 +1160,19 @@ public class GameFragment extends Fragment {
                 .setTitle("Game Over!")
                 .setMessage(message)
                 .setPositiveButton("Main Menu", (dialog, which) -> {
+                    // Delete the auto-save since game is over
+                    viewModel.deleteAutoSave(new edu.commonwealthu.lastserverstanding.data.repository.GameRepository.DeleteCallback() {
+                        @Override
+                        public void onSuccess() {
+                            Log.d(TAG, "Auto-save deleted after game over");
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            Log.e(TAG, "Failed to delete auto-save after game over: " + error);
+                        }
+                    });
+
                     // Clear the game engine to prevent continuing
                     viewModel.resetGameEngine();
 
@@ -1150,6 +1187,19 @@ public class GameFragment extends Fragment {
                     }
                 })
                 .setNegativeButton("New Game", (dialog, which) -> {
+                    // Delete the auto-save since we're starting fresh
+                    viewModel.deleteAutoSave(new edu.commonwealthu.lastserverstanding.data.repository.GameRepository.DeleteCallback() {
+                        @Override
+                        public void onSuccess() {
+                            Log.d(TAG, "Auto-save deleted before starting new game");
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            Log.e(TAG, "Failed to delete auto-save before new game: " + error);
+                        }
+                    });
+
                     // Reset game and start fresh
                     viewModel.resetGameEngine();
                     gameEngine = viewModel.getGameEngine();

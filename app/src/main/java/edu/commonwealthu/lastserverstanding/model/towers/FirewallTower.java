@@ -25,7 +25,7 @@ public class FirewallTower extends Tower {
             UUID.randomUUID().toString(),
             position,
             1,  // level
-            9f, // damage (reduced from 15 for difficulty)
+            10f, // damage
             150f, // range
             2.0f, // fireRate (2 attacks per second)
             200 // cost (doubled from 100)
@@ -43,7 +43,7 @@ public class FirewallTower extends Tower {
     
     @Override
     public Projectile fire() {
-        if (target == null || isOnCooldown() || isCorrupted) {
+        if (target == null || isOnCooldown()) {
             return null;
         }
 

@@ -22,7 +22,7 @@ public class JammerTower extends Tower {
             UUID.randomUUID().toString(),
             position,
             1,  // level
-            6f, // damage (reduced from 10 for difficulty)
+            10f, // damage
             200f, // range (wider range)
             3.0f, // fireRate (3 attacks per second - very fast!)
             400 // cost (doubled from 200)
@@ -39,7 +39,7 @@ public class JammerTower extends Tower {
 
     @Override
     public Projectile fire() {
-        if (target == null || isOnCooldown() || isCorrupted) {
+        if (target == null || isOnCooldown()) {
             return null;
         }
 

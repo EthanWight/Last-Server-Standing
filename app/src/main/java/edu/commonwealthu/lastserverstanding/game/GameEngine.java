@@ -83,6 +83,15 @@ public class GameEngine {
     // Object pooling for performance (reduce GC)
     private final Rect tempRect = new Rect();
 
+    // Dedicated Paint objects to reduce configuration changes during rendering
+    private final Paint mapPaint = new Paint();
+    private final Paint towerPaint = new Paint();
+    private final Paint towerRangePaint = new Paint();
+    private final Paint enemyPaint = new Paint();
+    private final Paint projectilePaint = new Paint();
+    private final Paint healthBarPaint = new Paint();
+    private final Paint healthBarBgPaint = new Paint();
+
     // Reusable lists for rendering (avoid allocation per frame)
     private final List<Tower> renderTowersCopy = new ArrayList<>();
     private final List<Enemy> renderEnemiesCopy = new ArrayList<>();
@@ -93,12 +102,6 @@ public class GameEngine {
     private final List<Long> buildableTiles = new ArrayList<>();
     private final List<Long> spawnTiles = new ArrayList<>();
     private final List<Long> datacenterTiles = new ArrayList<>();
-
-    // Cached rendering resources (avoid per-frame allocation/lookup)
-    private static final android.graphics.ColorFilter CORRUPTION_FILTER =
-        new android.graphics.PorterDuffColorFilter(
-            android.graphics.Color.RED,
-            android.graphics.PorterDuff.Mode.MULTIPLY);
 
     private int pathColor;
     private int wallColor;
@@ -115,10 +118,9 @@ public class GameEngine {
         enemies = new ArrayList<>();
         projectiles = new ArrayList<>();
 
-        // Initialize temp paint
-        Paint tempPaint = new Paint();
-        tempPaint.setAntiAlias(true);
-        
+        // Initialize dedicated Paint objects
+        initializePaints();
+
         currentWave = 0;
         resources = STARTING_RESOURCES;
         dataCenterHealth = STARTING_HEALTH;
@@ -141,7 +143,44 @@ public class GameEngine {
         pathfinding = new Pathfinding(worldWidth / gridSize, worldHeight / gridSize, gridSize);
         waveManager = new WaveManager();
     }
-    
+
+    /**
+     * Initialize dedicated Paint objects to reduce configuration changes during rendering
+     */
+    private void initializePaints() {
+        // Map paint - for tiles
+        mapPaint.setStyle(Paint.Style.FILL);
+        mapPaint.setAntiAlias(false); // No AA needed for grid tiles
+
+        // Tower paint - for drawing towers
+        towerPaint.setStyle(Paint.Style.FILL);
+        towerPaint.setAntiAlias(true);
+
+        // Tower range paint - for showing tower ranges
+        towerRangePaint.setStyle(Paint.Style.STROKE);
+        towerRangePaint.setStrokeWidth(2);
+        towerRangePaint.setAntiAlias(true);
+        towerRangePaint.setAlpha(128); // 50% transparent
+
+        // Enemy paint - for drawing enemies
+        enemyPaint.setStyle(Paint.Style.FILL);
+        enemyPaint.setAntiAlias(true);
+
+        // Projectile paint - for drawing projectiles
+        projectilePaint.setStyle(Paint.Style.FILL);
+        projectilePaint.setAntiAlias(true);
+
+        // Health bar paint - for enemy health bars
+        healthBarPaint.setStyle(Paint.Style.FILL);
+        healthBarPaint.setAntiAlias(false); // No AA for rectangles
+        healthBarPaint.setColor(Color.GREEN);
+
+        // Health bar background - dark background for health bars
+        healthBarBgPaint.setStyle(Paint.Style.FILL);
+        healthBarBgPaint.setAntiAlias(false);
+        healthBarBgPaint.setColor(Color.DKGRAY);
+    }
+
     /**
      * Set context for loading resources
      */
@@ -280,7 +319,7 @@ public class GameEngine {
      */
     public void render(Canvas canvas, Paint paint) {
         // Draw map first (underneath everything)
-        renderMap(canvas, paint);
+        renderMap(canvas);
 
         // Draw data center goals
         drawGoals(canvas, paint);
@@ -304,14 +343,14 @@ public class GameEngine {
         // Draw tower ranges first (underneath towers) if enabled
         if (showTowerRanges) {
             for (int i = 0; i < renderTowersCopy.size(); i++) {
-                drawTowerRange(canvas, paint, renderTowersCopy.get(i));
+                drawTowerRange(canvas, renderTowersCopy.get(i));
             }
         }
 
         // Draw towers
         paint.setStyle(Paint.Style.FILL);
         for (int i = 0; i < renderTowersCopy.size(); i++) {
-            drawTower(canvas, paint, renderTowersCopy.get(i));
+            drawTower(canvas, renderTowersCopy.get(i));
         }
 
         // Draw enemies
@@ -321,7 +360,7 @@ public class GameEngine {
 
         // Draw projectiles
         for (int i = 0; i < renderProjectilesCopy.size(); i++) {
-            drawProjectile(canvas, paint, renderProjectilesCopy.get(i));
+            drawProjectile(canvas, renderProjectilesCopy.get(i));
         }
     }
 
@@ -329,12 +368,12 @@ public class GameEngine {
      * Render the game map with different colors for different tile types
      * Optimized to batch paint operations by color
      */
-    private void renderMap(Canvas canvas, Paint paint) {
+    private void renderMap(Canvas canvas) {
         if (gameMap == null) {
             return; // Guard against null gameMap
         }
 
-        paint.setStyle(Paint.Style.FILL);
+        // Use dedicated mapPaint instead of generic paint
 
         float offsetX = gameMap.getOffsetX();
         float offsetY = gameMap.getOffsetY();
@@ -376,46 +415,46 @@ public class GameEngine {
 
         // Second pass: draw all tiles of each type with single color set (use cached colors)
         if (!pathTiles.isEmpty()) {
-            paint.setColor(pathColor);
+            mapPaint.setColor(pathColor);
             for (long coords : pathTiles) {
                 int x = (int) (coords >> 32);
                 int y = (int) coords;
                 float left = x * gridSize + offsetX;
                 float top = y * gridSize + offsetY;
-                canvas.drawRect(left, top, left + gridSize, top + gridSize, paint);
+                canvas.drawRect(left, top, left + gridSize, top + gridSize, mapPaint);
             }
         }
 
         if (!buildableTiles.isEmpty()) {
-            paint.setColor(wallColor);
+            mapPaint.setColor(wallColor);
             for (long coords : buildableTiles) {
                 int x = (int) (coords >> 32);
                 int y = (int) coords;
                 float left = x * gridSize + offsetX;
                 float top = y * gridSize + offsetY;
-                canvas.drawRect(left, top, left + gridSize, top + gridSize, paint);
+                canvas.drawRect(left, top, left + gridSize, top + gridSize, mapPaint);
             }
         }
 
         if (!spawnTiles.isEmpty()) {
-            paint.setColor(spawnColor);
+            mapPaint.setColor(spawnColor);
             for (long coords : spawnTiles) {
                 int x = (int) (coords >> 32);
                 int y = (int) coords;
                 float left = x * gridSize + offsetX;
                 float top = y * gridSize + offsetY;
-                canvas.drawRect(left, top, left + gridSize, top + gridSize, paint);
+                canvas.drawRect(left, top, left + gridSize, top + gridSize, mapPaint);
             }
         }
 
         if (!datacenterTiles.isEmpty()) {
-            paint.setColor(datacenterColor);
+            mapPaint.setColor(datacenterColor);
             for (long coords : datacenterTiles) {
                 int x = (int) (coords >> 32);
                 int y = (int) coords;
                 float left = x * gridSize + offsetX;
                 float top = y * gridSize + offsetY;
-                canvas.drawRect(left, top, left + gridSize, top + gridSize, paint);
+                canvas.drawRect(left, top, left + gridSize, top + gridSize, mapPaint);
             }
         }
     }
@@ -559,36 +598,21 @@ public class GameEngine {
     /**
      * Draw tower range indicator (semi-transparent circle)
      */
-    private void drawTowerRange(Canvas canvas, Paint paint, Tower tower) {
+    private void drawTowerRange(Canvas canvas, Tower tower) {
         if (tower == null) return;
         PointF pos = tower.getPosition();
         if (pos == null) return;
 
-        // Save current paint state
-        int originalColor = paint.getColor();
-        Paint.Style originalStyle = paint.getStyle();
-
-        // Draw range circle with semi-transparent fill
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.argb(30, 100, 200, 255)); // Light blue, 30% opacity
-        canvas.drawCircle(pos.x, pos.y, tower.getRange(), paint);
-
+        // Use dedicated range paint (already configured with stroke, alpha, etc.)
         // Draw range circle border
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(2);
-        paint.setColor(Color.argb(80, 100, 200, 255)); // Light blue, 80% opacity
-        canvas.drawCircle(pos.x, pos.y, tower.getRange(), paint);
-
-        // Restore paint state
-        paint.setColor(originalColor);
-        paint.setStyle(originalStyle);
-        paint.setStrokeWidth(1);
+        towerRangePaint.setColor(Color.argb(80, 100, 200, 255)); // Light blue, 80% opacity
+        canvas.drawCircle(pos.x, pos.y, tower.getRange(), towerRangePaint);
     }
 
     /**
      * Draw a tower with its icon (optimized to reduce object allocation)
      */
-    private void drawTower(Canvas canvas, Paint paint, Tower tower) {
+    private void drawTower(Canvas canvas, Tower tower) {
         if (tower == null) return;
         PointF pos = tower.getPosition();
         if (pos == null) return;
@@ -606,19 +630,11 @@ public class GameEngine {
                     (int) (pos.y + halfSize)
             );
 
-            // Apply corruption tint if corrupted (use cached filter)
-            if (tower.isCorrupted()) {
-                paint.setColorFilter(CORRUPTION_FILTER);
-            }
-
-            canvas.drawBitmap(icon, null, tempRect, paint);
-
-            // Clear color filter
-            paint.setColorFilter(null);
+            canvas.drawBitmap(icon, null, tempRect, towerPaint);
         } else {
-            // Fallback to circle if icon not available
-            paint.setColor(tower.isCorrupted() ? Color.RED : Color.CYAN);
-            canvas.drawCircle(pos.x, pos.y, 24, paint);
+            // Fallback to circle if icon not available - use dedicated tower paint
+            towerPaint.setColor(Color.CYAN);
+            canvas.drawCircle(pos.x, pos.y, 24, towerPaint);
         }
 
     }
@@ -644,25 +660,33 @@ public class GameEngine {
                     (int) (pos.y + halfSize)
             );
 
-            canvas.drawBitmap(icon, null, tempRect, paint);
+            canvas.drawBitmap(icon, null, tempRect, enemyPaint);
         } else {
-            // Fallback to circle if icon not available
-            paint.setColor(enemy.getColor());
-            canvas.drawCircle(pos.x, pos.y, 15, paint);
+            // Fallback to circle if icon not available - use dedicated enemy paint
+            enemyPaint.setColor(enemy.getColor());
+            canvas.drawCircle(pos.x, pos.y, 15, enemyPaint);
         }
 
         // Draw status effect animations
         drawStatusEffects(canvas, paint, enemy);
 
-        // Draw health bar above the enemy
-        paint.setColor(Color.GREEN);
+        // Draw health bar above the enemy - use dedicated health bar paints
         float healthBarWidth = 30 * enemy.getHealthPercentage();
+        // Draw background
+        canvas.drawRect(
+            pos.x - 15,
+            pos.y - 30,
+            pos.x + 15,
+            pos.y - 25,
+            healthBarBgPaint
+        );
+        // Draw health
         canvas.drawRect(
             pos.x - 15,
             pos.y - 30,
             pos.x - 15 + healthBarWidth,
             pos.y - 25,
-            paint
+            healthBarPaint
         );
     }
 
@@ -795,12 +819,13 @@ public class GameEngine {
     /**
      * Draw a projectile (placeholder - will be enhanced later)
      */
-    private void drawProjectile(Canvas canvas, Paint paint, Projectile projectile) {
+    private void drawProjectile(Canvas canvas, Projectile projectile) {
         if (projectile == null) return;
         PointF pos = projectile.getPosition();
         if (pos == null) return;
-        paint.setColor(Color.YELLOW);
-        canvas.drawCircle(pos.x, pos.y, 5, paint);
+        // Use dedicated projectile paint
+        projectilePaint.setColor(Color.YELLOW);
+        canvas.drawCircle(pos.x, pos.y, 5, projectilePaint);
     }
     
     /**
@@ -1022,8 +1047,7 @@ public class GameEngine {
                 state.towers.add(new edu.commonwealthu.lastserverstanding.data.models.GameState.TowerData(
                     tower.getType(),
                     tower.getPosition(),
-                    tower.getLevel(),
-                    tower.isCorrupted()
+                    tower.getLevel()
                 ));
             }
         }
@@ -1121,7 +1145,6 @@ public class GameEngine {
             int upgradeCost = tower.getUpgradeCost();
             tower.upgrade(upgradeCost);
         }
-        tower.setCorrupted(data.isCorrupted);
         return tower;
     }
 

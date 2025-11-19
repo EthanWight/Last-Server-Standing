@@ -48,14 +48,12 @@ public class GameState {
         public float x;
         public float y;
         public int level;
-        public boolean isCorrupted;
 
-        public TowerData(String type, PointF position, int level, boolean isCorrupted) {
+        public TowerData(String type, PointF position, int level) {
             this.type = type;
             this.x = position.x;
             this.y = position.y;
             this.level = level;
-            this.isCorrupted = isCorrupted;
         }
     }
 

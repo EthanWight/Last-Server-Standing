@@ -22,7 +22,7 @@ public class HoneypotTower extends Tower {
             UUID.randomUUID().toString(),
             position,
             1,  // level
-            15f, // damage (reduced from 25 for difficulty)
+            15f, // damage
             120f, // range
             1.5f, // fireRate (1.5 attacks per second)
             300 // cost (doubled from 150)
@@ -39,7 +39,7 @@ public class HoneypotTower extends Tower {
 
     @Override
     public Projectile fire() {
-        if (target == null || isOnCooldown() || isCorrupted) {
+        if (target == null || isOnCooldown()) {
             return null;
         }
 

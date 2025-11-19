@@ -53,6 +53,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     
     // Touch input
     private PointF lastTouchPoint;
+    private final PointF tempTouchPoint = new PointF(); // Reusable temp for touch events
 
     // Tap listener for tower placement
     private OnTapListener tapListener;
@@ -463,22 +464,23 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        PointF touchPoint = new PointF(event.getX(), event.getY());
+        // Use temp point to avoid allocation on every touch event
+        tempTouchPoint.set(event.getX(), event.getY());
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                lastTouchPoint.set(touchPoint.x, touchPoint.y);
+                lastTouchPoint.set(tempTouchPoint.x, tempTouchPoint.y);
                 return true;
 
             case MotionEvent.ACTION_UP:
                 // Check if this was a tap (minimal movement)
-                float dx = touchPoint.x - lastTouchPoint.x;
-                float dy = touchPoint.y - lastTouchPoint.y;
+                float dx = tempTouchPoint.x - lastTouchPoint.x;
+                float dy = tempTouchPoint.y - lastTouchPoint.y;
                 float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
                 if (distance < 20) { // Threshold for tap vs drag
                     // Store touch point for performClick to use
-                    lastTouchPoint.set(touchPoint.x, touchPoint.y);
+                    lastTouchPoint.set(tempTouchPoint.x, tempTouchPoint.y);
                     performClick();
                 }
                 return true;
