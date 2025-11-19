@@ -55,6 +55,8 @@ cd Last-Server-Standing
 - Connect via USB cable
 - Select your device as the run target
 
+---
+
 ### **4. Build & Run the Game**
 Click the Run ▶️ button, or press:
 ```
@@ -62,4 +64,8 @@ Shift + F10
 ```
 Android Studio will build, install, and launch the game.
 
+---
 
+### **🐛 Known Issues**
+- UI scaling inconsistent on smaller screens
+- FPS drops during high enemy counts
