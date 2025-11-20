@@ -430,7 +430,7 @@ public class GameFragment extends Fragment {
                     if (towerIndex < availableTowers.size()) {
                         TowerOption tower = availableTowers.get(towerIndex);
                         draggedTower = tower;
-                        gameView.showDragPreview(tower.getIconResId());
+                        gameView.showDragPreview(tower.getIconResId(), tower.getRange());
                         updateDragPreview(event.getRawX(), event.getRawY());
                     }
                     return true;
@@ -573,8 +573,8 @@ public class GameFragment extends Fragment {
         availableTowers.add(new TowerOption(
                 "Firewall",
                 "Firewall",
-                100,
-                15f,
+                200,
+                10f,
                 150f,
                 2.0f,
                 R.drawable.ic_tower_firewall,
@@ -586,8 +586,8 @@ public class GameFragment extends Fragment {
         availableTowers.add(new TowerOption(
                 "Honeypot",
                 "Honeypot",
-                150,
-                25f,
+                300,
+                15f,
                 120f,
                 1.5f,
                 R.drawable.ic_tower_honeypot,
@@ -599,7 +599,7 @@ public class GameFragment extends Fragment {
         availableTowers.add(new TowerOption(
                 "Jammer",
                 "Jammer",
-                200,
+                400,
                 10f,
                 200f,
                 3.0f,

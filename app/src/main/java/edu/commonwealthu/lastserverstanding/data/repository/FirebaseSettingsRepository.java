@@ -20,6 +20,7 @@ public class FirebaseSettingsRepository {
     private static final String COLLECTION_SETTINGS = "user_settings";
     private static final String FIELD_SOUND_ENABLED = "soundEnabled";
     private static final String FIELD_VIBRATION_ENABLED = "vibrationEnabled";
+    private static final String FIELD_SHOW_TOWER_RANGES = "showTowerRanges";
 
     private final FirebaseFirestore firestore;
     private final FirebaseAuth auth;
@@ -27,6 +28,7 @@ public class FirebaseSettingsRepository {
     // Default settings
     private static final boolean DEFAULT_SOUND_ENABLED = true;
     private static final boolean DEFAULT_VIBRATION_ENABLED = true;
+    private static final boolean DEFAULT_SHOW_TOWER_RANGES = true;
 
     public FirebaseSettingsRepository() {
         firestore = FirebaseFirestore.getInstance();
@@ -80,7 +82,7 @@ public class FirebaseSettingsRepository {
             public void onError(String error) {
                 // If auth fails, return default settings
                 Log.w(TAG, "Authentication failed, using default settings: " + error);
-                callback.onSuccess(DEFAULT_SOUND_ENABLED, DEFAULT_VIBRATION_ENABLED);
+                callback.onSuccess(DEFAULT_SOUND_ENABLED, DEFAULT_VIBRATION_ENABLED, DEFAULT_SHOW_TOWER_RANGES);
             }
         });
     }
@@ -99,22 +101,24 @@ public class FirebaseSettingsRepository {
                         // Load settings from Firestore
                         Boolean soundEnabled = document.getBoolean(FIELD_SOUND_ENABLED);
                         Boolean vibrationEnabled = document.getBoolean(FIELD_VIBRATION_ENABLED);
+                        Boolean showTowerRanges = document.getBoolean(FIELD_SHOW_TOWER_RANGES);
 
                         // Use defaults if fields are missing
                         boolean sound = soundEnabled != null ? soundEnabled : DEFAULT_SOUND_ENABLED;
                         boolean vibration = vibrationEnabled != null ? vibrationEnabled : DEFAULT_VIBRATION_ENABLED;
+                        boolean ranges = showTowerRanges != null ? showTowerRanges : DEFAULT_SHOW_TOWER_RANGES;
 
                         Log.d(TAG, "Loaded settings for user " + userId);
-                        callback.onSuccess(sound, vibration);
+                        callback.onSuccess(sound, vibration, ranges);
                     } else {
                         // No settings found, return defaults
                         Log.d(TAG, "No settings found for user, using defaults");
-                        callback.onSuccess(DEFAULT_SOUND_ENABLED, DEFAULT_VIBRATION_ENABLED);
+                        callback.onSuccess(DEFAULT_SOUND_ENABLED, DEFAULT_VIBRATION_ENABLED, DEFAULT_SHOW_TOWER_RANGES);
                     }
                 } else {
                     Log.e(TAG, "Failed to load settings", task.getException());
                     // On error, return defaults
-                    callback.onSuccess(DEFAULT_SOUND_ENABLED, DEFAULT_VIBRATION_ENABLED);
+                    callback.onSuccess(DEFAULT_SOUND_ENABLED, DEFAULT_VIBRATION_ENABLED, DEFAULT_SHOW_TOWER_RANGES);
                 }
             });
     }
@@ -122,11 +126,11 @@ public class FirebaseSettingsRepository {
     /**
      * Save settings to Firestore
      */
-    public void saveSettings(boolean soundEnabled, boolean vibrationEnabled, SaveCallback callback) {
+    public void saveSettings(boolean soundEnabled, boolean vibrationEnabled, boolean showTowerRanges, SaveCallback callback) {
         ensureAuthenticated(new AuthCallback() {
             @Override
             public void onSuccess(String userId) {
-                performSave(userId, soundEnabled, vibrationEnabled, callback);
+                performSave(userId, soundEnabled, vibrationEnabled, showTowerRanges, callback);
             }
 
             @Override
@@ -139,10 +143,11 @@ public class FirebaseSettingsRepository {
     /**
      * Perform the actual save operation
      */
-    private void performSave(String userId, boolean soundEnabled, boolean vibrationEnabled, SaveCallback callback) {
+    private void performSave(String userId, boolean soundEnabled, boolean vibrationEnabled, boolean showTowerRanges, SaveCallback callback) {
         Map<String, Object> settingsData = new HashMap<>();
         settingsData.put(FIELD_SOUND_ENABLED, soundEnabled);
         settingsData.put(FIELD_VIBRATION_ENABLED, vibrationEnabled);
+        settingsData.put(FIELD_SHOW_TOWER_RANGES, showTowerRanges);
 
         firestore.collection(COLLECTION_SETTINGS)
             .document(userId)
@@ -168,7 +173,7 @@ public class FirebaseSettingsRepository {
     }
 
     public interface LoadCallback {
-        void onSuccess(boolean soundEnabled, boolean vibrationEnabled);
+        void onSuccess(boolean soundEnabled, boolean vibrationEnabled, boolean showTowerRanges);
     }
 
     public interface SaveCallback {

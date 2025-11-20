@@ -113,4 +113,5 @@ public class Projectile {
     public PointF getPosition() { return position; }
     public float getDamage() { return damage; }
     public boolean hasHit() { return hasHit; }
+    public StatusEffect getStatusEffect() { return statusEffect; }
 }

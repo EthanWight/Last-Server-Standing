@@ -751,30 +751,44 @@ public class GameEngine {
     }
 
     /**
-     * Draw slow effect (ice crystals)
+     * Draw slow effect (dripping glue/honey)
      */
     private void drawSlowEffect(Canvas canvas, Paint paint, PointF pos) {
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(2);
         long time = System.currentTimeMillis();
 
-        // Rotating ice crystals
-        for (int i = 0; i < 6; i++) {
-            float angle = (float) ((time / 30.0 + i * 60) % 360);
-            float radius = 18 + (float) Math.sin(time / 300.0) * 3;
+        // Dripping glue effect with honey/amber color
+        paint.setStyle(Paint.Style.FILL);
 
-            float x1 = pos.x + (float) Math.cos(Math.toRadians(angle)) * radius;
-            float y1 = pos.y + (float) Math.sin(Math.toRadians(angle)) * radius;
+        // Draw main glue blob on enemy
+        int alpha = 180;
+        paint.setColor(Color.argb(alpha, 255, 180, 0)); // Honey/amber color
+        canvas.drawCircle(pos.x, pos.y, 12, paint);
 
-            // Draw ice crystal lines
-            int alpha = 150;
-            paint.setColor(Color.argb(alpha, 100, 200, 255));
-            canvas.drawLine(pos.x, pos.y, x1, y1, paint);
+        // Add darker center for depth
+        paint.setColor(Color.argb(alpha, 200, 140, 0));
+        canvas.drawCircle(pos.x, pos.y, 8, paint);
 
-            // Draw small circles at the end
-            paint.setStyle(Paint.Style.FILL);
-            canvas.drawCircle(x1, y1, 2, paint);
+        // Draw dripping glue drops
+        paint.setStyle(Paint.Style.FILL);
+        for (int i = 0; i < 4; i++) {
+            // Slow dripping animation
+            float dropProgress = (float) ((time / 150.0 + i * 3) % 12);
+            float angle = i * 90; // Four drips evenly spaced
+
+            float dropX = pos.x + (float) Math.cos(Math.toRadians(angle)) * 10;
+            float dropY = pos.y + dropProgress;
+
+            // Draw elongated drip
+            int dropAlpha = (int) (150 * (1.0f - dropProgress / 12));
+            paint.setColor(Color.argb(dropAlpha, 255, 180, 0));
+            canvas.drawCircle(dropX, dropY, 3, paint);
+
+            // Draw connecting string from blob to drip
+            paint.setStrokeWidth(1.5f);
             paint.setStyle(Paint.Style.STROKE);
+            paint.setColor(Color.argb(dropAlpha, 230, 160, 0));
+            canvas.drawLine(pos.x, pos.y + 8, dropX, dropY, paint);
+            paint.setStyle(Paint.Style.FILL);
         }
     }
 
@@ -823,8 +837,31 @@ public class GameEngine {
         if (projectile == null) return;
         PointF pos = projectile.getPosition();
         if (pos == null) return;
-        // Use dedicated projectile paint
-        projectilePaint.setColor(Color.YELLOW);
+
+        // Color projectile based on status effect type
+        StatusEffect effect = projectile.getStatusEffect();
+        if (effect != null) {
+            switch (effect.getType()) {
+                case BURN:
+                    // Firewall - Red/Orange
+                    projectilePaint.setColor(Color.rgb(255, 100, 0));
+                    break;
+                case SLOW:
+                    // Honeypot - Amber/Honey
+                    projectilePaint.setColor(Color.rgb(255, 180, 0));
+                    break;
+                case STUN:
+                    // Jammer - Blue/Electric
+                    projectilePaint.setColor(Color.rgb(100, 200, 255));
+                    break;
+                default:
+                    projectilePaint.setColor(Color.YELLOW);
+                    break;
+            }
+        } else {
+            projectilePaint.setColor(Color.YELLOW);
+        }
+
         canvas.drawCircle(pos.x, pos.y, 5, projectilePaint);
     }
     

@@ -63,6 +63,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     private final PointF dragPreviewPosition = new PointF();
     private int dragPreviewIconRes = 0;
     private boolean isDragPreviewValid = false;
+    private float dragPreviewRange = 0f;
 
     public interface OnTapListener {
         void onTap(PointF worldPosition);
@@ -75,9 +76,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     /**
      * Show tower drag preview
      */
-    public void showDragPreview(int iconRes) {
+    public void showDragPreview(int iconRes, float range) {
         this.showDragPreview = true;
         this.dragPreviewIconRes = iconRes;
+        this.dragPreviewRange = range;
     }
 
     /**
@@ -445,6 +447,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
         paint.setColor(Color.argb(80, 255, 255, 255)); // Light white
         canvas.drawCircle(dragPreviewPosition.x, dragPreviewPosition.y,
                 32f, paint); // Half of minimum spacing (64f / 2)
+
+        // Draw range circle if range is specified
+        if (dragPreviewRange > 0) {
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(2);
+            if (isDragPreviewValid) {
+                paint.setColor(Color.argb(120, 100, 200, 255)); // Semi-transparent blue
+            } else {
+                paint.setColor(Color.argb(120, 255, 150, 150)); // Semi-transparent red
+            }
+            canvas.drawCircle(dragPreviewPosition.x, dragPreviewPosition.y,
+                    dragPreviewRange, paint);
+        }
 
         // Reset paint style
         paint.setStyle(Paint.Style.FILL);

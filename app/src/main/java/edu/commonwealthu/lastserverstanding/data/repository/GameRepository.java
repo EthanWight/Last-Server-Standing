@@ -39,8 +39,8 @@ public class GameRepository {
      * Load settings from Firebase
      */
     private void loadSettings() {
-        firebaseSettingsRepository.loadSettings((soundEnabled, vibrationEnabled) -> {
-            Settings loadedSettings = new Settings(soundEnabled, vibrationEnabled);
+        firebaseSettingsRepository.loadSettings((soundEnabled, vibrationEnabled, showTowerRanges) -> {
+            Settings loadedSettings = new Settings(soundEnabled, vibrationEnabled, showTowerRanges);
             settings.postValue(loadedSettings);
         });
     }
@@ -123,6 +123,7 @@ public class GameRepository {
         firebaseSettingsRepository.saveSettings(
             newSettings.isSoundEnabled(),
             newSettings.isVibrationEnabled(),
+            newSettings.isShowTowerRanges(),
             new FirebaseSettingsRepository.SaveCallback() {
                 @Override
                 public void onSuccess() {

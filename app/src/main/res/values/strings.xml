@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Last Server Standing</string>
     <string name="tagline">Defend the Last Data Center</string>
     <string name="start_wave">Start Wave %1$d</string>
@@ -23,10 +23,10 @@
     <!-- Tower dialog strings -->
     <string name="tower_name_format">%s Tower</string>
     <string name="tower_level_format">Level %d</string>
-    <string name="upgrade_button_format">Upgrade - %d resources</string>
+    <string name="upgrade_button_format" tools:ignore="PluralsCandidate">Upgrade - %d resources</string>
     <string name="max_level">Max Level</string>
     <string name="not_enough_resources">Not enough resources!</string>
-    <string name="tower_upgraded_format">%s upgraded to Level %d!</string>
+    <string name="tower_upgraded_format">%1$s upgraded to Level %2$d!</string>
 
     <!-- Load Game strings -->
     <string name="load_game">Load Game</string>
@@ -86,7 +86,7 @@
     <string name="level_1">Level 1</string>
     <string name="cost_100">100</string>
     <string name="firewall_description">Basic defense tower with high fire rate.</string>
-    <string name="damage_15">9</string>
+    <string name="damage_15">10</string>
     <string name="range_150">150</string>
     <string name="fire_rate_2_0">2.0</string>
     <string name="upgrade">Upgrade</string>
@@ -99,9 +99,9 @@
     <string name="enemies">Enemies</string>
 
     <!-- Tower Info Descriptions -->
-    <string name="firewall_tower_info"><b>Firewall Tower</b>\n\nCost: 200\nDamage: 9\nRange: 150\nFire Rate: 2.0/sec\n\n<b>Ability:</b> Applies a burn effect that deals damage over time (50% of direct damage for 2.5 seconds). Gains penetration chance with upgrades, potentially damaging multiple enemies.</string>
-    <string name="honeypot_tower_info"><b>Honeypot Tower</b>\n\nCost: 300\nDamage: 15\nRange: 120\nFire Rate: 1.5/sec\n\n<b>Ability:</b> Slows enemy movement by 50% for 3 seconds. Excellent for controlling enemy movement and creating choke points.</string>
-    <string name="jammer_tower_info"><b>Jammer Tower</b>\n\nCost: 400\nDamage: 6\nRange: 200\nFire Rate: 3.0/sec\n\n<b>Ability:</b> Stuns enemies for 0.5 seconds with very fast attack speed. Wide range makes it ideal for covering large areas and hitting multiple targets.</string>
+    <string name="firewall_tower_info"><b>Firewall Tower</b>\n\nCost: 200\nDamage: 10\nRange: 150\nFire Rate: 2.0/sec\n\n<b>Ability:</b> Applies a burn effect that deals damage over time (50% of direct damage for 2.5 seconds). Gains penetration chance with upgrades, potentially damaging multiple enemies.</string>
+    <string name="honeypot_tower_info" tools:ignore="StringFormatInvalid"><b>Honeypot Tower</b>\n\nCost: 300\nDamage: 15\nRange: 120\nFire Rate: 1.5/sec\n\n<b>Ability:</b> Covers enemies in sticky glue, slowing their movement by 50% for 3 seconds. Excellent for controlling enemy movement and creating choke points.</string>
+    <string name="jammer_tower_info"><b>Jammer Tower</b>\n\nCost: 400\nDamage: 10\nRange: 200\nFire Rate: 3.0/sec\n\n<b>Ability:</b> Stuns enemies for 0.5 seconds with very fast attack speed. Wide range makes it ideal for covering large areas and hitting multiple targets.</string>
 
     <!-- Enemy Info Descriptions -->
     <string name="data_crawler_info"><b>Data Crawler</b>\n\nHealth: 50\nSpeed: 120\nReward: 5 resources\nDamage: 5\n\n<b>Description:</b> Fast-moving web scraping bots with low health. They move quickly but are easy to destroy. Good for farming early resources.</string>
