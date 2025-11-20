@@ -15,8 +15,10 @@ import android.view.SurfaceView;
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
 
 /**
- * Custom SurfaceView for rendering the game at 60 FPS using Choreographer
- * Handles all game rendering and input
+ * Custom SurfaceView for rendering the game at 60 FPS using Choreographer.
+ * Handles all game rendering and input.
+ *
+ * @author Ethan Wight
  */
 public class GameView extends SurfaceView implements SurfaceHolder.Callback, Choreographer.FrameCallback {
 
@@ -74,7 +76,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Show tower drag preview
+     * Show tower drag preview.
+     *
+     * @param iconRes The icon resource ID.
+     * @param range The tower range.
      */
     public void showDragPreview(int iconRes, float range) {
         this.showDragPreview = true;
@@ -83,14 +88,17 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Hide tower drag preview
+     * Hide tower drag preview.
      */
     public void hideDragPreview() {
         this.showDragPreview = false;
     }
 
     /**
-     * Update drag preview position and validity
+     * Update drag preview position and validity.
+     *
+     * @param screenPos The screen position.
+     * @param isValid Whether the placement is valid.
      */
     public void updateDragPreview(PointF screenPos, boolean isValid) {
         PointF worldPos = screenToWorld(screenPos);
@@ -99,7 +107,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Constructor for XML inflation
+     * Constructor for XML inflation.
+     *
+     * @param context The application context.
+     * @param attrs The attribute set.
      */
     public GameView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -107,13 +118,21 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Constructor for programmatic creation
+     * Constructor for programmatic creation.
+     *
+     * @param context The application context.
      */
     public GameView(Context context) {
         super(context);
         init();
     }
 
+    /**
+     * Measure the view.
+     *
+     * @param widthMeasureSpec The width measure specification.
+     * @param heightMeasureSpec The height measure specification.
+     */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -126,7 +145,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Initialize the view
+     * Initialize the view.
      */
     private void init() {
         // Set up surface holder callbacks
@@ -152,14 +171,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Set the game engine
+     * Set the game engine.
+     *
+     * @param engine The game engine.
      */
     public void setGameEngine(GameEngine engine) {
         this.gameEngine = engine;
     }
     
     /**
-     * Calculate grid dimensions based on view size
+     * Calculate grid dimensions based on view size.
+     *
+     * @param width The view width.
+     * @param height The view height.
      */
     private void calculateGridDimensions(int width, int height) {
         int newGridWidth = width / gridSize;
@@ -215,7 +239,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Start the game loop using Choreographer
+     * Start the game loop using Choreographer.
      */
     public void startGameLoop() {
         if (!isRunning) {
@@ -227,7 +251,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Stop the game loop
+     * Stop the game loop.
      */
     public void stopGameLoop() {
         isRunning = false;
@@ -237,7 +261,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Choreographer frame callback - called on each vsync (typically 60 FPS)
+     * Choreographer frame callback - called on each vsync (typically 60 FPS).
+     *
+     * @param frameTimeNanos The frame time in nanoseconds.
      */
     @Override
     public void doFrame(long frameTimeNanos) {
@@ -266,7 +292,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Render the game
+     * Render the game.
      */
     private void render() {
         if (!getHolder().getSurface().isValid()) {
@@ -314,7 +340,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Draw the game grid (optimized with caching)
+     * Draw the game grid (optimized with caching).
      */
     private void drawGrid() {
         int gridPixelWidth = gridWidth * gridSize;
@@ -375,7 +401,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Fallback method to draw grid directly (if caching fails)
+     * Fallback method to draw grid directly (if caching fails).
      */
     private void drawGridDirect() {
         // Vertical lines
@@ -392,7 +418,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Draw drag preview of tower being placed
+     * Draw drag preview of tower being placed.
      */
     private void drawDragPreview() {
         float radius = gridSize / 2f;
@@ -400,9 +426,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
         // Draw semi-transparent background circle
         paint.setStyle(Paint.Style.FILL);
         if (isDragPreviewValid) {
-            paint.setColor(Color.argb(100, 0, 255, 0)); // Green with transparency
+            paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.placement_valid_fill));
         } else {
-            paint.setColor(Color.argb(100, 255, 0, 0)); // Red with transparency
+            paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.placement_invalid_fill));
         }
         canvas.drawCircle(dragPreviewPosition.x, dragPreviewPosition.y, radius, paint);
 
@@ -435,16 +461,16 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(3);
         if (isDragPreviewValid) {
-            paint.setColor(Color.argb(200, 0, 255, 0)); // Solid green border
+            paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.placement_valid_border));
         } else {
-            paint.setColor(Color.argb(200, 255, 0, 0)); // Solid red border
+            paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.placement_invalid_border));
         }
         canvas.drawCircle(dragPreviewPosition.x, dragPreviewPosition.y, radius, paint);
 
         // Draw spacing border (shows minimum spacing)
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(1);
-        paint.setColor(Color.argb(80, 255, 255, 255)); // Light white
+        paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.placement_grid_overlay));
         canvas.drawCircle(dragPreviewPosition.x, dragPreviewPosition.y,
                 32f, paint); // Half of minimum spacing (64f / 2)
 
@@ -453,9 +479,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(2);
             if (isDragPreviewValid) {
-                paint.setColor(Color.argb(120, 100, 200, 255)); // Semi-transparent blue
+                paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.drag_preview_valid));
             } else {
-                paint.setColor(Color.argb(120, 255, 150, 150)); // Semi-transparent red
+                paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.drag_preview_invalid));
             }
             canvas.drawCircle(dragPreviewPosition.x, dragPreviewPosition.y,
                     dragPreviewRange, paint);
@@ -467,7 +493,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Draw heads-up display
+     * Draw heads-up display.
      */
     private void drawHUD() {
         // HUD elements are now handled by GameFragment overlay
@@ -475,7 +501,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Handle touch input
+     * Handle touch input.
+     *
+     * @param event The motion event.
+     * @return True if the event was handled.
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -510,7 +539,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Handle click for accessibility
+     * Handle click for accessibility.
+     *
+     * @return True if the click was handled.
      */
     @Override
     public boolean performClick() {
@@ -528,7 +559,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Convert screen coordinates to world coordinates
+     * Convert screen coordinates to world coordinates.
+     *
+     * @param screenPos The screen position.
+     * @return The world position.
      */
     public PointF screenToWorld(PointF screenPos) {
         return new PointF(

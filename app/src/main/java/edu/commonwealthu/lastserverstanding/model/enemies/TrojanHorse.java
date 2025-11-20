@@ -1,6 +1,5 @@
 package edu.commonwealthu.lastserverstanding.model.enemies;
 
-import android.graphics.Color;
 import android.graphics.PointF;
 
 import java.util.List;
@@ -10,14 +9,18 @@ import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.model.Enemy;
 
 /**
- * Trojan Horse - High health, slow but tanky enemy
- * Appears starting from wave 10
- * Represents sophisticated malware systems
+ * Trojan Horse - High health, slow but tanky enemy.
+ * Appears starting from wave 10.
+ * Represents sophisticated malware systems.
+ *
+ * @author Ethan Wight
  */
 public class TrojanHorse extends Enemy {
 
     /**
-     * Constructor with default stats
+     * Constructor with default stats.
+     *
+     * @param path The path this enemy will follow.
      */
     public TrojanHorse(List<PointF> path) {
         super(
@@ -30,27 +33,50 @@ public class TrojanHorse extends Enemy {
         );
     }
 
+    /**
+     * Type-specific update logic (override in subclasses).
+     *
+     * @param deltaTime Time since last update in seconds.
+     */
     @Override
     protected void updateSpecific(float deltaTime) {
         // Trojan Horses are slow but resilient
         // No special behavior during update
     }
 
+    /**
+     * Get the enemy type name.
+     *
+     * @return The type name of this enemy.
+     */
     @Override
     public String getType() {
         return "Trojan Horse";
     }
 
+    /**
+     * Get the enemy's color for rendering.
+     *
+     * @return Color value (use android.graphics.Color constants).
+     */
     @Override
     public int getColor() {
-        return Color.GREEN;
+        return android.graphics.Color.GREEN;
     }
 
+    /**
+     * Get the enemy's icon resource ID for rendering.
+     *
+     * @return Drawable resource ID.
+     */
     @Override
     public int getIconResId() {
         return R.drawable.ic_enemy_horse;
     }
 
+    /**
+     * Called when enemy dies.
+     */
     @Override
     protected void onDeath() {
         super.onDeath();

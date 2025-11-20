@@ -19,8 +19,10 @@ import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
 import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
 /**
- * Main Menu Fragment - Entry point for the application
- * Provides navigation to game, leaderboards, and settings
+ * Main Menu Fragment - Entry point for the application.
+ * Provides navigation to game, leaderboards, and settings.
+ *
+ * @author Ethan Wight
  */
 public class MainMenuFragment extends Fragment {
 
@@ -94,7 +96,9 @@ public class MainMenuFragment extends Fragment {
     }
 
     /**
-     * Check Firebase for autosaves and update continue button visibility
+     * Check Firebase for autosaves and update continue button visibility.
+     *
+     * @param viewModel The game view model to use for loading saves
      */
     private void checkForFirebaseSave(GameViewModel viewModel) {
         Log.d(TAG, "==========================================");
@@ -103,14 +107,17 @@ public class MainMenuFragment extends Fragment {
 
         viewModel.loadLatestAutoSave(new GameRepository.LoadCallback() {
             @Override
-            public void onSuccess(edu.commonwealthu.lastserverstanding.data.models.GameState gameState) {
+            public void onSuccess(
+                    edu.commonwealthu.lastserverstanding.data.models.GameState gameState) {
                 Log.d(TAG, "checkForFirebaseSave: onSuccess callback received");
-                Log.d(TAG, "checkForFirebaseSave: gameState != null? " + (gameState != null));
+                Log.d(TAG, "checkForFirebaseSave: gameState != null? "
+                        + (gameState != null));
 
                 // Found a save - show continue button if it has progress
                 if (gameState != null && gameState.currentWave > 0) {
                     Log.d(TAG, "checkForFirebaseSave: ✓✓✓ SHOWING CONTINUE BUTTON");
-                    Log.d(TAG, "checkForFirebaseSave: Wave: " + gameState.currentWave + ", Score: " + gameState.score);
+                    Log.d(TAG, "checkForFirebaseSave: Wave: " + gameState.currentWave
+                            + ", Score: " + gameState.score);
                     continueButton.setVisibility(View.VISIBLE);
                     Log.d(TAG, "checkForFirebaseSave: Button visibility set to VISIBLE");
                 } else {

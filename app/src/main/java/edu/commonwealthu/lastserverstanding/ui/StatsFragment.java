@@ -23,7 +23,9 @@ import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager;
 
 /**
- * Stats Fragment - Displays leaderboard ranked by highest wave reached
+ * Stats Fragment - Displays leaderboard ranked by highest wave reached.
+ *
+ * @author Ethan Wight
  */
 public class StatsFragment extends Fragment {
 

@@ -27,7 +27,9 @@ import edu.commonwealthu.lastserverstanding.model.StatusEffect;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
 /**
- * Core game engine managing all game logic and state
+ * Core game engine managing all game logic and state.
+ *
+ * @author Ethan Wight
  */
 public class GameEngine {
 
@@ -66,6 +68,9 @@ public class GameEngine {
     // Game constants
     private static final int STARTING_RESOURCES = 500;
     private static final int STARTING_HEALTH = 100;
+    // Icon sizes for rendering
+    private static final int TOWER_ICON_SIZE = 48;
+    private static final int DATACENTER_ICON_SIZE = 96;
 
     // Tower icon cache
     private final Map<String, Bitmap> towerIcons;
@@ -109,7 +114,7 @@ public class GameEngine {
     private int datacenterColor;
 
     /**
-     * Constructor
+     * Constructor.
      */
     public GameEngine() {
         towerIcons = new HashMap<>();
@@ -145,7 +150,7 @@ public class GameEngine {
     }
 
     /**
-     * Initialize dedicated Paint objects to reduce configuration changes during rendering
+     * Initialize dedicated Paint objects to reduce configuration changes during rendering.
      */
     private void initializePaints() {
         // Map paint - for tiles
@@ -173,16 +178,18 @@ public class GameEngine {
         // Health bar paint - for enemy health bars
         healthBarPaint.setStyle(Paint.Style.FILL);
         healthBarPaint.setAntiAlias(false); // No AA for rectangles
-        healthBarPaint.setColor(Color.GREEN);
+        // Color will be set in setContext() after context is available
 
         // Health bar background - dark background for health bars
         healthBarBgPaint.setStyle(Paint.Style.FILL);
         healthBarBgPaint.setAntiAlias(false);
-        healthBarBgPaint.setColor(Color.DKGRAY);
+        // Color will be set in setContext() after context is available
     }
 
     /**
-     * Set context for loading resources
+     * Set context for loading resources.
+     *
+     * @param context The application context
      */
     public void setContext(Context context) {
         this.context = context;
@@ -193,11 +200,19 @@ public class GameEngine {
             wallColor = androidx.core.content.ContextCompat.getColor(context, R.color.wall_dark_gray);
             spawnColor = androidx.core.content.ContextCompat.getColor(context, R.color.spawn_green);
             datacenterColor = androidx.core.content.ContextCompat.getColor(context, R.color.datacenter_blue);
+
+            // Set health bar colors now that context is available
+            healthBarPaint.setColor(ContextCompat.getColor(context, R.color.health_bar_fill));
+            healthBarBgPaint.setColor(ContextCompat.getColor(context, R.color.health_bar_background));
         }
     }
 
     /**
-     * Set world dimensions (called by GameView after initialization)
+     * Set world dimensions (called by GameView after initialization).
+     *
+     * @param width World width in pixels
+     * @param height World height in pixels
+     * @param cellSize Grid cell size in pixels
      */
     public void setWorldDimensions(int width, int height, int cellSize) {
         if (width <= 0 || height <= 0 || cellSize <= 0) {
@@ -225,7 +240,8 @@ public class GameEngine {
     }
     
     /**
-     * Update game state
+     * Update game state.
+     *
      * @param deltaTime Time since last update in seconds
      */
     public void update(float deltaTime) {
@@ -313,7 +329,8 @@ public class GameEngine {
     }
     
     /**
-     * Render all game elements
+     * Render all game elements.
+     *
      * @param canvas Canvas to draw on
      * @param paint Paint object for drawing
      */
@@ -365,8 +382,10 @@ public class GameEngine {
     }
 
     /**
-     * Render the game map with different colors for different tile types
-     * Optimized to batch paint operations by color
+     * Render the game map with different colors for different tile types.
+     * Optimized to batch paint operations by color.
+     *
+     * @param canvas Canvas to draw on
      */
     private void renderMap(Canvas canvas) {
         if (gameMap == null) {
@@ -460,7 +479,10 @@ public class GameEngine {
     }
     
     /**
-     * Get tower icon resource ID based on type
+     * Get tower icon resource ID based on type.
+     *
+     * @param towerType The type of tower
+     * @return The resource ID for the tower icon
      */
     private int getTowerIconResource(String towerType) {
         return switch (towerType) {
@@ -476,8 +498,11 @@ public class GameEngine {
     }
 
     /**
-     * Load and cache tower icon
-     * Converts vector drawables to bitmaps for rendering
+     * Load and cache tower icon.
+     * Converts vector drawables to bitmaps for rendering.
+     *
+     * @param towerType The type of tower
+     * @return The cached tower icon bitmap, or null if loading failed
      */
     private Bitmap getTowerIcon(String towerType) {
         if (!towerIcons.containsKey(towerType) && context != null) {
@@ -489,8 +514,8 @@ public class GameEngine {
 
                 if (drawable != null) {
                     // Create a bitmap to draw the vector drawable into
-                    int size = 48; // Icon size in pixels
-                    Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+                    Bitmap bitmap = Bitmap.createBitmap(
+                            TOWER_ICON_SIZE, TOWER_ICON_SIZE, Bitmap.Config.ARGB_8888);
                     Canvas canvas = new Canvas(bitmap);
 
                     // Set the bounds and draw
@@ -511,8 +536,11 @@ public class GameEngine {
     }
 
     /**
-     * Load and cache enemy icon
-     * Converts vector drawables to bitmaps for rendering
+     * Load and cache enemy icon.
+     * Converts vector drawables to bitmaps for rendering.
+     *
+     * @param enemy The enemy to get the icon for
+     * @return The cached enemy icon bitmap, or null if loading failed
      */
     private Bitmap getEnemyIcon(Enemy enemy) {
         String enemyType = enemy.getType();
@@ -525,7 +553,8 @@ public class GameEngine {
 
                 if (drawable != null) {
                     // Create bitmap and canvas
-                    Bitmap bitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888);
+                    Bitmap bitmap = Bitmap.createBitmap(
+                            TOWER_ICON_SIZE, TOWER_ICON_SIZE, Bitmap.Config.ARGB_8888);
                     Canvas canvas = new Canvas(bitmap);
 
                     // Set the bounds and draw
@@ -546,8 +575,10 @@ public class GameEngine {
     }
 
     /**
-     * Load and cache data center goal icon
-     * Converts vector drawable to bitmap for rendering
+     * Load and cache data center goal icon.
+     * Converts vector drawable to bitmap for rendering.
+     *
+     * @return The cached datacenter icon bitmap, or null if loading failed
      */
     private Bitmap getDataCenterIcon() {
         if (dataCenterIcon == null && context != null) {
@@ -557,8 +588,9 @@ public class GameEngine {
 
                 if (drawable != null) {
                     // Create a larger bitmap for the goal icon (more visible)
-                    int size = 96; // Larger icon for goal visibility
-                    Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+                    Bitmap bitmap = Bitmap.createBitmap(
+                            DATACENTER_ICON_SIZE, DATACENTER_ICON_SIZE,
+                            Bitmap.Config.ARGB_8888);
                     Canvas canvas = new Canvas(bitmap);
 
                     // Set the bounds and draw
@@ -576,7 +608,10 @@ public class GameEngine {
     }
 
     /**
-     * Draw data center icon at the map exit/goal position
+     * Draw data center icon at the map exit/goal position.
+     *
+     * @param canvas Canvas to draw on
+     * @param paint Paint object for drawing
      */
     private void drawGoals(Canvas canvas, Paint paint) {
         if (gameMap == null) return;
@@ -596,7 +631,10 @@ public class GameEngine {
     }
 
     /**
-     * Draw tower range indicator (semi-transparent circle)
+     * Draw tower range indicator (semi-transparent circle).
+     *
+     * @param canvas Canvas to draw on
+     * @param tower The tower to draw range for
      */
     private void drawTowerRange(Canvas canvas, Tower tower) {
         if (tower == null) return;
@@ -605,12 +643,15 @@ public class GameEngine {
 
         // Use dedicated range paint (already configured with stroke, alpha, etc.)
         // Draw range circle border
-        towerRangePaint.setColor(Color.argb(80, 100, 200, 255)); // Light blue, 80% opacity
+        towerRangePaint.setColor(ContextCompat.getColor(context, R.color.tower_range_indicator));
         canvas.drawCircle(pos.x, pos.y, tower.getRange(), towerRangePaint);
     }
 
     /**
-     * Draw a tower with its icon (optimized to reduce object allocation)
+     * Draw a tower with its icon (optimized to reduce object allocation).
+     *
+     * @param canvas Canvas to draw on
+     * @param tower The tower to draw
      */
     private void drawTower(Canvas canvas, Tower tower) {
         if (tower == null) return;
@@ -633,14 +674,18 @@ public class GameEngine {
             canvas.drawBitmap(icon, null, tempRect, towerPaint);
         } else {
             // Fallback to circle if icon not available - use dedicated tower paint
-            towerPaint.setColor(Color.CYAN);
+            towerPaint.setColor(ContextCompat.getColor(context, R.color.tower_default));
             canvas.drawCircle(pos.x, pos.y, 24, towerPaint);
         }
 
     }
     
     /**
-     * Draw an enemy with its icon
+     * Draw an enemy with its icon.
+     *
+     * @param canvas Canvas to draw on
+     * @param paint Paint object for drawing
+     * @param enemy The enemy to draw
      */
     private void drawEnemy(Canvas canvas, Paint paint, Enemy enemy) {
         if (enemy == null) return;
@@ -691,7 +736,11 @@ public class GameEngine {
     }
 
     /**
-     * Draw status effect animations around an enemy
+     * Draw status effect animations around an enemy.
+     *
+     * @param canvas Canvas to draw on
+     * @param paint Paint object for drawing
+     * @param enemy The enemy to draw effects for
      */
     private void drawStatusEffects(Canvas canvas, Paint paint, Enemy enemy) {
         if (enemy == null) return;
@@ -728,11 +777,17 @@ public class GameEngine {
     }
 
     /**
-     * Draw burn effect (fire particles)
+     * Draw burn effect (fire particles).
+     *
+     * @param canvas Canvas to draw on
+     * @param paint Paint object for drawing
+     * @param pos Position to draw effect at
      */
     private void drawBurnEffect(Canvas canvas, Paint paint, PointF pos) {
         paint.setStyle(Paint.Style.FILL);
         long time = System.currentTimeMillis();
+
+        ContextCompat.getColor(context, R.color.effect_burn_base);
 
         // Animated fire particles rising up
         for (int i = 0; i < 4; i++) {
@@ -743,7 +798,7 @@ public class GameEngine {
             float x = pos.x + (float) Math.cos(Math.toRadians(angle)) * (radius / 2);
             float y = pos.y + offsetY;
 
-            // Gradient from red to orange to yellow
+            // Gradient from base color with varying alpha and green component for gradient effect
             int alpha = (int) (100 + Math.sin(time / 100.0 + i) * 50);
             paint.setColor(Color.argb(alpha, 255, 100 + i * 30, 0));
             canvas.drawCircle(x, y, 3 - i * 0.5f, paint);
@@ -751,21 +806,30 @@ public class GameEngine {
     }
 
     /**
-     * Draw slow effect (dripping glue/honey)
+     * Draw slow effect (dripping glue/honey).
+     *
+     * @param canvas Canvas to draw on
+     * @param paint Paint object for drawing
+     * @param pos Position to draw effect at
      */
     private void drawSlowEffect(Canvas canvas, Paint paint, PointF pos) {
         long time = System.currentTimeMillis();
+
+        // Get base colors for slow effect
+        int amberColor = ContextCompat.getColor(context, R.color.effect_slow_amber);
+        int amberDarkColor = ContextCompat.getColor(context, R.color.effect_slow_amber_dark);
+        int amberDropColor = ContextCompat.getColor(context, R.color.effect_slow_amber_drop);
 
         // Dripping glue effect with honey/amber color
         paint.setStyle(Paint.Style.FILL);
 
         // Draw main glue blob on enemy
         int alpha = 180;
-        paint.setColor(Color.argb(alpha, 255, 180, 0)); // Honey/amber color
+        paint.setColor(Color.argb(alpha, Color.red(amberColor), Color.green(amberColor), Color.blue(amberColor)));
         canvas.drawCircle(pos.x, pos.y, 12, paint);
 
         // Add darker center for depth
-        paint.setColor(Color.argb(alpha, 200, 140, 0));
+        paint.setColor(Color.argb(alpha, Color.red(amberDarkColor), Color.green(amberDarkColor), Color.blue(amberDarkColor)));
         canvas.drawCircle(pos.x, pos.y, 8, paint);
 
         // Draw dripping glue drops
@@ -780,25 +844,33 @@ public class GameEngine {
 
             // Draw elongated drip
             int dropAlpha = (int) (150 * (1.0f - dropProgress / 12));
-            paint.setColor(Color.argb(dropAlpha, 255, 180, 0));
+            paint.setColor(Color.argb(dropAlpha, Color.red(amberDropColor), Color.green(amberDropColor), Color.blue(amberDropColor)));
             canvas.drawCircle(dropX, dropY, 3, paint);
 
             // Draw connecting string from blob to drip
             paint.setStrokeWidth(1.5f);
             paint.setStyle(Paint.Style.STROKE);
-            paint.setColor(Color.argb(dropAlpha, 230, 160, 0));
+            paint.setColor(Color.argb(dropAlpha, Color.red(amberDropColor), Color.green(amberDropColor), Color.blue(amberDropColor)));
             canvas.drawLine(pos.x, pos.y + 8, dropX, dropY, paint);
             paint.setStyle(Paint.Style.FILL);
         }
     }
 
     /**
-     * Draw stun effect (electric sparks)
+     * Draw stun effect (electric sparks).
+     *
+     * @param canvas Canvas to draw on
+     * @param paint Paint object for drawing
+     * @param pos Position to draw effect at
      */
     private void drawStunEffect(Canvas canvas, Paint paint, PointF pos) {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(2);
         long time = System.currentTimeMillis();
+
+        // Get stun effect colors
+        int stunYellowColor = ContextCompat.getColor(context, R.color.effect_stun_yellow);
+        int stunGlowColor = ContextCompat.getColor(context, R.color.effect_stun_yellow_glow);
 
         // Electric lightning bolts
         for (int i = 0; i < 5; i++) {
@@ -816,7 +888,7 @@ public class GameEngine {
                 float y = pos.y + (float) Math.sin(Math.toRadians(segmentAngle)) * segmentRadius;
 
                 int alpha = (int) (150 + Math.sin(time / 50.0 + i) * 100);
-                paint.setColor(Color.argb(alpha, 255, 255, 100));
+                paint.setColor(Color.argb(alpha, Color.red(stunYellowColor), Color.green(stunYellowColor), Color.blue(stunYellowColor)));
                 canvas.drawLine(prevX, prevY, x, y, paint);
 
                 prevX = x;
@@ -826,12 +898,15 @@ public class GameEngine {
 
         // Outer glow
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.argb(50, 255, 255, 150));
+        paint.setColor(Color.argb(50, Color.red(stunGlowColor), Color.green(stunGlowColor), Color.blue(stunGlowColor)));
         canvas.drawCircle(pos.x, pos.y, 25, paint);
     }
     
     /**
-     * Draw a projectile (placeholder - will be enhanced later)
+     * Draw a projectile.
+     *
+     * @param canvas Canvas to draw on
+     * @param projectile The projectile to draw
      */
     private void drawProjectile(Canvas canvas, Projectile projectile) {
         if (projectile == null) return;
@@ -844,29 +919,29 @@ public class GameEngine {
             switch (effect.getType()) {
                 case BURN:
                     // Firewall - Red/Orange
-                    projectilePaint.setColor(Color.rgb(255, 100, 0));
+                    projectilePaint.setColor(ContextCompat.getColor(context, R.color.projectile_burn));
                     break;
                 case SLOW:
                     // Honeypot - Amber/Honey
-                    projectilePaint.setColor(Color.rgb(255, 180, 0));
+                    projectilePaint.setColor(ContextCompat.getColor(context, R.color.projectile_slow));
                     break;
                 case STUN:
                     // Jammer - Blue/Electric
-                    projectilePaint.setColor(Color.rgb(100, 200, 255));
+                    projectilePaint.setColor(ContextCompat.getColor(context, R.color.projectile_stun));
                     break;
                 default:
-                    projectilePaint.setColor(Color.YELLOW);
+                    projectilePaint.setColor(ContextCompat.getColor(context, R.color.projectile_default));
                     break;
             }
         } else {
-            projectilePaint.setColor(Color.YELLOW);
+            projectilePaint.setColor(ContextCompat.getColor(context, R.color.projectile_default));
         }
 
         canvas.drawCircle(pos.x, pos.y, 5, projectilePaint);
     }
     
     /**
-     * Update FPS counter
+     * Update FPS counter.
      */
     private void updateFPS() {
         frameCount++;
@@ -879,7 +954,9 @@ public class GameEngine {
     }
     
     /**
-     * Handle tap on game view
+     * Handle tap on game view.
+     *
+     * @param worldPos The world position that was tapped
      */
     public void handleTap(PointF worldPos) {
         // Will be implemented for tower placement
@@ -888,7 +965,8 @@ public class GameEngine {
     }
     
     /**
-     * Check if a tower can be placed at the given position
+     * Check if a tower can be placed at the given position.
+     *
      * @param position World position to check
      * @return true if placement is valid
      */
@@ -909,7 +987,7 @@ public class GameEngine {
                 float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
                 // Enforce minimum spacing between towers (one grid cell)
-                if (distance < 64f) {
+                if (distance < gridSize) {
                     return false;
                 }
             }
@@ -919,7 +997,10 @@ public class GameEngine {
     }
 
     /**
-     * Add a tower to the game
+     * Add a tower to the game.
+     *
+     * @param tower The tower to add
+     * @return true if tower was added successfully
      */
     public boolean addTower(Tower tower) {
         if (tower == null) {
@@ -944,7 +1025,8 @@ public class GameEngine {
     }
 
     /**
-     * Remove a tower from the game and refund partial resources
+     * Remove a tower from the game and refund partial resources.
+     *
      * @param tower The tower to remove
      * @return true if tower was successfully removed
      */
@@ -959,7 +1041,9 @@ public class GameEngine {
                 int refund = tower.getTotalInvestment() / 2;
                 resources += refund;
                 notifyStatsChanged();
-                android.util.Log.d("GameEngine", "Tower removed, refunded " + refund + " resources (50% of " + tower.getTotalInvestment() + " total investment)");
+                android.util.Log.d("GameEngine",
+                        "Tower removed, refunded " + refund + " resources (50% of "
+                        + tower.getTotalInvestment() + " total investment)");
                 return true;
             }
         }
@@ -967,7 +1051,9 @@ public class GameEngine {
     }
 
     /**
-     * Add an enemy to the game
+     * Add an enemy to the game.
+     *
+     * @param enemy The enemy to add
      */
     public void addEnemy(Enemy enemy) {
         synchronized (enemies) {
@@ -976,7 +1062,8 @@ public class GameEngine {
     }
 
     /**
-     * Get tower at a specific position (grid coordinates)
+     * Get tower at a specific position (grid coordinates).
+     *
      * @param worldPos World position to check
      * @return Tower at that position, or null if none found
      */
@@ -997,7 +1084,8 @@ public class GameEngine {
     }
 
     /**
-     * Upgrade a tower
+     * Upgrade a tower.
+     *
      * @param tower Tower to upgrade
      * @return true if upgrade successful
      */
@@ -1020,7 +1108,9 @@ public class GameEngine {
     }
 
     /**
-     * Add resources
+     * Add resources.
+     *
+     * @param amount Amount of resources to add
      */
     public void addResources(int amount) {
         resources += amount;
@@ -1028,7 +1118,9 @@ public class GameEngine {
     }
     
     /**
-     * Add score
+     * Add score.
+     *
+     * @param amount Amount of score to add
      */
     public void addScore(long amount) {
         score += amount;
@@ -1036,7 +1128,7 @@ public class GameEngine {
     }
 
     /**
-     * Notify listener that stats have changed
+     * Notify listener that stats have changed.
      */
     private void notifyStatsChanged() {
         if (gameListener != null) {
@@ -1045,7 +1137,7 @@ public class GameEngine {
     }
 
     /**
-     * Handle game over
+     * Handle game over.
      */
     private void gameOver() {
         if (isGameOver) return; // Prevent multiple game over calls
@@ -1060,7 +1152,7 @@ public class GameEngine {
     }
     
     /**
-     * Start next wave
+     * Start next wave.
      */
     public void startNextWave() {
         waveManager.startNextWave(this);
@@ -1069,7 +1161,9 @@ public class GameEngine {
     }
 
     /**
-     * Capture current game state for saving
+     * Capture current game state for saving.
+     *
+     * @return The captured game state
      */
     public edu.commonwealthu.lastserverstanding.data.models.GameState captureGameState() {
         edu.commonwealthu.lastserverstanding.data.models.GameState state = new edu.commonwealthu.lastserverstanding.data.models.GameState();
@@ -1106,9 +1200,12 @@ public class GameEngine {
     }
 
     /**
-     * Restore game state from saved data
+     * Restore game state from saved data.
+     *
+     * @param state The saved game state to restore
      */
-    public void restoreGameState(edu.commonwealthu.lastserverstanding.data.models.GameState state) {
+    public void restoreGameState(
+            edu.commonwealthu.lastserverstanding.data.models.GameState state) {
         // Clear current state
         synchronized (towers) {
             towers.clear();
@@ -1155,9 +1252,13 @@ public class GameEngine {
     }
 
     /**
-     * Helper to create tower from saved data
+     * Helper to create tower from saved data.
+     *
+     * @param data The saved tower data
+     * @return The recreated tower, or null if type is unknown
      */
-    private Tower createTowerFromData(edu.commonwealthu.lastserverstanding.data.models.GameState.TowerData data) {
+    private Tower createTowerFromData(
+            edu.commonwealthu.lastserverstanding.data.models.GameState.TowerData data) {
         PointF pos = new PointF(data.x, data.y);
         Tower tower;
 
@@ -1186,9 +1287,13 @@ public class GameEngine {
     }
 
     /**
-     * Helper to create enemy from saved data
+     * Helper to create enemy from saved data.
+     *
+     * @param data The saved enemy data
+     * @return The recreated enemy, or null if type is unsupported
      */
-    private Enemy createEnemyFromData(edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData data) {
+    private Enemy createEnemyFromData(
+            edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData data) {
         // Reconstruct path
         List<PointF> path = new ArrayList<>();
         for (edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData.Point p : data.path) {
@@ -1197,7 +1302,8 @@ public class GameEngine {
 
         // For now, only support DataCrawler (expand later)
         if ("Data Crawler".equals(data.type)) {
-            edu.commonwealthu.lastserverstanding.model.enemies.DataCrawler enemy = new edu.commonwealthu.lastserverstanding.model.enemies.DataCrawler(path);
+            edu.commonwealthu.lastserverstanding.model.enemies.DataCrawler enemy =
+                    new edu.commonwealthu.lastserverstanding.model.enemies.DataCrawler(path);
             // Set position and health
             enemy.setPosition(new PointF(data.x, data.y));
             enemy.setCurrentPathIndex(data.currentPathIndex);
@@ -1210,7 +1316,9 @@ public class GameEngine {
     }
 
     /**
-     * Try to upgrade tower at grid position
+     * Try to upgrade tower at grid position.
+     *
+     * @param gridPos The grid position to check for a tower
      * @return true if upgrade successful
      */
     public boolean tryUpgradeTowerAt(PointF gridPos) {
@@ -1219,7 +1327,8 @@ public class GameEngine {
         synchronized (towers) {
             for (Tower tower : towers) {
                 PointF towerGrid = gameMap.worldToGrid(tower.getPosition());
-                if (Math.abs(towerGrid.x - gridPos.x) < 0.5f && Math.abs(towerGrid.y - gridPos.y) < 0.5f) {
+                if (Math.abs(towerGrid.x - gridPos.x) < 0.5f
+                        && Math.abs(towerGrid.y - gridPos.y) < 0.5f) {
                     int upgradeCost = tower.getUpgradeCost();
                     if (resources >= upgradeCost) {
                         boolean upgraded = tower.upgrade(upgradeCost);
@@ -1237,7 +1346,7 @@ public class GameEngine {
     }
 
     /**
-     * Trigger emergency alert with haptic and audio feedback
+     * Trigger emergency alert with haptic and audio feedback.
      */
     public void triggerEmergencyAlert() {
         android.util.Log.d("GameEngine", "Emergency alert triggered!");
@@ -1256,7 +1365,8 @@ public class GameEngine {
                     // Pattern: short-long-short (SOS-like)
                     long[] timings = {0, 200, 100, 400, 100, 200};
                     int[] amplitudes = {0, 255, 0, 255, 0, 255};
-                    VibrationEffect effect = VibrationEffect.createWaveform(timings, amplitudes, -1);
+                    VibrationEffect effect = VibrationEffect.createWaveform(
+                            timings, amplitudes, -1);
                     vibrator.vibrate(effect);
                 } else {
                     // Fallback for older devices
@@ -1268,30 +1378,36 @@ public class GameEngine {
     }
 
     /**
-     * Play emergency alert sound using ToneGenerator
+     * Play emergency alert sound using ToneGenerator.
      */
     private void playAlertSound() {
         new Thread(() -> {
             android.media.ToneGenerator toneGen = null;
             try {
-                toneGen = new android.media.ToneGenerator(android.media.AudioManager.STREAM_ALARM, 100);
+                toneGen = new android.media.ToneGenerator(
+                        android.media.AudioManager.STREAM_ALARM, 100);
                 // Play a series of urgent tones (high pitched beeps)
-                toneGen.startTone(android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
+                toneGen.startTone(
+                        android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
                 Thread.sleep(300);
-                toneGen.startTone(android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 400);
+                toneGen.startTone(
+                        android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 400);
                 Thread.sleep(500);
-                toneGen.startTone(android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
+                toneGen.startTone(
+                        android.media.ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
                 Thread.sleep(300);
             } catch (Exception e) {
                 // Silently fail if sound cannot be played
-                android.util.Log.e("GameEngine", "Failed to play alert sound: " + e.getMessage(), e);
+                android.util.Log.e("GameEngine",
+                        "Failed to play alert sound: " + e.getMessage(), e);
             } finally {
                 // Always release ToneGenerator to prevent resource leak
                 if (toneGen != null) {
                     try {
                         toneGen.release();
                     } catch (Exception e) {
-                        android.util.Log.e("GameEngine", "Error releasing ToneGenerator: " + e.getMessage(), e);
+                        android.util.Log.e("GameEngine",
+                                "Error releasing ToneGenerator: " + e.getMessage(), e);
                     }
                 }
             }
@@ -1299,21 +1415,27 @@ public class GameEngine {
     }
 
     /**
-     * Set vibration enabled state from settings
+     * Set vibration enabled state from settings.
+     *
+     * @param enabled True to enable vibration, false to disable
      */
     public void setVibrationEnabled(boolean enabled) {
         this.vibrationEnabled = enabled;
     }
 
     /**
-     * Set sound enabled state from settings
+     * Set sound enabled state from settings.
+     *
+     * @param enabled True to enable sound, false to disable
      */
     public void setSoundEnabled(boolean enabled) {
         this.soundEnabled = enabled;
     }
 
     /**
-     * Set tower range visibility from settings
+     * Set tower range visibility from settings.
+     *
+     * @param enabled True to show tower ranges, false to hide
      */
     public void setShowTowerRanges(boolean enabled) {
         this.showTowerRanges = enabled;
@@ -1344,7 +1466,9 @@ public class GameEngine {
     }
 
     /**
-     * Notify listener that a wave has been completed
+     * Notify listener that a wave has been completed.
+     *
+     * @param waveNumber The number of the completed wave
      */
     public void notifyWaveComplete(int waveNumber) {
         if (gameListener != null) {
@@ -1353,7 +1477,7 @@ public class GameEngine {
     }
 
     /**
-     * Interface for game event callbacks
+     * Interface for game event callbacks.
      */
     public interface GameListener {
         void onGameOver(int finalWave);

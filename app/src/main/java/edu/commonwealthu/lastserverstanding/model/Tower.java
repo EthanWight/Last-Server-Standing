@@ -5,6 +5,8 @@ import android.graphics.PointF;
 /**
  * Abstract base class for all tower types in the game.
  * Represents a defensive structure that attacks enemies within range.
+ *
+ * @author Ethan Wight
  */
 public abstract class Tower {
     // Unique identifier for this tower instance
@@ -32,7 +34,15 @@ public abstract class Tower {
     protected long lastFireTime;
 
     /**
-     * Constructor for tower base class
+     * Constructor for tower base class.
+     *
+     * @param id Unique identifier for this tower instance.
+     * @param position Position on the game grid.
+     * @param level Current upgrade level (1-5).
+     * @param damage Damage per shot.
+     * @param range Attack range in units.
+     * @param fireRate Attacks per second.
+     * @param cost Cost to build this tower.
      */
     public Tower(String id, PointF position, int level, float damage, float range, float fireRate, int cost) {
         this.id = id;
@@ -47,26 +57,31 @@ public abstract class Tower {
     }
     
     /**
-     * Update tower state each frame
-     * @param deltaTime Time since last update in seconds
+     * Update tower state each frame.
+     *
+     * @param deltaTime Time since last update in seconds.
      */
     public abstract void update(float deltaTime);
     
     /**
-     * Fire at the current target if possible
-     * @return Projectile if fired, null otherwise
+     * Fire at the current target if possible.
+     *
+     * @return Projectile if fired, null otherwise.
      */
     public abstract Projectile fire();
 
     /**
-     * Get the tower type name
+     * Get the tower type name.
+     *
+     * @return The type name of this tower.
      */
     public abstract String getType();
     
     /**
-     * Get the cost to upgrade this tower to the next level
-     * Exponential cost scaling: cost * (2.0 ^ level)
-     * @return upgrade cost, or 0 if already at max level
+     * Get the cost to upgrade this tower to the next level.
+     * Exponential cost scaling: cost * (2.0 ^ level).
+     *
+     * @return Upgrade cost, or 0 if already at max level.
      */
     public int getUpgradeCost() {
         if (level >= 5) {
@@ -77,9 +92,10 @@ public abstract class Tower {
     }
     
     /**
-     * Upgrade tower to next level
-     * @param upgradeCost The cost paid for this upgrade
-     * @return true if upgrade successful
+     * Upgrade tower to next level.
+     *
+     * @param upgradeCost The cost paid for this upgrade.
+     * @return True if upgrade successful.
      */
     public boolean upgrade(int upgradeCost) {
         if (level < 5) {
@@ -95,7 +111,10 @@ public abstract class Tower {
     }
     
     /**
-     * Check if enemy is outside tower's attack range
+     * Check if enemy is outside tower's attack range.
+     *
+     * @param enemy The enemy to check.
+     * @return True if the enemy is out of range.
      */
     protected boolean isOutOfRange(Enemy enemy) {
         if (enemy == null) return true;
@@ -106,7 +125,9 @@ public abstract class Tower {
     }
     
     /**
-     * Check if tower is on cooldown and cannot fire yet
+     * Check if tower is on cooldown and cannot fire yet.
+     *
+     * @return True if the tower is on cooldown.
      */
     protected boolean isOnCooldown() {
         long currentTime = System.currentTimeMillis();

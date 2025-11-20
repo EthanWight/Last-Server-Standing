@@ -12,8 +12,10 @@ import edu.commonwealthu.lastserverstanding.model.Projectile;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
 /**
- * Spatial partitioning system for efficient collision detection
- * Divides the game world into a grid to reduce collision checks
+ * Spatial partitioning system for efficient collision detection.
+ * Divides the game world into a grid to reduce collision checks.
+ *
+ * @author Ethan Wight
  */
 public class CollisionSystem {
     
@@ -32,10 +34,11 @@ public class CollisionSystem {
     private final List<List<Projectile>> projectileListPool;
 
     /**
-     * Constructor
-     * @param worldWidth Width of game world in pixels
-     * @param worldHeight Height of game world in pixels
-     * @param cellSize Size of each spatial partition cell
+     * Constructor.
+     *
+     * @param worldWidth Width of game world in pixels.
+     * @param worldHeight Height of game world in pixels.
+     * @param cellSize Size of each spatial partition cell.
      */
     public CollisionSystem(int worldWidth, int worldHeight, int cellSize) {
         this.cellSize = cellSize;
@@ -52,8 +55,12 @@ public class CollisionSystem {
     }
     
     /**
-     * Update all entity positions in the spatial grid
-     * Should be called each frame
+     * Update all entity positions in the spatial grid.
+     * Should be called each frame.
+     *
+     * @param towers The list of towers.
+     * @param enemies The list of enemies.
+     * @param projectiles The list of projectiles.
      */
     public void update(List<Tower> towers, List<Enemy> enemies, List<Projectile> projectiles) {
         // Return lists to pool and clear grids
@@ -110,10 +117,11 @@ public class CollisionSystem {
     }
     
     /**
-     * Get all enemies within range of a position
-     * @param position Center position
-     * @param range Search radius
-     * @return List of enemies within range
+     * Get all enemies within range of a position.
+     *
+     * @param position Center position.
+     * @param range Search radius.
+     * @return List of enemies within range.
      */
     public List<Enemy> getEnemiesInRange(PointF position, float range) {
         List<Enemy> result = new ArrayList<>();
@@ -138,10 +146,11 @@ public class CollisionSystem {
     }
     
     /**
-     * Get the closest enemy to a position within range
-     * @param position Center position
-     * @param range Maximum search radius
-     * @return Closest enemy, or null if none in range
+     * Get the closest enemy to a position within range.
+     *
+     * @param position Center position.
+     * @param range Maximum search radius.
+     * @return Closest enemy, or null if none in range.
      */
     public Enemy getClosestEnemy(PointF position, float range) {
         List<Enemy> enemiesInRange = getEnemiesInRange(position, range);
@@ -165,7 +174,11 @@ public class CollisionSystem {
     }
     
     /**
-     * Get all grid cells within range of a position (returns long keys)
+     * Get all grid cells within range of a position (returns long keys).
+     *
+     * @param position The center position.
+     * @param range The search radius.
+     * @return List of cell keys within range.
      */
     private List<Long> getCellsInRange(PointF position, float range) {
         List<Long> cells = new ArrayList<>();
@@ -187,8 +200,11 @@ public class CollisionSystem {
     }
     
     /**
-     * Get cell key for a position (uses long to avoid string allocation)
-     * Encodes x and y coordinates into a single long value
+     * Get cell key for a position (uses long to avoid string allocation).
+     * Encodes x and y coordinates into a single long value.
+     *
+     * @param position The position.
+     * @return The cell key.
      */
     private long getCellKey(PointF position) {
         int x = (int) (position.x / cellSize);
@@ -198,7 +214,11 @@ public class CollisionSystem {
     }
     
     /**
-     * Calculate squared distance between two points (faster than distance)
+     * Calculate squared distance between two points (faster than distance).
+     *
+     * @param a The first position.
+     * @param b The second position.
+     * @return The squared distance.
      */
     private float distanceSquared(PointF a, PointF b) {
         float dx = b.x - a.x;

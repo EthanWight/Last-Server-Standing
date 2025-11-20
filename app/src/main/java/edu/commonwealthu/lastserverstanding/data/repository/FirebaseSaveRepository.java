@@ -18,8 +18,10 @@ import edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager;
 import edu.commonwealthu.lastserverstanding.data.models.GameState;
 
 /**
- * Repository for saving/loading game state to/from Firebase Firestore
- * Uses anonymous authentication combined with player name for device identification
+ * Repository for saving/loading game state to/from Firebase Firestore.
+ * Uses anonymous authentication combined with player name for device identification.
+ *
+ * @author Ethan Wight
  */
 public class FirebaseSaveRepository {
 
@@ -70,8 +72,8 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Refresh the device ID (player name) from SharedPreferences
-     * Call this when the player changes their name in settings
+     * Refresh the device ID (player name) from SharedPreferences.
+     * Call this when the player changes their name in settings.
      */
     public void refreshPlayerName() {
         try {
@@ -96,7 +98,9 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Ensure user is authenticated (anonymously)
+     * Ensure user is authenticated (anonymously).
+     *
+     * @param callback The callback to handle authentication result.
      */
     public void ensureAuthenticated(AuthCallback callback) {
         FirebaseUser currentUser = auth.getCurrentUser();
@@ -129,7 +133,11 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Save game state to Firestore
+     * Save game state to Firestore.
+     *
+     * @param gameState The game state to save.
+     * @param isAutoSave Whether this is an autosave.
+     * @param callback The callback to handle save result.
      */
     public void saveGame(GameState gameState, boolean isAutoSave, SaveCallback callback) {
         ensureAuthenticated(new AuthCallback() {
@@ -146,7 +154,12 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Perform the actual save operation
+     * Perform the actual save operation.
+     *
+     * @param userId The user ID to save for.
+     * @param gameState The game state to save.
+     * @param isAutoSave Whether this is an autosave.
+     * @param callback The callback to handle save result.
      */
     private void performSave(String userId, GameState gameState, boolean isAutoSave, SaveCallback callback) {
         try {
@@ -180,7 +193,12 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Create save data map from game state
+     * Create save data map from game state.
+     *
+     * @param userId The user ID for this save.
+     * @param gameState The game state to save.
+     * @param isAutoSave Whether this is an autosave.
+     * @return A map of save data.
      */
     private Map<String, Object> createSaveData(String userId, GameState gameState, boolean isAutoSave) {
         String json = gameState.toJson();
@@ -200,7 +218,10 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Save to Firestore with immediate persistence
+     * Save to Firestore with immediate persistence.
+     *
+     * @param saveData The save data to persist.
+     * @param callback The callback to handle save result.
      */
     private void saveToPrimaryFirestore(Map<String, Object> saveData, SaveCallback callback) {
         firestore.collection(COLLECTION_SAVES)
@@ -239,7 +260,9 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Load most recent autosave for current user
+     * Load most recent autosave for current user.
+     *
+     * @param callback The callback to handle loaded game state.
      */
     public void loadLatestAutoSave(LoadCallback callback) {
         Log.d(TAG, "=== loadLatestAutoSave called ===");
@@ -261,7 +284,10 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Perform the actual load operation
+     * Perform the actual load operation.
+     *
+     * @param userId The user ID to load for.
+     * @param callback The callback to handle loaded game state.
      */
     private void performLoad(String userId, LoadCallback callback) {
         Log.d(TAG, "performLoad: Starting load sequence");
@@ -286,7 +312,11 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Extract and deserialize game state from a document
+     * Extract and deserialize game state from a document.
+     *
+     * @param document The document to extract from.
+     * @param callback The callback to handle loaded game state.
+     * @param source The source name for logging.
      */
     private void extractGameStateFromDocument(DocumentSnapshot document, LoadCallback callback, String source) {
         String json = document.getString(FIELD_GAME_STATE_JSON);
@@ -307,7 +337,10 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Load saves for a specific user ID (fallback method)
+     * Load saves for a specific user ID (fallback method).
+     *
+     * @param userId The user ID to load saves for.
+     * @param callback The callback to handle loaded game state.
      */
     private void loadSavesForUser(String userId, LoadCallback callback) {
         Log.d(TAG, "loadSavesForUser: Querying for userId = '" + userId + "'");
@@ -352,7 +385,9 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Load saves for player name (primary method - players identify by name)
+     * Load saves for player name (primary method - players identify by name).
+     *
+     * @param callback The callback to handle loaded game state.
      */
     private void loadSavesForPlayerName(LoadCallback callback) {
         Log.d(TAG, "loadSavesForPlayerName: Querying for playerName = '" + deviceId + "'");
@@ -417,7 +452,10 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Delete old autosaves for current user (keep only the most recent)
+     * Delete old autosaves for current user (keep only the most recent).
+     *
+     * @param userId The user ID to delete autosaves for.
+     * @param callback The callback to handle delete result.
      */
     private void deleteOldAutoSaves(String userId, DeleteCallback callback) {
         firestore.collection(COLLECTION_SAVES)
@@ -448,7 +486,9 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Clean up old player name saves (orphaned data from previous auth sessions)
+     * Clean up old player name saves (orphaned data from previous auth sessions).
+     *
+     * @param callback The callback to handle cleanup result.
      */
     private void cleanupOldPlayerSaves(DeleteCallback callback) {
         firestore.collection(COLLECTION_SAVES)
@@ -475,7 +515,9 @@ public class FirebaseSaveRepository {
     }
 
     /**
-     * Delete autosave for current user
+     * Delete autosave for current user.
+     *
+     * @param callback The callback to handle delete result.
      */
     public void deleteAutoSave(DeleteCallback callback) {
         ensureAuthenticated(new AuthCallback() {

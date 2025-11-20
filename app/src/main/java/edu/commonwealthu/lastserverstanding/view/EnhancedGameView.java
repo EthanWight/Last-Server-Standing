@@ -2,7 +2,6 @@ package edu.commonwealthu.lastserverstanding.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.os.Build;
@@ -19,8 +18,10 @@ import androidx.annotation.NonNull;
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
 
 /**
- * Enhanced GameView with comprehensive gesture handling
- * Supports: tap, long press, pan, pinch zoom, double tap, and swipe
+ * Enhanced GameView with comprehensive gesture handling.
+ * Supports: tap, long press, pan, pinch zoom, double tap, and swipe.
+ *
+ * @author Ethan Wight
  */
 public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
 
@@ -65,22 +66,44 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     private OnSwipeUpListener swipeUpListener;
     
     /**
-     * Interfaces for gesture callbacks
+     * Listener for grid tap events.
      */
     public interface OnGridTapListener {
+        /**
+         * Called when a grid is tapped.
+         *
+         * @param gridPosition The grid position that was tapped.
+         */
         void onGridTapped(PointF gridPosition);
     }
-    
+
+    /**
+     * Listener for tower long press events.
+     */
     public interface OnTowerLongPressListener {
+        /**
+         * Called when a tower is long pressed.
+         *
+         * @param gridPosition The grid position that was long pressed.
+         */
         void onTowerLongPressed(PointF gridPosition);
     }
-    
+
+    /**
+     * Listener for swipe up events.
+     */
     public interface OnSwipeUpListener {
+        /**
+         * Called when a swipe up gesture is detected.
+         */
         void onSwipeUp();
     }
     
     /**
-     * Constructor for XML inflation
+     * Constructor for XML inflation.
+     *
+     * @param context The application context.
+     * @param attrs The attribute set.
      */
     public EnhancedGameView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -88,7 +111,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Constructor for programmatic creation
+     * Constructor for programmatic creation.
+     *
+     * @param context The application context.
      */
     public EnhancedGameView(Context context) {
         super(context);
@@ -96,7 +121,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Initialize the view
+     * Initialize the view.
+     *
+     * @param context The application context.
      */
     private void init(Context context) {
         getHolder().addCallback(this);
@@ -116,7 +143,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
 
     /**
-     * Set up gesture detection
+     * Set up gesture detection.
+     *
+     * @param context The application context.
      */
     private void setupGestureDetectors(Context context) {
         // Standard gesture detector for taps, scrolls, flings
@@ -169,7 +198,10 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Handle single tap gesture
+     * Handle single tap gesture.
+     *
+     * @param screenX The x coordinate of the tap.
+     * @param screenY The y coordinate of the tap.
      */
     private void handleSingleTap(float screenX, float screenY) {
         PointF worldPos = screenToWorld(new PointF(screenX, screenY));
@@ -190,7 +222,10 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Handle long press gesture
+     * Handle long press gesture.
+     *
+     * @param screenX The x coordinate of the press.
+     * @param screenY The y coordinate of the press.
      */
     private void handleLongPress(float screenX, float screenY) {
         PointF worldPos = screenToWorld(new PointF(screenX, screenY));
@@ -206,7 +241,10 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Handle pan gesture
+     * Handle pan gesture.
+     *
+     * @param distanceX The horizontal distance.
+     * @param distanceY The vertical distance.
      */
     private void handlePan(float distanceX, float distanceY) {
         // Move camera in opposite direction of pan
@@ -218,7 +256,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Handle pinch zoom gesture
+     * Handle pinch zoom gesture.
+     *
+     * @param detector The scale gesture detector.
      */
     private void handlePinchZoom(ScaleGestureDetector detector) {
         float scaleFactor = detector.getScaleFactor();
@@ -234,7 +274,10 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Handle double tap gesture
+     * Handle double tap gesture.
+     *
+     * @param screenX The x coordinate of the tap.
+     * @param screenY The y coordinate of the tap.
      */
     private void handleDoubleTap(float screenX, float screenY) {
         PointF worldPos = screenToWorld(new PointF(screenX, screenY));
@@ -263,7 +306,10 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Handle fling gesture
+     * Handle fling gesture.
+     *
+     * @param velocityX The horizontal velocity.
+     * @param velocityY The vertical velocity.
      */
     private void handleFling(float velocityX, float velocityY) {
         // Check for upward swipe from bottom of screen
@@ -276,7 +322,7 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Apply bounds to camera panning
+     * Apply bounds to camera panning.
      */
     private void applyPanBounds() {
         float worldWidth = gridWidth * gridSize * cameraZoom;
@@ -290,7 +336,11 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Adjust camera position when zooming
+     * Adjust camera position when zooming.
+     *
+     * @param focusX The focus x coordinate.
+     * @param focusY The focus y coordinate.
+     * @param scaleFactor The scale factor.
      */
     private void adjustCameraForZoom(float focusX, float focusY, float scaleFactor) {
         // Zoom toward the focus point
@@ -304,7 +354,10 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Convert screen coordinates to world coordinates
+     * Convert screen coordinates to world coordinates.
+     *
+     * @param screenPos The screen position.
+     * @return The world position.
      */
     private PointF screenToWorld(PointF screenPos) {
         return new PointF(
@@ -314,7 +367,10 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Convert world coordinates to grid coordinates
+     * Convert world coordinates to grid coordinates.
+     *
+     * @param worldPos The world position.
+     * @return The grid position.
      */
     private PointF worldToGrid(PointF worldPos) {
         return new PointF(
@@ -342,7 +398,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
     
     /**
-     * Set game engine
+     * Set game engine.
+     *
+     * @param engine The game engine.
      */
     @SuppressWarnings("unused") // Public API
     public void setGameEngine(GameEngine engine) {
@@ -350,18 +408,30 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     }
 
     /**
-     * Set gesture listeners
+     * Set grid tap listener.
+     *
+     * @param listener The listener.
      */
     @SuppressWarnings("unused") // Public API
     public void setOnGridTapListener(OnGridTapListener listener) {
         this.gridTapListener = listener;
     }
 
+    /**
+     * Set tower long press listener.
+     *
+     * @param listener The listener.
+     */
     @SuppressWarnings("unused") // Public API
     public void setOnTowerLongPressListener(OnTowerLongPressListener listener) {
         this.towerLongPressListener = listener;
     }
 
+    /**
+     * Set swipe up listener.
+     *
+     * @param listener The listener.
+     */
     @SuppressWarnings("unused") // Public API
     public void setOnSwipeUpListener(OnSwipeUpListener listener) {
         this.swipeUpListener = listener;
@@ -385,11 +455,20 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
         stopGameLoop();
     }
     
+    /**
+     * Calculate grid dimensions.
+     *
+     * @param width The view width.
+     * @param height The view height.
+     */
     private void calculateGridDimensions(int width, int height) {
         gridWidth = width / gridSize;
         gridHeight = height / gridSize;
     }
     
+    /**
+     * Start the game loop.
+     */
     public void startGameLoop() {
         if (!isRunning) {
             isRunning = true;
@@ -398,6 +477,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
         }
     }
     
+    /**
+     * Stop the game loop.
+     */
     public void stopGameLoop() {
         isRunning = false;
         if (gameThread != null) {
@@ -412,6 +494,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
         }
     }
     
+    /**
+     * Run the game loop.
+     */
     @Override
     public void run() {
         long lastFrameTime = System.currentTimeMillis();
@@ -443,6 +528,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
         }
     }
     
+    /**
+     * Render the game.
+     */
     private void render() {
         if (!getHolder().getSurface().isValid()) {
             return;
@@ -473,6 +561,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
         }
     }
     
+    /**
+     * Draw the game grid.
+     */
     private void drawGrid() {
         paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.grid_line));
         paint.setStrokeWidth(1);
@@ -489,6 +580,9 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
         }
     }
     
+    /**
+     * Draw the selected cell.
+     */
     private void drawSelectedCell() {
         if (selectedCell != null) {
             paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.electric_blue));
@@ -501,11 +595,14 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
         }
     }
     
+    /**
+     * Draw the heads-up display.
+     */
     private void drawHUD() {
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.WHITE);
+        paint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), edu.commonwealthu.lastserverstanding.R.color.debug_white));
         paint.setTextSize(40);
-        
+
         if (gameEngine != null) {
             String fpsText = "FPS: " + gameEngine.getFPS();
             canvas.drawText(fpsText, getWidth() - 200, 120, paint);

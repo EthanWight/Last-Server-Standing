@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents the game map with tiles defining where enemies walk and towers can be placed
+ * Represents the game map with tiles defining where enemies walk and towers can be placed.
+ *
+ * @author Ethan Wight
  */
 public class GameMap {
     private final int width;
@@ -37,7 +39,11 @@ public class GameMap {
     }
 
     /**
-     * Get tile type at grid position
+     * Get tile type at grid position.
+     *
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @return The tile type at the given position.
      */
     public TileType getTileAt(int x, int y) {
         if (x < 0 || x >= width || y < 0 || y >= height) {
@@ -47,7 +53,11 @@ public class GameMap {
     }
 
     /**
-     * Set tile type at grid position
+     * Set tile type at grid position.
+     *
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param type The tile type to set.
      */
     public void setTileAt(int x, int y, TileType type) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
@@ -56,21 +66,32 @@ public class GameMap {
     }
 
     /**
-     * Check if a tile can have a tower built on it
+     * Check if a tile can have a tower built on it.
+     *
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @return True if the tile is buildable.
      */
     public boolean isBuildable(int x, int y) {
         return getTileAt(x, y) == TileType.BUILDABLE;
     }
 
     /**
-     * Check if a tile can have a tower built on it (PointF version)
+     * Check if a tile can have a tower built on it (PointF version).
+     *
+     * @param gridPos The grid position.
+     * @return True if the tile is buildable.
      */
     public boolean isBuildable(PointF gridPos) {
         return isBuildable((int) gridPos.x, (int) gridPos.y);
     }
 
     /**
-     * Convert grid coordinates to world coordinates (center of tile)
+     * Convert grid coordinates to world coordinates (center of tile).
+     *
+     * @param x The x grid coordinate.
+     * @param y The y grid coordinate.
+     * @return The world coordinates.
      */
     public PointF gridToWorld(int x, int y) {
         return new PointF(
@@ -80,7 +101,10 @@ public class GameMap {
     }
 
     /**
-     * Convert world coordinates to grid coordinates
+     * Convert world coordinates to grid coordinates.
+     *
+     * @param worldPos The world position.
+     * @return The grid coordinates.
      */
     public PointF worldToGrid(PointF worldPos) {
         return new PointF(
@@ -90,8 +114,11 @@ public class GameMap {
     }
 
     /**
-     * Set the offset to center the map on screen
-     * Recalculates all path points with new offset
+     * Set the offset to center the map on screen.
+     * Recalculates all path points with new offset.
+     *
+     * @param screenWidth The screen width.
+     * @param screenHeight The screen height.
      */
     public void centerOnScreen(int screenWidth, int screenHeight) {
         int mapPixelWidth = width * gridSize;
@@ -123,15 +150,20 @@ public class GameMap {
     }
 
     /**
-     * Get the path that enemies should follow
-     * Returns unmodifiable view to avoid defensive copy allocation
+     * Get the path that enemies should follow.
+     * Returns unmodifiable view to avoid defensive copy allocation.
+     *
+     * @return The enemy path.
      */
     public List<PointF> getEnemyPath() {
         return java.util.Collections.unmodifiableList(pathPoints);
     }
 
     /**
-     * Add a path point for enemies to follow (grid coordinates)
+     * Add a path point for enemies to follow (grid coordinates).
+     *
+     * @param x The x coordinate.
+     * @param y The y coordinate.
      */
     public void addPathPoint(int x, int y) {
         pathPoints.add(gridToWorld(x, y));
@@ -149,8 +181,13 @@ public class GameMap {
     public PointF getDataCenterPoint() { return dataCenterPoint; }
 
     /**
-     * Create a butterfly-shaped map with a beautiful symmetric design
-     * The path traces through both wings of the butterfly
+     * Create a butterfly-shaped map with a beautiful symmetric design.
+     * The path traces through both wings of the butterfly.
+     *
+     * @param gridWidth The grid width (for API compatibility).
+     * @param gridHeight The grid height (for API compatibility).
+     * @param gridSize The size of each grid cell.
+     * @return A new GameMap with a butterfly shape.
      */
     @SuppressWarnings("unused") // gridWidth and gridHeight parameters kept for API compatibility
     public static GameMap createSimpleMap(int gridWidth, int gridHeight, int gridSize) {

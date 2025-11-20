@@ -7,6 +7,8 @@ import java.util.List;
 /**
  * Abstract base class for all enemy types in the game.
  * Represents a rogue AI system attacking the data center.
+ *
+ * @author Ethan Wight
  */
 public abstract class Enemy {
     // Unique identifier
@@ -33,7 +35,14 @@ public abstract class Enemy {
     protected boolean isAlive;
     
     /**
-     * Constructor for enemy base class
+     * Constructor for enemy base class.
+     *
+     * @param id Unique identifier for this enemy.
+     * @param path The path this enemy will follow.
+     * @param maxHealth Maximum health of this enemy.
+     * @param speed Movement speed in units per second.
+     * @param reward Reward for defeating this enemy.
+     * @param damage Damage dealt if this enemy reaches the end.
      */
     public Enemy(String id, List<PointF> path, float maxHealth, float speed, int reward, int damage) {
         this.id = id;
@@ -50,8 +59,9 @@ public abstract class Enemy {
     }
     
     /**
-     * Update enemy state each frame
-     * @param deltaTime Time since last update in seconds
+     * Update enemy state each frame.
+     *
+     * @param deltaTime Time since last update in seconds.
      */
     public void update(float deltaTime) {
         // Apply status effects
@@ -67,29 +77,37 @@ public abstract class Enemy {
     }
     
     /**
-     * Type-specific update logic (override in subclasses)
+     * Type-specific update logic (override in subclasses).
+     *
+     * @param deltaTime Time since last update in seconds.
      */
     protected abstract void updateSpecific(float deltaTime);
     
     /**
-     * Get the enemy type name
+     * Get the enemy type name.
+     *
+     * @return The type name of this enemy.
      */
     public abstract String getType();
 
     /**
-     * Get the enemy's color for rendering
-     * @return Color value (use android.graphics.Color constants)
+     * Get the enemy's color for rendering.
+     *
+     * @return Color value (use android.graphics.Color constants).
      */
     public abstract int getColor();
 
     /**
-     * Get the enemy's icon resource ID for rendering
-     * @return Drawable resource ID
+     * Get the enemy's icon resource ID for rendering.
+     *
+     * @return Drawable resource ID.
      */
     public abstract int getIconResId();
 
     /**
-     * Move enemy along its path
+     * Move enemy along its path.
+     *
+     * @param deltaTime Time since last update in seconds.
      */
     private void move(float deltaTime) {
         if (currentPathIndex >= path.size()) return;
@@ -116,7 +134,9 @@ public abstract class Enemy {
     }
     
     /**
-     * Calculate speed after applying status effects (optimized single-pass)
+     * Calculate speed after applying status effects (optimized single-pass).
+     *
+     * @return The effective speed after applying all status effects.
      */
     private float getEffectiveSpeed() {
         float effectiveSpeed = speed;
@@ -133,7 +153,9 @@ public abstract class Enemy {
     }
     
     /**
-     * Apply and update status effects (optimized with iterator)
+     * Apply and update status effects (optimized with iterator).
+     *
+     * @param deltaTime Time since last update in seconds.
      */
     private void applyStatusEffects(float deltaTime) {
         // Use iterator to remove expired effects without temporary list
@@ -155,8 +177,9 @@ public abstract class Enemy {
     }
     
     /**
-     * Take damage from a tower
-     * @param damageAmount Amount of damage to take
+     * Take damage from a tower.
+     *
+     * @param damageAmount Amount of damage to take.
      */
     public void takeDamage(float damageAmount) {
         health -= damageAmount;
@@ -168,35 +191,43 @@ public abstract class Enemy {
     }
     
     /**
-     * Called when enemy dies
+     * Called when enemy dies.
      */
     protected void onDeath() {
         // Can be overridden for special death effects
     }
     
     /**
-     * Add a status effect to this enemy
+     * Add a status effect to this enemy.
+     *
+     * @param effect The status effect to add.
      */
     public void addStatusEffect(StatusEffect effect) {
         statusEffects.add(effect);
     }
 
     /**
-     * Get active status effects
+     * Get active status effects.
+     *
+     * @return A list of active status effects.
      */
     public List<StatusEffect> getStatusEffects() {
         return statusEffects;
     }
     
     /**
-     * Check if enemy has reached the end of its path
+     * Check if enemy has reached the end of its path.
+     *
+     * @return True if the enemy has reached the end of its path.
      */
     public boolean hasReachedEnd() {
         return currentPathIndex >= path.size();
     }
     
     /**
-     * Get health percentage
+     * Get health percentage.
+     *
+     * @return The health as a percentage (0.0 to 1.0).
      */
     public float getHealthPercentage() {
         return health / maxHealth;

@@ -10,8 +10,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Manager for Firebase Firestore leaderboard operations
- * Optimized to prevent ANR and crashes
+ * Manager for Firebase Firestore leaderboard operations.
+ * Optimized to prevent ANR and crashes.
+ *
+ * @author Ethan Wight
  */
 public class FirebaseManager {
 
@@ -37,6 +39,11 @@ public class FirebaseManager {
         }
     }
 
+    /**
+     * Get the singleton instance.
+     *
+     * @return The FirebaseManager instance.
+     */
     public static FirebaseManager getInstance() {
         if (instance == null) {
             instance = new FirebaseManager();
@@ -45,11 +52,17 @@ public class FirebaseManager {
     }
 
     /**
-     * Submit highest wave to leaderboard
-     * Only updates if this wave is higher than the player's current best
-     * Uses userId as the document ID to prevent duplicates when player changes name
+     * Submit highest wave to leaderboard.
+     * Only updates if this wave is higher than the player's current best.
+     * Uses userId as the document ID to prevent duplicates when player changes name.
+     *
+     * @param userId The user ID.
+     * @param playerName The player name.
+     * @param wave The wave to submit.
+     * @param callback Callback for the operation.
      */
-    public void submitHighScore(String userId, String playerName, int wave, LeaderboardCallback callback) {
+    public void submitHighScore(String userId, String playerName, int wave,
+                                LeaderboardCallback callback) {
         if (!initialized || firestore == null) {
             Log.w(TAG, "Firebase not initialized, skipping score submission");
             if (callback != null) {
@@ -80,8 +93,10 @@ public class FirebaseManager {
                         entryData.put(FIELD_WAVE, wave);
                         entryData.put(FIELD_TIMESTAMP, System.currentTimeMillis());
 
-                        Log.d(TAG, "Writing score to Firestore for userId: " + userId +
-                                   (existingEntry != null ? " (updating from wave " + existingEntry.wave + " as '" + existingEntry.playerName + "')" : " (new entry)"));
+                        Log.d(TAG, "Writing score to Firestore for userId: " + userId
+                                + (existingEntry != null ? " (updating from wave "
+                                + existingEntry.wave + " as '" + existingEntry.playerName + "')"
+                                : " (new entry)"));
 
                         firestore.collection(COLLECTION_LEADERBOARD)
                             .document(userId)
@@ -120,8 +135,11 @@ public class FirebaseManager {
     }
 
     /**
-     * Get top players by highest wave reached
-     * Shows only each player's highest wave (one entry per player)
+     * Get top players by highest wave reached.
+     * Shows only each player's highest wave (one entry per player).
+     *
+     * @param limit The maximum number of entries.
+     * @param callback Callback for the operation.
      */
     public void getTopScores(int limit, LeaderboardFetchCallback callback) {
         if (!initialized || firestore == null) {
@@ -189,7 +207,9 @@ public class FirebaseManager {
     }
 
     /**
-     * Leaderboard entry model
+     * Leaderboard entry model.
+     *
+     * @author Ethan Wight
      */
     public static class LeaderboardEntry {
         public String userId;       // Firebase anonymous auth user ID (used as document ID)
@@ -197,11 +217,21 @@ public class FirebaseManager {
         public int wave;
         public long timestamp;
 
-        // Default constructor required for Firebase deserialization
+        /**
+         * Default constructor required for Firebase deserialization.
+         */
         @SuppressWarnings("unused")
         public LeaderboardEntry() {
         }
 
+        /**
+         * Constructor with all fields.
+         *
+         * @param userId The user ID.
+         * @param playerName The player name.
+         * @param wave The wave number.
+         * @param timestamp The timestamp of the entry.
+         */
         @SuppressWarnings("unused")
         public LeaderboardEntry(String userId, String playerName, int wave, long timestamp) {
             this.userId = userId;
@@ -211,14 +241,39 @@ public class FirebaseManager {
         }
     }
 
-    // Callback interfaces
+    /**
+     * Callback for leaderboard submission operations.
+     */
     public interface LeaderboardCallback {
+        /**
+         * Called on successful operation.
+         */
         void onSuccess();
+
+        /**
+         * Called on error.
+         *
+         * @param message The error message.
+         */
         void onError(String message);
     }
 
+    /**
+     * Callback for leaderboard fetch operations.
+     */
     public interface LeaderboardFetchCallback {
+        /**
+         * Called on successful fetch.
+         *
+         * @param entries The fetched leaderboard entries.
+         */
         void onSuccess(List<LeaderboardEntry> entries);
+
+        /**
+         * Called on error.
+         *
+         * @param message The error message.
+         */
         void onError(String message);
     }
 }

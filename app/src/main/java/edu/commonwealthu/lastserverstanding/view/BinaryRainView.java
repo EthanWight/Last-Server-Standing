@@ -15,16 +15,26 @@ import java.util.Random;
 import edu.commonwealthu.lastserverstanding.R;
 
 /**
- * Matrix-style binary rain animation background
- * Displays falling columns of 0s and 1s with random flickering
+ * Displays a Matrix-style binary rain animation background with falling columns of 0s and 1s.
+ *
+ * @author Ethan Wight
  */
 public class BinaryRainView extends View {
 
-    private static final int COLUMN_COUNT = 10; // Number of vertical columns (reduced for performance)
-    private static final int UPDATE_INTERVAL_MS = 50; // Update every 50ms (20 FPS for efficiency)
-    private static final float FALL_SPEED = 16f; // Pixels per update (compensate for slower updates)
-    private static final int MAX_TRAIL_LENGTH = 10; // Maximum digits in trail (reduced for performance)
-    private static final float FLICKER_CHANCE = 0.2f; // 20% chance to flicker per update
+    // Number of vertical columns (reduced for performance)
+    private static final int COLUMN_COUNT = 10;
+    // Update every 50ms (20 FPS for efficiency)
+    private static final int UPDATE_INTERVAL_MS = 50;
+    // Pixels per update (compensate for slower updates)
+    private static final float FALL_SPEED = 16f;
+    // Maximum digits in trail (reduced for performance)
+    private static final int MAX_TRAIL_LENGTH = 10;
+    // 20% chance to flicker per update
+    private static final float FLICKER_CHANCE = 0.2f;
+    // Y position when resetting column to top
+    private static final float RESET_Y_POSITION = -50f;
+    // Approximate height of each character
+    private static final float APPROXIMATE_CHAR_HEIGHT = 30f;
 
     private final Paint paint;
     private final Random random;
@@ -153,8 +163,9 @@ public class BinaryRainView extends View {
             this.digits = new StringBuilder();
 
             // Start at random position - some on screen, some above
+            // Range from -50% to +100% of screen height
             Random rand = new Random();
-            this.y = rand.nextFloat() * screenHeight * 1.5f - screenHeight * 0.5f; // Range from -50% to +100% of screen
+            this.y = rand.nextFloat() * screenHeight * 1.5f - screenHeight * 0.5f;
             this.trailLength = 5 + rand.nextInt(MAX_TRAIL_LENGTH - 5);
 
             // Initialize with random binary digits
@@ -174,8 +185,8 @@ public class BinaryRainView extends View {
             }
 
             // If column has fallen off screen, reset to top
-            if (y - (trailLength * 30) > screenHeight) { // 30 is approximate char height
-                y = -50;
+            if (y - (trailLength * APPROXIMATE_CHAR_HEIGHT) > screenHeight) {
+                y = RESET_Y_POSITION;
                 trailLength = 5 + random.nextInt(MAX_TRAIL_LENGTH - 5);
 
                 // Generate new random digits

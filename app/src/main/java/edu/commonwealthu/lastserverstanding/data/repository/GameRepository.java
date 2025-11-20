@@ -10,9 +10,11 @@ import edu.commonwealthu.lastserverstanding.data.models.GameState;
 import edu.commonwealthu.lastserverstanding.data.models.Settings;
 
 /**
- * Repository for managing data operations
- * Provides clean API between ViewModels and data sources
- * Now uses Firebase for cloud-based autosaves and settings
+ * Repository for managing data operations.
+ * Provides clean API between ViewModels and data sources.
+ * Now uses Firebase for cloud-based autosaves and settings.
+ *
+ * @author Ethan Wight
  */
 public class GameRepository {
 
@@ -36,7 +38,7 @@ public class GameRepository {
     }
 
     /**
-     * Load settings from Firebase
+     * Load settings from Firebase.
      */
     private void loadSettings() {
         firebaseSettingsRepository.loadSettings((soundEnabled, vibrationEnabled, showTowerRanges) -> {
@@ -46,7 +48,11 @@ public class GameRepository {
     }
 
     /**
-     * Save game state to Firebase
+     * Save game state to Firebase.
+     *
+     * @param gameState The game state to save.
+     * @param isAutoSave Whether this is an autosave.
+     * @param callback The callback to handle save result.
      */
     public void saveGame(GameState gameState, boolean isAutoSave, SaveCallback callback) {
         firebaseSaveRepository.saveGame(gameState, isAutoSave, new FirebaseSaveRepository.SaveCallback() {
@@ -67,7 +73,9 @@ public class GameRepository {
     }
 
     /**
-     * Load most recent auto-save from Firebase
+     * Load most recent auto-save from Firebase.
+     *
+     * @param callback The callback to handle loaded game state.
      */
     public void loadLatestAutoSave(LoadCallback callback) {
         firebaseSaveRepository.loadLatestAutoSave(new FirebaseSaveRepository.LoadCallback() {
@@ -88,7 +96,9 @@ public class GameRepository {
     }
 
     /**
-     * Delete autosave from Firebase
+     * Delete autosave from Firebase.
+     *
+     * @param callback The callback to handle delete result.
      */
     public void deleteAutoSave(DeleteCallback callback) {
         firebaseSaveRepository.deleteAutoSave(new FirebaseSaveRepository.DeleteCallback() {
@@ -109,15 +119,17 @@ public class GameRepository {
     }
 
     /**
-     * Refresh player name for Firebase saves
-     * Call this when the player changes their name in settings
+     * Refresh player name for Firebase saves.
+     * Call this when the player changes their name in settings.
      */
     public void refreshPlayerName() {
         firebaseSaveRepository.refreshPlayerName();
     }
 
     /**
-     * Update settings
+     * Update settings.
+     *
+     * @param newSettings The new settings to apply.
      */
     public void updateSettings(Settings newSettings) {
         firebaseSettingsRepository.saveSettings(
@@ -146,8 +158,8 @@ public class GameRepository {
     }
 
     /**
-     * Shutdown the executor service to prevent resource leaks
-     * Should be called when the repository is no longer needed
+     * Shutdown the executor service to prevent resource leaks.
+     * Should be called when the repository is no longer needed.
      */
     public void shutdown() {
         if (executorService != null && !executorService.isShutdown()) {

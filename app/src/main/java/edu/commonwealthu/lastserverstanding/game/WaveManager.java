@@ -12,8 +12,10 @@ import edu.commonwealthu.lastserverstanding.model.enemies.TrojanHorse;
 import edu.commonwealthu.lastserverstanding.model.enemies.VirusBot;
 
 /**
- * Wave manager handles enemy spawning with progressive difficulty
- * Generates waves of enemies with varying compositions and timing
+ * Wave manager handles enemy spawning with progressive difficulty.
+ * Generates waves of enemies with varying compositions and timing.
+ *
+ * @author Ethan Wight
  */
 public class WaveManager {
     
@@ -35,7 +37,7 @@ public class WaveManager {
     private static final float DIFFICULTY_INCREASE_PER_WAVE = 0.15f;
     
     /**
-     * Constructor
+     * Constructor for WaveManager.
      */
     public WaveManager() {
         this.currentWave = 0;
@@ -60,9 +62,10 @@ public class WaveManager {
     }
     
     /**
-     * Update wave manager
-     * @param deltaTime Time since last update in seconds
-     * @param gameEngine Reference to game engine for spawning enemies
+     * Update wave manager.
+     *
+     * @param deltaTime Time since last update in seconds.
+     * @param gameEngine Reference to game engine for spawning enemies.
      */
     public void update(float deltaTime, GameEngine gameEngine) {
         if (!isWaveActive) {
@@ -85,7 +88,9 @@ public class WaveManager {
     }
     
     /**
-     * Start the next wave
+     * Start the next wave.
+     *
+     * @param gameEngine The game engine instance.
      */
     public void startNextWave(GameEngine gameEngine) {
         if (isWaveActive) {
@@ -108,7 +113,7 @@ public class WaveManager {
     }
     
     /**
-     * Calculate wave parameters based on wave number
+     * Calculate wave parameters based on wave number.
      */
     private void calculateWaveParameters() {
         // Base enemies: 5 + 3 per wave
@@ -119,7 +124,9 @@ public class WaveManager {
     }
     
     /**
-     * Spawn an enemy
+     * Spawn an enemy.
+     *
+     * @param gameEngine The game engine instance.
      */
     private void spawnEnemy(GameEngine gameEngine) {
         List<PointF> path;
@@ -149,7 +156,12 @@ public class WaveManager {
     }
     
     /**
-     * Generate path from spawn to goal using pathfinding
+     * Generate path from spawn to goal using pathfinding.
+     *
+     * @param start The starting position.
+     * @param goal The goal position.
+     * @param gameEngine The game engine instance.
+     * @return The path from start to goal.
      */
     private List<PointF> generatePath(PointF start, PointF goal, GameEngine gameEngine) {
         // Get tower positions as obstacles
@@ -173,11 +185,14 @@ public class WaveManager {
     }
     
     /**
-     * Create enemy appropriate for current wave
+     * Create enemy appropriate for current wave.
      * Enemy variety increases with wave progression:
      * - Waves 1-4: Data Crawlers (red) only
      * - Waves 5-9: Data Crawlers and Virus Bots (blue)
      * - Wave 10+: All three types with increasing difficulty
+     *
+     * @param path The path for the enemy to follow.
+     * @return The created enemy.
      */
     private Enemy createEnemyForWave(List<PointF> path) {
         // Waves 1-4: Only Data Crawlers (basic red enemies)
@@ -215,7 +230,9 @@ public class WaveManager {
     }
     
     /**
-     * End current wave
+     * End current wave.
+     *
+     * @param gameEngine The game engine instance.
      */
     private void endWave(GameEngine gameEngine) {
         isWaveActive = false;
@@ -237,8 +254,9 @@ public class WaveManager {
     public boolean isWaveActive() { return isWaveActive; }
 
     /**
-     * Restore wave state from saved game
-     * @param wave The wave number to restore
+     * Restore wave state from saved game.
+     *
+     * @param wave The wave number to restore.
      */
     public void restoreWaveState(int wave) {
         this.currentWave = wave;

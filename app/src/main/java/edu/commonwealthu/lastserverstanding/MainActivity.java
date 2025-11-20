@@ -9,8 +9,10 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 /**
- * Main Activity for Last Server Standing
- * Uses Navigation Component for fragment-based architecture
+ * Manages the main activity for Last Server Standing using Navigation Component
+ * for fragment-based architecture.
+ *
+ * @author Ethan Wight
  */
 public class MainActivity extends AppCompatActivity {
 

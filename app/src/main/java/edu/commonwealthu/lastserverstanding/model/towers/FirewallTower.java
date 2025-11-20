@@ -9,8 +9,10 @@ import edu.commonwealthu.lastserverstanding.model.StatusEffect;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
 /**
- * Firewall Tower - Basic defense tower with high fire rate
- * Good all-around tower for early game
+ * Firewall Tower - Basic defense tower with high fire rate.
+ * Good all-around tower for early game.
+ *
+ * @author Ethan Wight
  */
 public class FirewallTower extends Tower {
     
@@ -18,7 +20,9 @@ public class FirewallTower extends Tower {
     private float penetration; // Chance to damage multiple enemies
     
     /**
-     * Constructor with default stats
+     * Constructor with default stats.
+     *
+     * @param position The position to place this tower on the grid.
      */
     public FirewallTower(PointF position) {
         super(
@@ -33,6 +37,11 @@ public class FirewallTower extends Tower {
         this.penetration = 0.0f; // No penetration at level 1
     }
     
+    /**
+     * Update tower state each frame.
+     *
+     * @param deltaTime Time since last update in seconds.
+     */
     @Override
     public void update(float deltaTime) {
         // Update target validity
@@ -41,6 +50,11 @@ public class FirewallTower extends Tower {
         }
     }
     
+    /**
+     * Fire at the current target if possible.
+     *
+     * @return Projectile if fired, null otherwise.
+     */
     @Override
     public Projectile fire() {
         if (target == null || isOnCooldown()) {
@@ -66,11 +80,22 @@ public class FirewallTower extends Tower {
         );
     }
 
+    /**
+     * Get the tower type name.
+     *
+     * @return The type name of this tower.
+     */
     @Override
     public String getType() {
         return "Firewall";
     }
-    
+
+    /**
+     * Upgrade tower to next level.
+     *
+     * @param upgradeCost The cost paid for this upgrade.
+     * @return True if upgrade successful.
+     */
     @Override
     public boolean upgrade(int upgradeCost) {
         boolean upgraded = super.upgrade(upgradeCost);

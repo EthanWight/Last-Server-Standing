@@ -12,8 +12,10 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 /**
- * A* Pathfinding implementation for enemy navigation
- * Finds optimal path from start to goal while avoiding obstacles
+ * A* Pathfinding implementation for enemy navigation.
+ * Finds optimal path from start to goal while avoiding obstacles.
+ *
+ * @author Ethan Wight
  */
 public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
 
@@ -51,22 +53,18 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
     }
 
     /**
-     * Constructor
-     *
-     * @param gridWidth  Width of the game grid
-     * @param gridHeight Height of the game grid
-     * @param cellSize   Size of each grid cell in pixels
+     * Constructor.
      */
     public Pathfinding {
     }
 
     /**
-     * Find path from start to goal using A* algorithm
+     * Find path from start to goal using A* algorithm.
      *
-     * @param start     Starting position
-     * @param goal      Goal position
-     * @param obstacles List of obstacle positions (tower positions)
-     * @return List of waypoints from start to goal, or empty list if no path found
+     * @param start Starting position.
+     * @param goal Goal position.
+     * @param obstacles List of obstacle positions (tower positions).
+     * @return List of waypoints from start to goal, or empty list if no path found.
      */
     public List<PointF> findPath(PointF start, PointF goal, List<PointF> obstacles) {
         // Convert world coordinates to grid coordinates
@@ -134,7 +132,13 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
     }
 
     /**
-     * Get neighboring nodes (8 directions)
+     * Get neighboring nodes (8 directions).
+     *
+     * @param current The current node.
+     * @param goal The goal position.
+     * @param obstacles Map of obstacle positions.
+     * @param allNodes Map of all nodes.
+     * @return List of neighboring nodes.
      */
     private List<Node> getNeighbors(Node current, PointF goal,
                                     Map<String, Boolean> obstacles,
@@ -174,7 +178,10 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
     }
 
     /**
-     * Reconstruct path from goal to start by following parent pointers
+     * Reconstruct path from goal to start by following parent pointers.
+     *
+     * @param goalNode The goal node.
+     * @return The reconstructed path.
      */
     private List<PointF> reconstructPath(Node goalNode) {
         List<PointF> path = new ArrayList<>();
@@ -192,7 +199,10 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
     }
 
     /**
-     * Smooth path by removing waypoints that can be skipped
+     * Smooth path by removing waypoints that can be skipped.
+     *
+     * @param path The path to smooth.
+     * @return The smoothed path.
      */
     private List<PointF> smoothPath(List<PointF> path) {
         if (path.size() <= 2) return path;
@@ -219,7 +229,11 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
     }
 
     /**
-     * Check if there's a clear line of sight between two points
+     * Check if there's a clear line of sight between two points.
+     *
+     * @param start The starting position.
+     * @param end The ending position.
+     * @return True if there is a clear line of sight.
      */
     @SuppressWarnings("unused")
     private boolean hasLineOfSight(PointF start, PointF end) {
@@ -229,7 +243,11 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
     }
 
     /**
-     * Heuristic function (Euclidean distance)
+     * Heuristic function (Euclidean distance).
+     *
+     * @param a The first position.
+     * @param b The second position.
+     * @return The Euclidean distance between the positions.
      */
     private float heuristic(PointF a, PointF b) {
         float dx = b.x - a.x;
@@ -238,7 +256,11 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
     }
 
     /**
-     * Calculate distance between two points
+     * Calculate distance between two points.
+     *
+     * @param a The first position.
+     * @param b The second position.
+     * @return The distance between the positions.
      */
     private float distance(PointF a, PointF b) {
         float dx = b.x - a.x;
@@ -247,7 +269,10 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
     }
 
     /**
-     * Convert world coordinates to grid coordinates
+     * Convert world coordinates to grid coordinates.
+     *
+     * @param world The world coordinates.
+     * @return The grid coordinates.
      */
     private PointF worldToGrid(PointF world) {
         return new PointF(
@@ -257,7 +282,10 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
     }
 
     /**
-     * Convert grid coordinates to world coordinates (center of cell)
+     * Convert grid coordinates to world coordinates (center of cell).
+     *
+     * @param grid The grid coordinates.
+     * @return The world coordinates.
      */
     private PointF gridToWorld(PointF grid) {
         return new PointF(
@@ -267,7 +295,10 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
     }
 
     /**
-     * Get unique key for a grid position
+     * Get unique key for a grid position.
+     *
+     * @param pos The grid position.
+     * @return The unique key for the position.
      */
     private String getKey(PointF pos) {
         return (int) pos.x + "," + (int) pos.y;

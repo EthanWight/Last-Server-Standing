@@ -42,7 +42,7 @@ import edu.commonwealthu.lastserverstanding.view.GameView;
 import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
 /**
- * Game Fragment - Main gameplay screen
+ * Game Fragment - Main gameplay screen.
  * Contains GameView and HUD overlay
  * Save/Load Flow:
  * - Auto-save occurs in onPause() whenever there's progress (wave > 0)
@@ -50,6 +50,8 @@ import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
  * - When user clicks "Continue" from main menu, saved game is loaded
  * - When user clicks "New Game" from main menu, saves are deleted and fresh game starts
  * - When returning from settings, existing game state is preserved in ViewModel
+ *
+ * @author Ethan Wight
  */
 public class GameFragment extends Fragment {
 
@@ -313,7 +315,7 @@ public class GameFragment extends Fragment {
     }
     
     /**
-     * Start the next wave, pause, or resume
+     * Start the next wave, pause, or resume.
      */
     private void startNextWave() {
         if (gameEngine != null) {
@@ -358,7 +360,7 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Update play/pause button icon based on game state
+     * Update play/pause button icon based on game state.
      */
     private void updatePlayPauseButton() {
         if (gameEngine != null && nextWaveFab != null) {
@@ -384,7 +386,7 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Open settings menu
+     * Open settings menu.
      */
     private void openSettings() {
         if (gameEngine != null) {
@@ -401,7 +403,10 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Set up drag and drop for tower button
+     * Set up drag and drop for tower button.
+     *
+     * @param fab The button to set up
+     * @param towerIndex Index of the tower in availableTowers list
      */
     private void setupTowerDragAndDrop(AccessibleImageButton fab, int towerIndex) {
         // Add click listener for accessibility support
@@ -461,7 +466,10 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Update drag preview position and validity
+     * Update drag preview position and validity.
+     *
+     * @param screenX Screen X coordinate
+     * @param screenY Screen Y coordinate
      */
     private void updateDragPreview(float screenX, float screenY) {
         // Convert screen coordinates to game view coordinates
@@ -480,7 +488,10 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Handle tower drop
+     * Handle tower drop.
+     *
+     * @param screenX Screen X coordinate where tower was dropped
+     * @param screenY Screen Y coordinate where tower was dropped
      */
     private void handleTowerDrop(float screenX, float screenY) {
         // Convert screen coordinates to game view coordinates
@@ -497,7 +508,7 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Set up LiveData observers for HUD stats
+     * Set up LiveData observers for HUD stats.
      */
     private void setupLiveDataObservers() {
         // Observe wave changes
@@ -546,7 +557,7 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Set up periodic FPS updates
+     * Set up periodic FPS updates.
      */
     private void setupFPSUpdates() {
         hudHandler = new Handler();
@@ -564,7 +575,7 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Initialize available tower options
+     * Initialize available tower options.
      */
     private void initializeTowerOptions() {
         availableTowers = new ArrayList<>();
@@ -610,7 +621,10 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Select a tower by index
+     * Select a tower by index.
+     *
+     * @param index The index of the tower to select
+     * @param fab The button associated with the tower
      */
     private void selectTower(int index, AccessibleImageButton fab) {
         if (index < 0 || index >= availableTowers.size()) {
@@ -656,7 +670,7 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Deselect the currently selected tower
+     * Deselect the currently selected tower.
      */
     private void deselectTower() {
         if (selectedFab != null) {
@@ -671,7 +685,9 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Show info dialog for a tower using the tower card layout
+     * Show info dialog for a tower using the tower card layout.
+     *
+     * @param index The index of the tower to show info for
      */
     private void showTowerInfoDialog(int index) {
         if (index < 0 || index >= availableTowers.size()) {
@@ -721,7 +737,9 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Show upgrade dialog for an existing tower
+     * Show upgrade dialog for an existing tower.
+     *
+     * @param tower The tower to show upgrade options for
      */
     private void showTowerUpgradeDialog(Tower tower) {
         if (tower == null) return;
@@ -828,7 +846,10 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Get tower icon resource by type
+     * Get tower icon resource by type.
+     *
+     * @param towerType The type of tower
+     * @return The resource ID for the tower icon
      */
     private int getTowerIconResource(String towerType) {
         return switch (towerType) {
@@ -836,26 +857,38 @@ public class GameFragment extends Fragment {
             case "Honeypot" -> R.drawable.ic_tower_honeypot;
             case "Jammer" -> R.drawable.ic_tower_jammer;
             default -> {
-                Log.w(TAG, "Unknown tower type: " + towerType + ", using Firewall icon as default");
+                Log.w(TAG, "Unknown tower type: " + towerType
+                        + ", using Firewall icon as default");
                 yield R.drawable.ic_tower_firewall;
             }
         };
     }
 
     /**
-     * Get tower description by type
+     * Get tower description by type.
+     *
+     * @param towerType The type of tower
+     * @return The description text for the tower
      */
     private String getTowerDescription(String towerType) {
         return switch (towerType) {
-            case "Firewall" -> "Basic defense tower with high fire rate. Good all-around tower for early game.";
-            case "Honeypot" -> "Slows enemies and deals damage over time. Effective for controlling enemy movement.";
-            case "Jammer" -> "Fast attack speed with wide range. Best for hitting multiple targets.";
+            case "Firewall" ->
+                    "Basic defense tower with high fire rate. "
+                    + "Good all-around tower for early game.";
+            case "Honeypot" ->
+                    "Slows enemies and deals damage over time. "
+                    + "Effective for controlling enemy movement.";
+            case "Jammer" ->
+                    "Fast attack speed with wide range. "
+                    + "Best for hitting multiple targets.";
             default -> "Unknown tower type.";
         };
     }
 
     /**
-     * Handle tap event for tower placement or upgrade
+     * Handle tap event for tower placement or upgrade.
+     *
+     * @param worldPosition The world position that was tapped
      */
     private void handleTowerPlacement(PointF worldPosition) {
         if (gameEngine == null) {
@@ -871,7 +904,8 @@ public class GameFragment extends Fragment {
             return;
         }
 
-        // Use draggedTower if available (from drag operation), otherwise use selectedTower (from click)
+        // Use draggedTower if available (from drag operation),
+        // otherwise use selectedTower (from click)
         TowerOption towerToPlace = draggedTower != null ? draggedTower : selectedTower;
 
         // No existing tower, proceed with placement
@@ -920,11 +954,10 @@ public class GameFragment extends Fragment {
             int towerCost = towerToAdd.getCost();
             if (currentResources < towerCost) {
                 int needed = towerCost - currentResources;
-                Toast.makeText(requireContext(),
-                        String.format(Locale.getDefault(),
-                                "Cannot afford %s!\nCosts %d resources (you have %d)\nNeed %d more",
-                                towerToPlace.name(), towerCost, currentResources, needed),
-                        Toast.LENGTH_LONG).show();
+                String message = String.format(Locale.getDefault(),
+                        "Cannot afford %s!\nCosts %d resources (you have %d)\nNeed %d more",
+                        towerToPlace.name(), towerCost, currentResources, needed);
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
                 return;
             }
 
@@ -932,19 +965,19 @@ public class GameFragment extends Fragment {
             boolean placed = gameEngine.addTower(towerToAdd);
 
             if (placed) {
-                Log.d(TAG, String.format(Locale.getDefault(), "Tower placed successfully at (%.0f, %.0f)", worldPosition.x, worldPosition.y));
-                Toast.makeText(requireContext(),
-                        towerToPlace.name() + " placed!",
+                Log.d(TAG, String.format(Locale.getDefault(),
+                        "Tower placed successfully at (%.0f, %.0f)",
+                        worldPosition.x, worldPosition.y));
+                Toast.makeText(requireContext(), towerToPlace.name() + " placed!",
                         Toast.LENGTH_SHORT).show();
             } else {
                 // Check why placement failed
                 if (gameEngine.getResources() < towerCost) {
                     int needed = towerCost - gameEngine.getResources();
-                    Toast.makeText(requireContext(),
-                            String.format(Locale.getDefault(),
-                                    "Cannot afford %s!\nCosts %d resources (you have %d)\nNeed %d more",
-                                    towerToPlace.name(), towerCost, gameEngine.getResources(), needed),
-                            Toast.LENGTH_LONG).show();
+                    String failMessage = String.format(Locale.getDefault(),
+                            "Cannot afford %s!\nCosts %d resources (you have %d)\nNeed %d more",
+                            towerToPlace.name(), towerCost, gameEngine.getResources(), needed);
+                    Toast.makeText(requireContext(), failMessage, Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(requireContext(),
                             "Invalid spot! Place towers on walls only.",
@@ -960,7 +993,7 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Load saved game state from most recent auto-save
+     * Load saved game state from most recent auto-save.
      */
     private void loadSavedGame() {
         if (viewModel == null) {
@@ -973,7 +1006,9 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Create a load callback for saved games
+     * Create a load callback for saved games.
+     *
+     * @return A callback for handling load success/failure
      */
     private GameRepository.LoadCallback createLoadCallback() {
         return new GameRepository.LoadCallback() {
@@ -982,13 +1017,15 @@ public class GameFragment extends Fragment {
                 if (gameEngine != null && gameState != null) {
                     // Check if the saved game is a game-over state (0 health)
                     if (gameState.dataCenterHealth <= 0) {
-                        Log.d(TAG, "Saved game was game-over state. Starting fresh game instead.");
+                        Log.d(TAG,
+                                "Saved game was game-over state. Starting fresh game instead.");
                         hasLoadedGame = true;
 
                         if (isAdded()) {
                             requireActivity().runOnUiThread(() -> {
-                                Toast.makeText(requireContext(),
-                                        "Previous game ended at Wave " + gameState.currentWave + ". Starting new game.",
+                                String gameOverMessage = "Previous game ended at Wave "
+                                        + gameState.currentWave + ". Starting new game.";
+                                Toast.makeText(requireContext(), gameOverMessage,
                                         Toast.LENGTH_LONG).show();
 
                                 // Delete the old save and start fresh
@@ -1045,7 +1082,7 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Delete auto-save when starting a new game
+     * Delete auto-save when starting a new game.
      */
     private void deleteAutoSave() {
         if (viewModel == null) {
@@ -1067,7 +1104,9 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Handle game over event
+     * Handle game over event.
+     *
+     * @param finalWave The final wave number reached
      */
     private void handleGameOver(int finalWave) {
         if (!isAdded()) return;
@@ -1080,8 +1119,10 @@ public class GameFragment extends Fragment {
             // Note: When continuing, the load logic will detect 0 health and start fresh
 
             // Get player name from SharedPreferences or use default
-            android.content.SharedPreferences prefs = requireContext().getSharedPreferences("game_prefs", android.content.Context.MODE_PRIVATE);
-            String playerName = prefs.getString("player_name", android.os.Build.MODEL); // Use device model as default
+            android.content.SharedPreferences prefs = requireContext()
+                    .getSharedPreferences("game_prefs", android.content.Context.MODE_PRIVATE);
+            // Use device model as default
+            String playerName = prefs.getString("player_name", android.os.Build.MODEL);
 
             // Get the final score from game engine
             long finalScore = gameEngine != null ? gameEngine.getScore() : 0;
@@ -1117,18 +1158,25 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Submit score to leaderboard with userId
+     * Submit score to leaderboard with userId.
+     *
+     * @param userId The user ID for the leaderboard
+     * @param playerName The player's name
+     * @param wave The final wave reached
      */
     private void submitScoreToLeaderboard(String userId, String playerName, int wave) {
         edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager.getInstance()
-            .submitHighScore(userId, playerName, wave, new edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager.LeaderboardCallback() {
+                .submitHighScore(userId, playerName, wave,
+                new edu.commonwealthu.lastserverstanding.data.firebase
+                        .FirebaseManager.LeaderboardCallback() {
                 @Override
                 public void onSuccess() {
-                    Log.d(TAG, "Score submitted successfully to leaderboard - UserId: " + userId + ", Player: " + playerName + ", Wave: " + wave);
+                    Log.d(TAG, "Score submitted successfully to leaderboard - UserId: "
+                            + userId + ", Player: " + playerName + ", Wave: " + wave);
                     if (isAdded()) {
                         Toast.makeText(requireContext(),
-                            "Score submitted to leaderboard!",
-                            Toast.LENGTH_SHORT).show();
+                                "Score submitted to leaderboard!",
+                                Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -1145,23 +1193,29 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Show game over dialog
+     * Show game over dialog.
+     *
+     * @param finalWave The final wave reached
+     * @param finalScore The final score achieved
      */
     private void showGameOverDialog(int finalWave, long finalScore) {
         if (!isAdded()) return;
 
         String message = String.format(Locale.getDefault(),
-            "You reached Wave %d!\nFinal Score: %,d\n\nYour score has been submitted to the leaderboard.",
-            finalWave,
-            finalScore
-        );
+                """
+                        You reached Wave %d!
+                        Final Score: %,d
+                        
+                        Your score has been submitted to the leaderboard.""",
+                finalWave, finalScore);
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Game Over!")
                 .setMessage(message)
                 .setPositiveButton("Main Menu", (dialog, which) -> {
                     // Delete the auto-save since game is over
-                    viewModel.deleteAutoSave(new edu.commonwealthu.lastserverstanding.data.repository.GameRepository.DeleteCallback() {
+                    viewModel.deleteAutoSave(new edu.commonwealthu.lastserverstanding
+                            .data.repository.GameRepository.DeleteCallback() {
                         @Override
                         public void onSuccess() {
                             Log.d(TAG, "Auto-save deleted after game over");
@@ -1169,7 +1223,8 @@ public class GameFragment extends Fragment {
 
                         @Override
                         public void onError(String error) {
-                            Log.e(TAG, "Failed to delete auto-save after game over: " + error);
+                            Log.e(TAG,
+                                    "Failed to delete auto-save after game over: " + error);
                         }
                     });
 
@@ -1188,7 +1243,8 @@ public class GameFragment extends Fragment {
                 })
                 .setNegativeButton("New Game", (dialog, which) -> {
                     // Delete the auto-save since we're starting fresh
-                    viewModel.deleteAutoSave(new edu.commonwealthu.lastserverstanding.data.repository.GameRepository.DeleteCallback() {
+                    viewModel.deleteAutoSave(new edu.commonwealthu.lastserverstanding
+                            .data.repository.GameRepository.DeleteCallback() {
                         @Override
                         public void onSuccess() {
                             Log.d(TAG, "Auto-save deleted before starting new game");
@@ -1272,7 +1328,7 @@ public class GameFragment extends Fragment {
     }
 
     /**
-     * Save current game state as auto-save
+     * Save current game state as auto-save.
      */
     private void saveGameState() {
         if (gameEngine == null || viewModel == null) {

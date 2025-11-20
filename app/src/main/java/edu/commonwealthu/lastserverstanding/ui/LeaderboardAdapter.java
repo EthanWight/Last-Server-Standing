@@ -17,7 +17,9 @@ import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager;
 
 /**
- * Adapter for displaying leaderboard entries
+ * Adapter for displaying leaderboard entries.
+ *
+ * @author Ethan Wight
  */
 public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.LeaderboardViewHolder> {
 
@@ -27,6 +29,11 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
         this.entries = new ArrayList<>();
     }
 
+    /**
+     * Set the leaderboard entries to display.
+     *
+     * @param newEntries The new list of leaderboard entries.
+     */
     public void setEntries(List<FirebaseManager.LeaderboardEntry> newEntries) {
         List<FirebaseManager.LeaderboardEntry> newList = newEntries != null ? newEntries : new ArrayList<>();
 
@@ -47,8 +54,8 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
                 // Items are the same if they have the same player name and timestamp
                 FirebaseManager.LeaderboardEntry oldEntry = entries.get(oldItemPosition);
                 FirebaseManager.LeaderboardEntry newEntry = newList.get(newItemPosition);
-                return Objects.equals(oldEntry.playerName, newEntry.playerName) &&
-                       oldEntry.timestamp == newEntry.timestamp;
+                return Objects.equals(oldEntry.playerName, newEntry.playerName)
+                       && oldEntry.timestamp == newEntry.timestamp;
             }
 
             @Override
@@ -57,9 +64,9 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
                 FirebaseManager.LeaderboardEntry newEntry = newList.get(newItemPosition);
 
                 // Compare all relevant fields
-                return Objects.equals(oldEntry.playerName, newEntry.playerName) &&
-                       oldEntry.wave == newEntry.wave &&
-                       oldEntry.timestamp == newEntry.timestamp;
+                return Objects.equals(oldEntry.playerName, newEntry.playerName)
+                       && oldEntry.wave == newEntry.wave
+                       && oldEntry.timestamp == newEntry.timestamp;
             }
         });
 
@@ -86,12 +93,22 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
         return entries.size();
     }
 
+    /**
+     * ViewHolder for leaderboard entry items.
+     *
+     * @author Ethan Wight
+     */
     public static class LeaderboardViewHolder extends RecyclerView.ViewHolder {
         private final TextView rankText;
         private final TextView playerNameText;
         private final TextView waveText;
         private final TextView timestampText;
 
+        /**
+         * Constructor for the leaderboard view holder.
+         *
+         * @param itemView The view for this holder.
+         */
         public LeaderboardViewHolder(@NonNull View itemView) {
             super(itemView);
             rankText = itemView.findViewById(R.id.text_rank);
@@ -100,6 +117,12 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
             timestampText = itemView.findViewById(R.id.text_timestamp);
         }
 
+        /**
+         * Bind the leaderboard entry to this view holder.
+         *
+         * @param entry The leaderboard entry.
+         * @param rank The rank of this entry.
+         */
         public void bind(FirebaseManager.LeaderboardEntry entry, int rank) {
             rankText.setText(String.valueOf(rank));
             playerNameText.setText(entry.playerName != null ? entry.playerName : "Anonymous");
@@ -107,6 +130,12 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
             timestampText.setText(formatTimestamp(entry.timestamp));
         }
 
+        /**
+         * Format a timestamp into a human-readable relative time.
+         *
+         * @param timestamp The timestamp to format.
+         * @return A human-readable relative time string.
+         */
         private String formatTimestamp(long timestamp) {
             long now = System.currentTimeMillis();
             long diff = now - timestamp;

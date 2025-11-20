@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Serializable representation of complete game state
+ * Serializable representation of complete game state.
+ *
+ * @author Ethan Wight
  */
 public class GameState {
 
@@ -25,7 +27,9 @@ public class GameState {
     }
 
     /**
-     * Serialize to JSON string
+     * Serialize to JSON string.
+     *
+     * @return The JSON representation of this game state.
      */
     public String toJson() {
         Gson gson = new Gson();
@@ -33,7 +37,10 @@ public class GameState {
     }
 
     /**
-     * Deserialize from JSON string
+     * Deserialize from JSON string.
+     *
+     * @param json The JSON string to deserialize.
+     * @return The deserialized game state.
      */
     public static GameState fromJson(String json) {
         Gson gson = new Gson();
@@ -41,7 +48,9 @@ public class GameState {
     }
 
     /**
-     * Nested class for tower data
+     * Nested class for tower data.
+     *
+     * @author Ethan Wight
      */
     public static class TowerData {
         public String type;
@@ -58,7 +67,9 @@ public class GameState {
     }
 
     /**
-     * Nested class for enemy data
+     * Nested class for enemy data.
+     *
+     * @author Ethan Wight
      */
     public static class EnemyData {
         public String type;
@@ -80,8 +91,20 @@ public class GameState {
             }
         }
 
+        /**
+         * Point class for path coordinates.
+         *
+         * @author Ethan Wight
+         */
         public static class Point {
             public float x, y;
+
+            /**
+             * Constructor for point.
+             *
+             * @param x The x coordinate.
+             * @param y The y coordinate.
+             */
             public Point(float x, float y) {
                 this.x = x;
                 this.y = y;

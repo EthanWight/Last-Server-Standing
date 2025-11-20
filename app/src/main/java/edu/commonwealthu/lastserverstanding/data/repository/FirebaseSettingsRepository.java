@@ -11,8 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Repository for managing user settings in Firebase Firestore
- * Uses anonymous authentication to sync settings across sessions
+ * Repository for managing user settings in Firebase Firestore.
+ * Uses anonymous authentication to sync settings across sessions.
+ *
+ * @author Ethan Wight
  */
 public class FirebaseSettingsRepository {
 
@@ -36,7 +38,9 @@ public class FirebaseSettingsRepository {
     }
 
     /**
-     * Ensure user is authenticated (anonymously)
+     * Ensure user is authenticated (anonymously).
+     *
+     * @param callback The callback to handle authentication result.
      */
     public void ensureAuthenticated(AuthCallback callback) {
         FirebaseUser currentUser = auth.getCurrentUser();
@@ -69,7 +73,9 @@ public class FirebaseSettingsRepository {
     }
 
     /**
-     * Load settings from Firestore
+     * Load settings from Firestore.
+     *
+     * @param callback The callback to handle loaded settings.
      */
     public void loadSettings(LoadCallback callback) {
         ensureAuthenticated(new AuthCallback() {
@@ -88,7 +94,10 @@ public class FirebaseSettingsRepository {
     }
 
     /**
-     * Perform the actual load operation
+     * Perform the actual load operation.
+     *
+     * @param userId The user ID to load settings for.
+     * @param callback The callback to handle loaded settings.
      */
     private void performLoad(String userId, LoadCallback callback) {
         firestore.collection(COLLECTION_SETTINGS)
@@ -124,9 +133,15 @@ public class FirebaseSettingsRepository {
     }
 
     /**
-     * Save settings to Firestore
+     * Save settings to Firestore.
+     *
+     * @param soundEnabled Whether sound is enabled.
+     * @param vibrationEnabled Whether vibration is enabled.
+     * @param showTowerRanges Whether to show tower ranges.
+     * @param callback The callback to handle save result.
      */
-    public void saveSettings(boolean soundEnabled, boolean vibrationEnabled, boolean showTowerRanges, SaveCallback callback) {
+    public void saveSettings(boolean soundEnabled, boolean vibrationEnabled, boolean showTowerRanges,
+                             SaveCallback callback) {
         ensureAuthenticated(new AuthCallback() {
             @Override
             public void onSuccess(String userId) {
@@ -141,9 +156,16 @@ public class FirebaseSettingsRepository {
     }
 
     /**
-     * Perform the actual save operation
+     * Perform the actual save operation.
+     *
+     * @param userId The user ID to save settings for.
+     * @param soundEnabled Whether sound is enabled.
+     * @param vibrationEnabled Whether vibration is enabled.
+     * @param showTowerRanges Whether to show tower ranges.
+     * @param callback The callback to handle save result.
      */
-    private void performSave(String userId, boolean soundEnabled, boolean vibrationEnabled, boolean showTowerRanges, SaveCallback callback) {
+    private void performSave(String userId, boolean soundEnabled, boolean vibrationEnabled,
+                             boolean showTowerRanges, SaveCallback callback) {
         Map<String, Object> settingsData = new HashMap<>();
         settingsData.put(FIELD_SOUND_ENABLED, soundEnabled);
         settingsData.put(FIELD_VIBRATION_ENABLED, vibrationEnabled);

@@ -3,7 +3,9 @@ package edu.commonwealthu.lastserverstanding.ui;
 import androidx.annotation.DrawableRes;
 
 /**
- * Data class representing a tower type available for purchase
+ * Data class representing a tower type available for purchase.
+ *
+ * @author Ethan Wight
  */
 public record TowerOption(String name, String type, int cost, float damage, float range,
                           float fireRate, @DrawableRes int iconResId, boolean isLocked,

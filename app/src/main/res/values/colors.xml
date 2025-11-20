@@ -66,4 +66,45 @@
     <!-- Overlay -->
     <color name="overlay_dark">#CC000000</color>
     <color name="overlay_red">#4CF44336</color>
+
+    <!-- Game Effects - Status Effects -->
+    <color name="effect_burn_base">#FFFF6400</color>          <!-- Orange for fire -->
+    <color name="effect_slow_amber">#FFFFB400</color>         <!-- Amber/honey color -->
+    <color name="effect_slow_amber_dark">#FFC88C00</color>    <!-- Darker amber -->
+    <color name="effect_slow_amber_drop">#FFE6A000</color>    <!-- Amber drop color -->
+    <color name="effect_stun_yellow">#FFFFFF64</color>        <!-- Yellow for electricity -->
+    <color name="effect_stun_yellow_glow">#32FFFF96</color>   <!-- Yellow glow -->
+
+    <!-- Projectiles -->
+    <color name="projectile_burn">#FFFF6400</color>           <!-- Orange projectile -->
+    <color name="projectile_slow">#FFFFB400</color>           <!-- Amber projectile -->
+    <color name="projectile_stun">#FF64C8FF</color>           <!-- Light blue projectile -->
+    <color name="projectile_default">#FFFFFF00</color>        <!-- Yellow default -->
+
+    <!-- Enemy Colors -->
+    <color name="enemy_data_crawler">#FFFF0000</color>        <!-- Red -->
+    <color name="enemy_virus_bot">#FF0000FF</color>           <!-- Blue -->
+    <color name="enemy_trojan_horse">#FF00FF00</color>        <!-- Green -->
+
+    <!-- Tower Elements -->
+    <color name="tower_range_indicator">#5064C8FF</color>     <!-- Semi-transparent blue -->
+    <color name="tower_default">#FF00FFFF</color>             <!-- Cyan fallback -->
+
+    <!-- Health Bar -->
+    <color name="health_bar_fill">#FF00FF00</color>           <!-- Green fill -->
+    <color name="health_bar_background">#FF444444</color>     <!-- Dark gray -->
+
+    <!-- Placement Indicators -->
+    <color name="placement_valid_fill">#6400FF00</color>      <!-- Green transparent -->
+    <color name="placement_valid_border">#C800FF00</color>    <!-- Green solid -->
+    <color name="placement_invalid_fill">#64FF0000</color>    <!-- Red transparent -->
+    <color name="placement_invalid_border">#C8FF0000</color>  <!-- Red solid -->
+    <color name="placement_grid_overlay">#50FFFFFF</color>    <!-- White transparent -->
+
+    <!-- Drag Preview -->
+    <color name="drag_preview_valid">#7864C8FF</color>        <!-- Blue transparent -->
+    <color name="drag_preview_invalid">#78FF9696</color>      <!-- Red transparent -->
+
+    <!-- Debug/Testing -->
+    <color name="debug_white">#FFFFFFFF</color>
 </resources>

@@ -24,7 +24,9 @@ import edu.commonwealthu.lastserverstanding.game.GameEngine;
 import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
 /**
- * Settings Fragment - User preferences and configuration
+ * Settings Fragment - User preferences and configuration.
+ *
+ * @author Ethan Wight
  */
 public class SettingsFragment extends Fragment {
 

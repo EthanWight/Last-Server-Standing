@@ -9,13 +9,17 @@ import edu.commonwealthu.lastserverstanding.model.StatusEffect;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
 /**
- * Jammer Tower - Fast attack speed with wide range
- * Best for hitting multiple targets
+ * Jammer Tower - Fast attack speed with wide range.
+ * Best for hitting multiple targets.
+ *
+ * @author Ethan Wight
  */
 public class JammerTower extends Tower {
 
     /**
-     * Constructor with default stats
+     * Constructor with default stats.
+     *
+     * @param position The position to place this tower on the grid.
      */
     public JammerTower(PointF position) {
         super(
@@ -29,6 +33,11 @@ public class JammerTower extends Tower {
         );
     }
 
+    /**
+     * Update tower state each frame.
+     *
+     * @param deltaTime Time since last update in seconds.
+     */
     @Override
     public void update(float deltaTime) {
         // Update target validity
@@ -37,6 +46,11 @@ public class JammerTower extends Tower {
         }
     }
 
+    /**
+     * Fire at the current target if possible.
+     *
+     * @return Projectile if fired, null otherwise.
+     */
     @Override
     public Projectile fire() {
         if (target == null || isOnCooldown()) {
@@ -62,6 +76,11 @@ public class JammerTower extends Tower {
         );
     }
 
+    /**
+     * Get the tower type name.
+     *
+     * @return The type name of this tower.
+     */
     @Override
     public String getType() {
         return "Jammer";

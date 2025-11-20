@@ -36,6 +36,8 @@ import edu.commonwealthu.lastserverstanding.R;
  * );
  * bottomSheet.show(getSupportFragmentManager(), "tower_selection");
  * </pre>
+ *
+ * @author Ethan Wight
  */
 public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
 
@@ -56,8 +58,8 @@ public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
     /**
      * Creates a new instance of TowerSelectionBottomSheet with a selection listener.
      *
-     * @param listener The listener to be notified when a tower is selected
-     * @return A new instance of TowerSelectionBottomSheet
+     * @param listener The listener to be notified when a tower is selected.
+     * @return A new instance of TowerSelectionBottomSheet.
      */
     @SuppressWarnings("unused")
     public static TowerSelectionBottomSheet newInstance(TowerSelectionListener listener) {
@@ -69,12 +71,20 @@ public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
     /**
      * Sets the tower selection listener.
      *
-     * @param listener The listener to be notified when a tower is selected
+     * @param listener The listener to be notified when a tower is selected.
      */
     public void setSelectionListener(TowerSelectionListener listener) {
         this.selectionListener = listener;
     }
 
+    /**
+     * Create the view for this fragment.
+     *
+     * @param inflater The layout inflater.
+     * @param container The parent view group.
+     * @param savedInstanceState The saved instance state.
+     * @return The view for this fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -97,7 +107,7 @@ public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
     /**
      * Creates the list of available towers with their stats and pricing.
      *
-     * @return List of tower information
+     * @return List of tower information.
      */
     private List<TowerInfo> createTowerList() {
         List<TowerInfo> towers = new ArrayList<>();
@@ -141,7 +151,7 @@ public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
     /**
      * Handles tower click events. Validates unlock status and notifies listener.
      *
-     * @param towerInfo The tower that was clicked
+     * @param towerInfo The tower that was clicked.
      */
     private void onTowerClicked(TowerInfo towerInfo) {
         if (!towerInfo.isUnlocked) {
@@ -163,14 +173,14 @@ public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
     /**
      * Data class containing tower information for display and purchase.
      *
-     * @param name Tower name
-     * @param description Tower description
-     * @param iconResId Resource ID for tower icon
-     * @param cost Purchase cost in resources
-     * @param damage Damage per hit
-     * @param range Attack range
-     * @param fireRate Attacks per second
-     * @param isUnlocked Whether the tower is unlocked for purchase
+     * @param name Tower name.
+     * @param description Tower description.
+     * @param iconResId Resource ID for tower icon.
+     * @param cost Purchase cost in resources.
+     * @param damage Damage per hit.
+     * @param range Attack range.
+     * @param fireRate Attacks per second.
+     * @param isUnlocked Whether the tower is unlocked for purchase.
      */
     @SuppressWarnings("unused")
     public record TowerInfo(
@@ -219,6 +229,8 @@ public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
 
     /**
      * RecyclerView Adapter for displaying towers in a grid.
+     *
+     * @author Ethan Wight
      */
     static class TowerAdapter extends RecyclerView.Adapter<TowerAdapter.TowerViewHolder> {
 
@@ -255,6 +267,8 @@ public class TowerSelectionBottomSheet extends BottomSheetDialogFragment {
 
         /**
          * ViewHolder for tower card items.
+         *
+         * @author Ethan Wight
          */
         static class TowerViewHolder extends RecyclerView.ViewHolder {
             private final ImageView towerIcon;

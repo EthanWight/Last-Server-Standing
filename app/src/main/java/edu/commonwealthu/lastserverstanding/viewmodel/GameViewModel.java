@@ -12,7 +12,9 @@ import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
 
 /**
- * ViewModel for managing game data with lifecycle awareness
+ * ViewModel for managing game data with lifecycle awareness.
+ *
+ * @author Ethan Wight
  */
 public class GameViewModel extends AndroidViewModel {
 
@@ -37,42 +39,57 @@ public class GameViewModel extends AndroidViewModel {
     }
 
     /**
-     * Save current game state
+     * Save current game state.
+     *
+     * @param gameState The game state to save.
+     * @param isAutoSave Whether this is an automatic save.
+     * @param callback Callback for save completion.
      */
     public void saveGame(GameState gameState, boolean isAutoSave, GameRepository.SaveCallback callback) {
         repository.saveGame(gameState, isAutoSave, callback);
     }
 
     /**
-     * Load most recent auto-save
+     * Load most recent auto-save.
+     *
+     * @param callback Callback for load completion.
      */
     public void loadLatestAutoSave(GameRepository.LoadCallback callback) {
         repository.loadLatestAutoSave(callback);
     }
 
     /**
-     * Delete autosave from Firebase
+     * Delete autosave from Firebase.
+     *
+     * @param callback Callback for delete completion.
      */
     public void deleteAutoSave(GameRepository.DeleteCallback callback) {
         repository.deleteAutoSave(callback);
     }
 
     /**
-     * Update settings
+     * Update settings.
+     *
+     * @param settings The new settings to apply.
      */
     public void updateSettings(Settings settings) {
         repository.updateSettings(settings);
     }
 
     /**
-     * Refresh player name for Firebase saves
+     * Refresh player name for Firebase saves.
      */
     public void refreshPlayerName() {
         repository.refreshPlayerName();
     }
 
     /**
-     * Update game stats (called from GameEngine)
+     * Update game stats (called from GameEngine).
+     *
+     * @param wave The current wave number.
+     * @param res The current resources.
+     * @param hp The current health.
+     * @param sc The current score.
      */
     public void updateGameStats(int wave, int res, int hp, long sc) {
         currentWave.postValue(wave);
@@ -88,8 +105,10 @@ public class GameViewModel extends AndroidViewModel {
     public LiveData<Integer> getHealth() { return health; }
 
     /**
-     * Get or create the game engine instance
-     * This ensures the same instance is used across navigation
+     * Get or create the game engine instance.
+     * This ensures the same instance is used across navigation.
+     *
+     * @return The game engine instance.
      */
     public GameEngine getGameEngine() {
         if (gameEngine == null) {
@@ -99,14 +118,16 @@ public class GameViewModel extends AndroidViewModel {
     }
 
     /**
-     * Reset game engine (for starting a new game)
+     * Reset game engine (for starting a new game).
      */
     public void resetGameEngine() {
         gameEngine = new GameEngine();
     }
 
     /**
-     * Check if game engine exists (has an active game)
+     * Check if game engine exists (has an active game).
+     *
+     * @return True if game engine exists, false otherwise.
      */
     public boolean hasActiveGame() {
         return gameEngine != null;

@@ -6,7 +6,9 @@ import android.util.Log;
 import com.google.firebase.FirebaseApp;
 
 /**
- * Custom Application class to initialize Firebase and other app-wide components
+ * Initializes Firebase and manages other app-wide components for the application.
+ *
+ * @author Ethan Wight
  */
 public class LastServerStandingApplication extends Application {
 
@@ -28,7 +30,9 @@ public class LastServerStandingApplication extends Application {
     }
 
     /**
-     * Get application instance for context access
+     * Returns the application instance for context access.
+     *
+     * @return the singleton application instance
      */
     public static LastServerStandingApplication getInstance() {
         return instance;

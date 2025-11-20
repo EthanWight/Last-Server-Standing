@@ -3,7 +3,9 @@ package edu.commonwealthu.lastserverstanding.model;
 import android.graphics.PointF;
 
 /**
- * Represents a projectile fired from a tower toward an enemy
+ * Represents a projectile fired from a tower toward an enemy.
+ *
+ * @author Ethan Wight
  */
 public class Projectile {
     private final String id;
@@ -18,6 +20,16 @@ public class Projectile {
     private static final float MAX_TRAVEL_DISTANCE = 2000f; // Remove if travels too far
     private static final float HIT_RADIUS_SQUARED = 625f; // 25 pixel hit radius (25^2)
 
+    /**
+     * Constructor for a projectile.
+     *
+     * @param id Unique identifier for this projectile.
+     * @param start Starting position of the projectile.
+     * @param target The target enemy to hit.
+     * @param damage Damage to deal on hit.
+     * @param speed Movement speed in units per second.
+     * @param statusEffect Optional status effect to apply on hit.
+     */
     public Projectile(String id, PointF start, Enemy target, float damage, float speed, StatusEffect statusEffect) {
         this.id = id;
         this.position = new PointF(start.x, start.y);
@@ -32,8 +44,9 @@ public class Projectile {
     }
     
     /**
-     * Update projectile position
-     * @param deltaTime Time since last update in seconds
+     * Update projectile position.
+     *
+     * @param deltaTime Time since last update in seconds.
      */
     public void update(float deltaTime) {
         if (hasHit || !target.isAlive()) {
@@ -74,7 +87,7 @@ public class Projectile {
     }
     
     /**
-     * Calculate velocity toward target (reuses velocity PointF to avoid allocation)
+     * Calculate velocity toward target (reuses velocity PointF to avoid allocation).
      */
     private void updateVelocity() {
         PointF targetPos = target.getPosition();
@@ -93,7 +106,7 @@ public class Projectile {
     }
     
     /**
-     * Handle projectile hitting target
+     * Handle projectile hitting target.
      */
     private void hit() {
         if (!hasHit && target.isAlive()) {

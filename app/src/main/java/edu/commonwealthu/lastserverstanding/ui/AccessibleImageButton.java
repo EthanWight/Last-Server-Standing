@@ -10,21 +10,47 @@ import androidx.appcompat.widget.AppCompatImageButton;
 /**
  * Custom ImageButton that properly overrides performClick for accessibility.
  * This is required when using setOnTouchListener for drag-and-drop functionality.
+ *
+ * @author Ethan Wight
  */
 public class AccessibleImageButton extends AppCompatImageButton {
 
+    /**
+     * Constructor for programmatic creation.
+     *
+     * @param context The application context.
+     */
     public AccessibleImageButton(@NonNull Context context) {
         super(context);
     }
 
+    /**
+     * Constructor for XML inflation.
+     *
+     * @param context The application context.
+     * @param attrs The attribute set.
+     */
     public AccessibleImageButton(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public AccessibleImageButton(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    /**
+     * Constructor for XML inflation with style.
+     *
+     * @param context The application context.
+     * @param attrs The attribute set.
+     * @param defStyleAttr The default style attribute.
+     */
+    public AccessibleImageButton(@NonNull Context context, @Nullable AttributeSet attrs,
+                                 int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
+    /**
+     * Perform click action.
+     *
+     * @return True if the click was handled.
+     */
     @Override
     public boolean performClick() {
         // Call super to handle accessibility
