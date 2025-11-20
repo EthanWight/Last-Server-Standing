@@ -2,6 +2,7 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -200,12 +201,6 @@
             app:layout_constraintTop_toBottomOf="@id/health_container"
             android:layout_marginTop="16dp">
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_warning"
-                android:contentDescription="@string/emergency_alert" />
-
             <TextView
                 android:id="@+id/banner_text"
                 android:layout_width="0dp"
@@ -213,7 +208,8 @@
                 android:layout_weight="1"
                 android:text="@string/breach_detected"
                 android:textAppearance="@style/TextAppearance.HUD"
-                android:layout_marginStart="12dp" />
+                android:layout_marginStart="12dp"
+                tools:ignore="VisualLintBounds" />
 
         </LinearLayout>
 

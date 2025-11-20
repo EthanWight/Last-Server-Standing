@@ -430,7 +430,7 @@ public class GameFragment extends Fragment {
                     if (towerIndex < availableTowers.size()) {
                         TowerOption tower = availableTowers.get(towerIndex);
                         draggedTower = tower;
-                        gameView.showDragPreview(tower.getIconResId(), tower.getRange());
+                        gameView.showDragPreview(tower.iconResId(), tower.range());
                         updateDragPreview(event.getRawX(), event.getRawY());
                     }
                     return true;
@@ -622,7 +622,7 @@ public class GameFragment extends Fragment {
         // Check if tower is locked
         if (tower.isLocked()) {
             Toast.makeText(requireContext(),
-                    tower.getName() + " is locked! Complete more waves to unlock.",
+                    tower.name() + " is locked! Complete more waves to unlock.",
                     Toast.LENGTH_SHORT).show();
             return;
         }
@@ -643,16 +643,16 @@ public class GameFragment extends Fragment {
 
         // Get current resources
         int resources = gameEngine != null ? gameEngine.getResources() : 0;
-        boolean canAfford = resources >= tower.getCost();
+        boolean canAfford = resources >= tower.cost();
 
         // Show selection feedback
-        String message = tower.getName() + " selected (" + tower.getCost() + " resources)";
+        String message = tower.name() + " selected (" + tower.cost() + " resources)";
         if (!canAfford) {
-            message += " - Need " + (tower.getCost() - resources) + " more!";
+            message += " - Need " + (tower.cost() - resources) + " more!";
         }
 
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "Tower selected: " + tower.getName());
+        Log.d(TAG, "Tower selected: " + tower.name());
     }
 
     /**
@@ -696,13 +696,13 @@ public class GameFragment extends Fragment {
         com.google.android.material.button.MaterialButton closeButton = cardView.findViewById(R.id.btn_close);
 
         // Populate the card with tower data
-        iconView.setImageResource(tower.getIconResId());
-        nameView.setText(getString(R.string.tower_name_format, tower.getName()));
-        costView.setText(String.valueOf(tower.getCost()));
-        descriptionView.setText(tower.getDescription());
-        damageChip.setText(String.format(Locale.getDefault(), "%.0f", tower.getDamage()));
-        rangeChip.setText(String.format(Locale.getDefault(), "%.0f", tower.getRange()));
-        fireRateChip.setText(String.format(Locale.getDefault(), "%.1f", tower.getFireRate()));
+        iconView.setImageResource(tower.iconResId());
+        nameView.setText(getString(R.string.tower_name_format, tower.name()));
+        costView.setText(String.valueOf(tower.cost()));
+        descriptionView.setText(tower.description());
+        damageChip.setText(String.format(Locale.getDefault(), "%.0f", tower.damage()));
+        rangeChip.setText(String.format(Locale.getDefault(), "%.0f", tower.range()));
+        fireRateChip.setText(String.format(Locale.getDefault(), "%.1f", tower.fireRate()));
 
         // Show/hide elements for dialog mode
         lockOverlay.setVisibility(tower.isLocked() ? View.VISIBLE : View.GONE);
@@ -883,7 +883,7 @@ public class GameFragment extends Fragment {
         try {
             // Create and place the tower based on type
             Tower towerToAdd = null;
-            switch (towerToPlace.getType()) {
+            switch (towerToPlace.type()) {
                 case "Firewall":
                     Log.d(TAG, "Creating Firewall tower at " + worldPosition);
                     towerToAdd = new FirewallTower(worldPosition);
@@ -897,7 +897,7 @@ public class GameFragment extends Fragment {
                     towerToAdd = new JammerTower(worldPosition);
                     break;
                 default:
-                    Log.e(TAG, "Unknown tower type: " + towerToPlace.getType());
+                    Log.e(TAG, "Unknown tower type: " + towerToPlace.type());
             }
 
             if (towerToAdd == null) {
@@ -923,7 +923,7 @@ public class GameFragment extends Fragment {
                 Toast.makeText(requireContext(),
                         String.format(Locale.getDefault(),
                                 "Cannot afford %s!\nCosts %d resources (you have %d)\nNeed %d more",
-                                towerToPlace.getName(), towerCost, currentResources, needed),
+                                towerToPlace.name(), towerCost, currentResources, needed),
                         Toast.LENGTH_LONG).show();
                 return;
             }
@@ -934,7 +934,7 @@ public class GameFragment extends Fragment {
             if (placed) {
                 Log.d(TAG, String.format(Locale.getDefault(), "Tower placed successfully at (%.0f, %.0f)", worldPosition.x, worldPosition.y));
                 Toast.makeText(requireContext(),
-                        towerToPlace.getName() + " placed!",
+                        towerToPlace.name() + " placed!",
                         Toast.LENGTH_SHORT).show();
             } else {
                 // Check why placement failed
@@ -943,7 +943,7 @@ public class GameFragment extends Fragment {
                     Toast.makeText(requireContext(),
                             String.format(Locale.getDefault(),
                                     "Cannot afford %s!\nCosts %d resources (you have %d)\nNeed %d more",
-                                    towerToPlace.getName(), towerCost, gameEngine.getResources(), needed),
+                                    towerToPlace.name(), towerCost, gameEngine.getResources(), needed),
                             Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(requireContext(),

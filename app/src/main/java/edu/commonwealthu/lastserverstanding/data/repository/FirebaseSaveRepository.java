@@ -286,6 +286,27 @@ public class FirebaseSaveRepository {
     }
 
     /**
+     * Extract and deserialize game state from a document
+     */
+    private void extractGameStateFromDocument(DocumentSnapshot document, LoadCallback callback, String source) {
+        String json = document.getString(FIELD_GAME_STATE_JSON);
+
+        if (json != null) {
+            try {
+                GameState gameState = GameState.fromJson(json);
+                Log.d(TAG, source + ": ✓ SUCCESS - Wave: " + gameState.currentWave);
+                callback.onSuccess(gameState);
+            } catch (Exception e) {
+                Log.e(TAG, source + ": Failed to deserialize", e);
+                callback.onError("Failed to parse save data: " + e.getMessage());
+            }
+        } else {
+            Log.e(TAG, source + ": JSON field is null");
+            callback.onError("Save data is corrupted");
+        }
+    }
+
+    /**
      * Load saves for a specific user ID (fallback method)
      */
     private void loadSavesForUser(String userId, LoadCallback callback) {
@@ -304,6 +325,7 @@ public class FirebaseSaveRepository {
 
                     if (snapshot != null && !snapshot.isEmpty()) {
                         // Sort documents by timestamp in descending order (newest first)
+                        //noinspection ExtractMethodRecommender
                         java.util.List<DocumentSnapshot> documents = snapshot.getDocuments();
                         documents.sort((a, b) -> {
                             Long timeA = a.getLong(FIELD_TIMESTAMP);
@@ -315,21 +337,7 @@ public class FirebaseSaveRepository {
 
                         // Get the most recent document
                         DocumentSnapshot document = documents.get(0);
-                        String json = document.getString(FIELD_GAME_STATE_JSON);
-
-                        if (json != null) {
-                            try {
-                                GameState gameState = GameState.fromJson(json);
-                                Log.d(TAG, "loadSavesForUser: ✓ SUCCESS - Wave: " + gameState.currentWave);
-                                callback.onSuccess(gameState);
-                            } catch (Exception e) {
-                                Log.e(TAG, "loadSavesForUser: Failed to deserialize", e);
-                                callback.onError("Failed to parse save data: " + e.getMessage());
-                            }
-                        } else {
-                            Log.e(TAG, "loadSavesForUser: JSON field is null");
-                            callback.onError("Save data is corrupted");
-                        }
+                        extractGameStateFromDocument(document, callback, "loadSavesForUser");
                     } else {
                         Log.d(TAG, "loadSavesForUser: ✗ No documents found");
                         callback.onError("No autosave found for user");
@@ -394,21 +402,7 @@ public class FirebaseSaveRepository {
                         // Get the most recent document (should be first after sorting DESC)
                         DocumentSnapshot document = documents.get(0);
                         Log.d(TAG, "loadSavesForPlayerName: >>> SELECTED document[0] with ts=" + document.getLong(FIELD_TIMESTAMP));
-                        String json = document.getString(FIELD_GAME_STATE_JSON);
-
-                        if (json != null) {
-                            try {
-                                GameState gameState = GameState.fromJson(json);
-                                Log.d(TAG, "loadSavesForPlayerName: ✓ SUCCESS - Wave: " + gameState.currentWave);
-                                callback.onSuccess(gameState);
-                            } catch (Exception e) {
-                                Log.e(TAG, "loadSavesForPlayerName: Failed to deserialize", e);
-                                callback.onError("Failed to parse save data: " + e.getMessage());
-                            }
-                        } else {
-                            Log.e(TAG, "loadSavesForPlayerName: JSON field is null");
-                            callback.onError("Save data is corrupted");
-                        }
+                        extractGameStateFromDocument(document, callback, "loadSavesForPlayerName");
                     } else {
                         Log.d(TAG, "loadSavesForPlayerName: ✗ No documents found");
                         callback.onError("No autosave found");

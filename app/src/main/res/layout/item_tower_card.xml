@@ -152,6 +152,8 @@
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="120dp"
+            android:minHeight="48dp"
             android:text="@string/close"
             android:textColor="@color/electric_blue"
             android:visibility="gone"

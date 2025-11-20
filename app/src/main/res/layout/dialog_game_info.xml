@@ -2,6 +2,7 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/background_deep"
@@ -50,7 +51,8 @@
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:padding="16dp"
-                android:lineSpacingMultiplier="1.2" />
+                android:lineSpacingMultiplier="1.2"
+                tools:ignore="VisualLintLongText" />
         </androidx.cardview.widget.CardView>
 
         <!-- Honeypot Tower -->
@@ -69,7 +71,8 @@
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:padding="16dp"
-                android:lineSpacingMultiplier="1.2" />
+                android:lineSpacingMultiplier="1.2"
+                tools:ignore="VisualLintLongText" />
         </androidx.cardview.widget.CardView>
 
         <!-- Jammer Tower -->
@@ -88,7 +91,8 @@
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:padding="16dp"
-                android:lineSpacingMultiplier="1.2" />
+                android:lineSpacingMultiplier="1.2"
+                tools:ignore="VisualLintLongText" />
         </androidx.cardview.widget.CardView>
 
         <!-- Divider -->
@@ -126,7 +130,8 @@
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:padding="16dp"
-                android:lineSpacingMultiplier="1.2" />
+                android:lineSpacingMultiplier="1.2"
+                tools:ignore="VisualLintLongText" />
         </androidx.cardview.widget.CardView>
 
         <!-- Virus Bot -->
@@ -141,11 +146,12 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:lineSpacingMultiplier="1.2"
+                android:padding="16dp"
                 android:text="@string/virus_bot_info"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
-                android:padding="16dp"
-                android:lineSpacingMultiplier="1.2" />
+                tools:ignore="VisualLintLongText,TextContrastCheck,TextContrastCheck,TextContrastCheck" />
         </androidx.cardview.widget.CardView>
 
         <!-- Trojan Horse -->
@@ -164,17 +170,23 @@
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:padding="16dp"
-                android:lineSpacingMultiplier="1.2" />
+                android:lineSpacingMultiplier="1.2"
+                tools:ignore="VisualLintLongText" />
         </androidx.cardview.widget.CardView>
 
         <!-- Close Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_close"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minWidth="200dp"
+            android:minHeight="48dp"
             android:text="@string/close"
             android:textColor="@color/button_text_dark"
             android:backgroundTint="@color/electric_blue"
+            android:paddingHorizontal="32dp"
+            android:paddingVertical="12dp"
+            android:layout_gravity="center"
             android:layout_marginTop="16dp" />
 
     </LinearLayout>

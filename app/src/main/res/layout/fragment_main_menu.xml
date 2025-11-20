@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_deep">
@@ -76,7 +77,8 @@
             android:text="@string/new_game"
             android:textColor="@color/button_text_dark"
             android:textSize="18sp"
-            app:cornerRadius="8dp" />
+            app:cornerRadius="8dp"
+            tools:ignore="VisualLintButtonSize" />
 
         <!-- Leaderboard Button -->
         <com.google.android.material.button.MaterialButton
@@ -87,7 +89,8 @@
             android:text="@string/leaderboard"
             android:textSize="16sp"
             android:padding="8dp"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="4dp"
+            tools:ignore="VisualLintButtonSize" />
 
     </LinearLayout>
 

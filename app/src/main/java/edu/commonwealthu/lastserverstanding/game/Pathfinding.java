@@ -15,8 +15,8 @@ import java.util.Set;
  * A* Pathfinding implementation for enemy navigation
  * Finds optimal path from start to goal while avoiding obstacles
  */
-public class Pathfinding {
-    
+public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
+
     // Node representing a position on the grid
     private static class Node implements Comparable<Node> {
         PointF position;
@@ -24,53 +24,47 @@ public class Pathfinding {
         float gCost; // Distance from start
         float hCost; // Estimated distance to goal
         float fCost; // Total cost (g + h)
-        
+
         Node(PointF position) {
             this.position = position;
             this.gCost = Float.MAX_VALUE;
             this.hCost = 0;
             this.fCost = Float.MAX_VALUE;
         }
-        
+
         @Override
         public int compareTo(Node other) {
             return Float.compare(this.fCost, other.fCost);
         }
-        
+
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof Node)) return false;
-            Node other = (Node) obj;
+            if (!(obj instanceof Node other)) return false;
             return Math.abs(position.x - other.position.x) < 0.01f &&
-                   Math.abs(position.y - other.position.y) < 0.01f;
+                    Math.abs(position.y - other.position.y) < 0.01f;
         }
-        
+
         @Override
         public int hashCode() {
-            return (int)(position.x * 1000 + position.y);
+            return (int) (position.x * 1000 + position.y);
         }
     }
-    
-    private final int gridWidth;
-    private final int gridHeight;
-    private final int cellSize;
-    
+
     /**
      * Constructor
-     * @param gridWidth Width of the game grid
+     *
+     * @param gridWidth  Width of the game grid
      * @param gridHeight Height of the game grid
-     * @param cellSize Size of each grid cell in pixels
+     * @param cellSize   Size of each grid cell in pixels
      */
-    public Pathfinding(int gridWidth, int gridHeight, int cellSize) {
-        this.gridWidth = gridWidth;
-        this.gridHeight = gridHeight;
-        this.cellSize = cellSize;
+    public Pathfinding {
     }
-    
+
     /**
      * Find path from start to goal using A* algorithm
-     * @param start Starting position
-     * @param goal Goal position
+     *
+     * @param start     Starting position
+     * @param goal      Goal position
      * @param obstacles List of obstacle positions (tower positions)
      * @return List of waypoints from start to goal, or empty list if no path found
      */
@@ -78,7 +72,7 @@ public class Pathfinding {
         // Convert world coordinates to grid coordinates
         PointF startGrid = worldToGrid(start);
         PointF goalGrid = worldToGrid(goal);
-        
+
         // Initialize data structures
         PriorityQueue<Node> openSet = new PriorityQueue<>();
         Set<String> openSetKeys = new HashSet<>(); // For O(1) membership checking
@@ -92,14 +86,14 @@ public class Pathfinding {
         openSet.add(startNode);
         openSetKeys.add(getKey(startGrid));
         allNodes.put(getKey(startGrid), startNode);
-        
+
         // Convert obstacles to grid coordinates for fast lookup
         Map<String, Boolean> obstacleMap = new HashMap<>();
         for (PointF obstacle : obstacles) {
             PointF obstacleGrid = worldToGrid(obstacle);
             obstacleMap.put(getKey(obstacleGrid), true);
         }
-        
+
         // A* main loop
         while (!openSet.isEmpty()) {
             Node current = openSet.poll();
@@ -131,81 +125,81 @@ public class Pathfinding {
                 }
             }
         }
-        
+
         // No path found - return straight line as fallback
         List<PointF> fallbackPath = new ArrayList<>();
         fallbackPath.add(start);
         fallbackPath.add(goal);
         return fallbackPath;
     }
-    
+
     /**
      * Get neighboring nodes (8 directions)
      */
-    private List<Node> getNeighbors(Node current, PointF goal, 
-                                     Map<String, Boolean> obstacles,
-                                     Map<String, Node> allNodes) {
+    private List<Node> getNeighbors(Node current, PointF goal,
+                                    Map<String, Boolean> obstacles,
+                                    Map<String, Node> allNodes) {
         List<Node> neighbors = new ArrayList<>();
-        
+
         // 8 directions: N, NE, E, SE, S, SW, W, NW
         int[][] directions = {
-            {0, -1}, {1, -1}, {1, 0}, {1, 1},
-            {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}
+                {0, -1}, {1, -1}, {1, 0}, {1, 1},
+                {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}
         };
-        
+
         for (int[] dir : directions) {
             float newX = current.position.x + dir[0];
             float newY = current.position.y + dir[1];
-            
+
             // Check bounds
             if (newX < 0 || newX >= gridWidth || newY < 0 || newY >= gridHeight) {
                 continue;
             }
-            
+
             PointF neighborPos = new PointF(newX, newY);
             String key = getKey(neighborPos);
-            
+
             // Skip if obstacle (unless it's the goal)
             if (obstacles.containsKey(key) && distance(neighborPos, goal) > 0.5f) {
                 continue;
             }
-            
+
             // Get or create neighbor node
             Node neighbor = allNodes.computeIfAbsent(key, k -> new Node(neighborPos));
 
             neighbors.add(neighbor);
         }
-        
+
         return neighbors;
     }
-    
+
     /**
      * Reconstruct path from goal to start by following parent pointers
      */
     private List<PointF> reconstructPath(Node goalNode) {
         List<PointF> path = new ArrayList<>();
         Node current = goalNode;
-        
+
         while (current != null) {
             path.add(gridToWorld(current.position));
             current = current.parent;
         }
-        
+
         Collections.reverse(path);
-        
+
         // Smooth path by removing unnecessary waypoints
         return smoothPath(path);
     }
-    
+
     /**
      * Smooth path by removing waypoints that can be skipped
      */
     private List<PointF> smoothPath(List<PointF> path) {
         if (path.size() <= 2) return path;
-        
+
         List<PointF> smoothed = new ArrayList<>();
         smoothed.add(path.get(0));
-        
+
         int current = 0;
         while (current < path.size() - 1) {
             // Try to skip ahead as far as possible
@@ -216,14 +210,14 @@ public class Pathfinding {
                     break;
                 }
             }
-            
+
             smoothed.add(path.get(furthest));
             current = furthest;
         }
-        
+
         return smoothed;
     }
-    
+
     /**
      * Check if there's a clear line of sight between two points
      */
@@ -233,7 +227,7 @@ public class Pathfinding {
         // For now, assume clear line of sight
         return true;
     }
-    
+
     /**
      * Heuristic function (Euclidean distance)
      */
@@ -242,7 +236,7 @@ public class Pathfinding {
         float dy = b.y - a.y;
         return (float) Math.sqrt(dx * dx + dy * dy);
     }
-    
+
     /**
      * Calculate distance between two points
      */
@@ -251,31 +245,31 @@ public class Pathfinding {
         float dy = b.y - a.y;
         return (float) Math.sqrt(dx * dx + dy * dy);
     }
-    
+
     /**
      * Convert world coordinates to grid coordinates
      */
     private PointF worldToGrid(PointF world) {
         return new PointF(
-            (int) (world.x / cellSize),
-            (int) (world.y / cellSize)
+                (int) (world.x / cellSize),
+                (int) (world.y / cellSize)
         );
     }
-    
+
     /**
      * Convert grid coordinates to world coordinates (center of cell)
      */
     private PointF gridToWorld(PointF grid) {
         return new PointF(
-            grid.x * cellSize + cellSize / 2f,
-            grid.y * cellSize + cellSize / 2f
+                grid.x * cellSize + cellSize / 2f,
+                grid.y * cellSize + cellSize / 2f
         );
     }
-    
+
     /**
      * Get unique key for a grid position
      */
     private String getKey(PointF pos) {
-        return (int)pos.x + "," + (int)pos.y;
+        return (int) pos.x + "," + (int) pos.y;
     }
 }
