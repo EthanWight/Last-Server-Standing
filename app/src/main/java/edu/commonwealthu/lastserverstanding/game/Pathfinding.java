@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
 
-    // Node representing a position on the grid
+    /** Node representing a position on the grid for A* pathfinding. */
     private static class Node implements Comparable<Node> {
         final PointF position;
         Node parent;
@@ -67,13 +67,11 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
      * @return List of waypoints from start to goal, or empty list if no path found.
      */
     public List<PointF> findPath(PointF start, PointF goal, List<PointF> obstacles) {
-        // Convert world coordinates to grid coordinates
         PointF startGrid = worldToGrid(start);
         PointF goalGrid = worldToGrid(goal);
 
-        // Initialize data structures
         PriorityQueue<Node> openSet = new PriorityQueue<>();
-        Set<String> openSetKeys = new HashSet<>(); // For O(1) membership checking
+        Set<String> openSetKeys = new HashSet<>();
         Map<String, Node> allNodes = new HashMap<>();
 
         Node startNode = new Node(startGrid);
@@ -85,27 +83,23 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
         openSetKeys.add(getKey(startGrid));
         allNodes.put(getKey(startGrid), startNode);
 
-        // Convert obstacles to grid coordinates for fast lookup
         Map<String, Boolean> obstacleMap = new HashMap<>();
         for (PointF obstacle : obstacles) {
             PointF obstacleGrid = worldToGrid(obstacle);
             obstacleMap.put(getKey(obstacleGrid), true);
         }
 
-        // A* main loop
         while (!openSet.isEmpty()) {
             Node current = openSet.poll();
-            if (current == null) continue; // Safety check
+            if (current == null) continue;
 
             String currentKey = getKey(current.position);
             openSetKeys.remove(currentKey);
 
-            // Check if we reached the goal
             if (distance(current.position, goalGrid) < 0.5f) {
                 return reconstructPath(current);
             }
 
-            // Explore neighbors
             for (Node neighbor : getNeighbors(current, goalGrid, obstacleMap, allNodes)) {
                 float tentativeGCost = current.gCost + distance(current.position, neighbor.position);
 
@@ -155,7 +149,6 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
             float newX = current.position.x + dir[0];
             float newY = current.position.y + dir[1];
 
-            // Check bounds
             if (newX < 0 || newX >= gridWidth || newY < 0 || newY >= gridHeight) {
                 continue;
             }
@@ -168,7 +161,6 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
                 continue;
             }
 
-            // Get or create neighbor node
             Node neighbor = allNodes.computeIfAbsent(key, k -> new Node(neighborPos));
 
             neighbors.add(neighbor);
@@ -193,8 +185,6 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
         }
 
         Collections.reverse(path);
-
-        // Smooth path by removing unnecessary waypoints
         return smoothPath(path);
     }
 
