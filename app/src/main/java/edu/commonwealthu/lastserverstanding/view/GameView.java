@@ -329,9 +329,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
 
             // Restore canvas state
             canvas.restore();
-
-            // Draw HUD (not affected by camera)
-            drawHUD();
             
         } finally {
             // Unlock and post canvas
@@ -492,14 +489,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
         paint.setAlpha(255);
     }
 
-    /**
-     * Draw heads-up display.
-     */
-    private void drawHUD() {
-        // HUD elements are now handled by GameFragment overlay
-        // This method can be used for debug overlays if needed
-    }
-    
     /**
      * Handle touch input.
      *

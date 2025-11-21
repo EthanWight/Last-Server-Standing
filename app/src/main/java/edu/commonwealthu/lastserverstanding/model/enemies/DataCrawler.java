@@ -31,17 +31,6 @@ public class DataCrawler extends Enemy {
             5     // damage to data center
         );
     }
-    
-    /**
-     * Type-specific update logic (override in subclasses).
-     *
-     * @param deltaTime Time since last update in seconds.
-     */
-    @Override
-    protected void updateSpecific(float deltaTime) {
-        // Data Crawlers don't have special behavior during update
-        // They just move fast along their path
-    }
 
     /**
      * Get the enemy type name.
@@ -73,12 +62,4 @@ public class DataCrawler extends Enemy {
         return R.drawable.ic_enemy_bug;
     }
 
-    /**
-     * Called when enemy dies.
-     */
-    @Override
-    protected void onDeath() {
-        super.onDeath();
-        // Could add particle effect or sound here later
-    }
 }

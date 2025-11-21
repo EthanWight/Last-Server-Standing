@@ -71,18 +71,8 @@ public abstract class Enemy {
         if (currentPathIndex < path.size()) {
             move(deltaTime);
         }
-        
-        // Custom update for specific enemy type
-        updateSpecific(deltaTime);
     }
-    
-    /**
-     * Type-specific update logic (override in subclasses).
-     *
-     * @param deltaTime Time since last update in seconds.
-     */
-    protected abstract void updateSpecific(float deltaTime);
-    
+
     /**
      * Get the enemy type name.
      *
@@ -186,17 +176,9 @@ public abstract class Enemy {
         if (health <= 0) {
             health = 0;
             isAlive = false;
-            onDeath();
         }
     }
-    
-    /**
-     * Called when enemy dies.
-     */
-    protected void onDeath() {
-        // Can be overridden for special death effects
-    }
-    
+
     /**
      * Add a status effect to this enemy.
      *

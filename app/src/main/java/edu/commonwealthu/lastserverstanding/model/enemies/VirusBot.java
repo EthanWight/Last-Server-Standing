@@ -34,16 +34,6 @@ public class VirusBot extends Enemy {
     }
 
     /**
-     * Type-specific update logic (override in subclasses).
-     *
-     * @param deltaTime Time since last update in seconds.
-     */
-    @Override
-    protected void updateSpecific(float deltaTime) {
-        // Virus Bots don't have special behavior during update
-    }
-
-    /**
      * Get the enemy type name.
      *
      * @return The type name of this enemy.
@@ -73,12 +63,4 @@ public class VirusBot extends Enemy {
         return R.drawable.ic_enemy_virus;
     }
 
-    /**
-     * Called when enemy dies.
-     */
-    @Override
-    protected void onDeath() {
-        super.onDeath();
-        // Could add special death effect here later
-    }
 }

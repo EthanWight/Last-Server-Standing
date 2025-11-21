@@ -13,7 +13,6 @@
     <!-- Accent Colors -->
     <color name="warning_yellow">#FFC107</color>
     <color name="success_green">#4CAF50</color>
-    <color name="corruption_purple">#9C27B0</color>
 
     <!-- Background Colors -->
     <color name="background_deep">#0D1117</color>
@@ -25,7 +24,6 @@
     <!-- Text Colors -->
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#8B949E</color>
-    <color name="text_disabled">#484F58</color>
     <color name="button_text_dark">#212121</color>
 
     <!-- Standard Colors -->
@@ -42,7 +40,6 @@
     <color name="chip_firerate_bg">#1AFFC107</color>
 
     <!-- Progress Indicators -->
-    <color name="progress_indicator">@color/electric_blue</color>
     <color name="progress_track">#30363D</color>
 
     <!-- Health Bar States -->
@@ -65,7 +62,6 @@
 
     <!-- Overlay -->
     <color name="overlay_dark">#CC000000</color>
-    <color name="overlay_red">#4CF44336</color>
 
     <!-- Game Effects - Status Effects -->
     <color name="effect_burn_base">#FFFF6400</color>          <!-- Orange for fire -->
@@ -80,11 +76,6 @@
     <color name="projectile_slow">#FFFFB400</color>           <!-- Amber projectile -->
     <color name="projectile_stun">#FF64C8FF</color>           <!-- Light blue projectile -->
     <color name="projectile_default">#FFFFFF00</color>        <!-- Yellow default -->
-
-    <!-- Enemy Colors -->
-    <color name="enemy_data_crawler">#FFFF0000</color>        <!-- Red -->
-    <color name="enemy_virus_bot">#FF0000FF</color>           <!-- Blue -->
-    <color name="enemy_trojan_horse">#FF00FF00</color>        <!-- Green -->
 
     <!-- Tower Elements -->
     <color name="tower_range_indicator">#5064C8FF</color>     <!-- Semi-transparent blue -->

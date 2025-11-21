@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base Dark Theme with Cyberpunk Aesthetic -->
     <style name="Base.Theme.LastServerStanding" parent="Theme.Material3.Dark.NoActionBar">
         <!-- Primary Colors -->
@@ -98,12 +98,6 @@
         <item name="rippleColor">@color/ripple_white</item>
     </style>
 
-    <style name="Widget.App.Button.Text" parent="Widget.Material3.Button.TextButton">
-        <item name="cornerRadius">8dp</item>
-        <item name="android:minHeight">48dp</item>
-        <item name="rippleColor">@color/ripple_blue</item>
-    </style>
-
     <style name="Widget.App.Button.Icon" parent="Widget.Material3.Button.IconButton">
         <item name="android:minWidth">48dp</item>
         <item name="android:minHeight">48dp</item>
@@ -160,26 +154,6 @@
         <item name="chipIconTint">@color/warning_yellow</item>
     </style>
 
-    <!-- Progress Indicators -->
-    <style name="Widget.App.LinearProgressIndicator" parent="Widget.Material3.LinearProgressIndicator">
-        <item name="trackThickness">8dp</item>
-        <item name="trackCornerRadius">4dp</item>
-        <item name="indicatorColor">@color/progress_indicator</item>
-        <item name="trackColor">@color/progress_track</item>
-    </style>
-
-    <style name="Widget.App.CircularProgressIndicator" parent="Widget.Material3.CircularProgressIndicator">
-        <item name="indicatorSize">48dp</item>
-        <item name="trackThickness">4dp</item>
-        <item name="indicatorColor">@color/electric_blue</item>
-    </style>
-
-    <!-- Switch -->
-    <style name="Widget.App.Switch" parent="Widget.Material3.CompoundButton.Switch">
-        <item name="thumbTint">@color/switch_thumb</item>
-        <item name="trackTint">@color/switch_track</item>
-    </style>
-
     <!-- HUD Overlay Style -->
     <style name="TextAppearance.HUD" parent="TextAppearance.Material3.BodyMedium">
         <item name="fontFamily">monospace</item>
@@ -189,13 +163,6 @@
         <item name="android:shadowDx">1</item>
         <item name="android:shadowDy">1</item>
         <item name="android:shadowRadius">2</item>
-    </style>
-
-    <!-- Emergency Alert Banner -->
-    <style name="Widget.App.Banner" parent="">
-        <item name="android:background">@color/danger_red</item>
-        <item name="android:elevation">8dp</item>
-        <item name="android:padding">16dp</item>
     </style>
 
 </resources>

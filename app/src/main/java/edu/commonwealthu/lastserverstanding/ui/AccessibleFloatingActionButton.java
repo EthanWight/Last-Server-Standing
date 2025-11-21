@@ -47,14 +47,4 @@ public class AccessibleFloatingActionButton extends FloatingActionButton {
         super(context, attrs, defStyleAttr);
     }
 
-    /**
-     * Perform click action.
-     *
-     * @return True if the click was handled.
-     */
-    @Override
-    public boolean performClick() {
-        // Call the superclass implementation which triggers any OnClickListener
-        return super.performClick();
-    }
 }

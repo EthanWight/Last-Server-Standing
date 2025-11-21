@@ -34,17 +34,6 @@ public class TrojanHorse extends Enemy {
     }
 
     /**
-     * Type-specific update logic (override in subclasses).
-     *
-     * @param deltaTime Time since last update in seconds.
-     */
-    @Override
-    protected void updateSpecific(float deltaTime) {
-        // Trojan Horses are slow but resilient
-        // No special behavior during update
-    }
-
-    /**
      * Get the enemy type name.
      *
      * @return The type name of this enemy.
@@ -74,12 +63,4 @@ public class TrojanHorse extends Enemy {
         return R.drawable.ic_enemy_horse;
     }
 
-    /**
-     * Called when enemy dies.
-     */
-    @Override
-    protected void onDeath() {
-        super.onDeath();
-        // Could add explosion effect or spawn mini enemies here later
-    }
 }

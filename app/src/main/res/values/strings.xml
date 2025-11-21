@@ -1,7 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Last Server Standing</string>
     <string name="tagline">Defend the Last Data Center</string>
-    <string name="start_wave">Start Wave %1$d</string>
     <string name="continue_game">Continue</string>
     <string name="new_game">New Game</string>
     <string name="leaderboard">Leaderboard</string>
@@ -9,12 +8,9 @@
     <string name="data_center_health">Data Center Health</string>
     <string name="wave">Wave</string>
     <string name="resources">Resources</string>
-    <string name="pause_game">Pause Game</string>
-    <string name="emergency_alert">Emergency Alert</string>
     <string name="breach_detected">Breach Detected!</string>
     <string name="select_tower">Select Tower</string>
     <string name="tower_icon">Tower Icon</string>
-    <string name="cost">Cost</string>
     <string name="tower_info">Tower Information</string>
     <string name="delete_tower">Delete Tower</string>
     <string name="locked">Locked</string>
@@ -29,15 +25,6 @@
     <string name="tower_upgraded_format">%1$s upgraded to Level %2$d!</string>
 
     <!-- Load Game strings -->
-    <string name="load_game">Load Game</string>
-    <string name="no_saved_games">No saved games found</string>
-    <string name="delete_save">Delete save</string>
-    <string name="wave_format">Wave %d</string>
-    <string name="score_format">Score: %,d</string>
-    <string name="autosave_badge">AUTO</string>
-    <string name="confirm_delete_save">Delete this saved game?</string>
-    <string name="save_deleted">Save deleted</string>
-    <string name="failed_to_load">Failed to load game</string>
     <string name="start_next_wave">Start Next Wave</string>
     <string name="_500">500</string>
     <string name="fps">FPS:</string>
@@ -67,18 +54,9 @@
     <string name="toggle_vibration">Toggle vibration</string>
 
     <!-- Stats/Leaderboard strings -->
-    <string name="add_test_data">Add Test Data</string>
-    <string name="clear_data">Clear Data</string>
-    <string name="reload">Reload</string>
-    <string name="no_data">No data</string>
-    <string name="no_leaderboard_data">No leaderboard data available</string>
-    <string name="play_games_prompt">Play some games to see your highest waves here!</string>
     <string name="player_name_placeholder">Player Name</string>
     <string name="timestamp_placeholder">2 days ago</string>
     <string name="_10">10</string>
-    <string name="wave_placeholder">Wave 5</string>
-    <string name="score_placeholder">Score: 1,234</string>
-    <string name="date_placeholder">Jan 15, 2025 10:30 AM</string>
     <string name="close">Close</string>
     
     <!-- Tower card strings -->
