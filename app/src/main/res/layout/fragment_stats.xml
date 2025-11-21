@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_deep"
-    android:padding="16dp">
+    android:padding="@dimen/spacing_md">
 
     <!-- Header -->
     <TextView
@@ -14,17 +14,17 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/leaderboard"
-        android:textSize="28sp"
+        android:textSize="@dimen/text_size_title"
         android:textStyle="bold"
         android:textColor="@color/text_primary"
         android:gravity="center_vertical"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:paddingTop="@dimen/spacing_xs"
+        android:paddingBottom="@dimen/spacing_xs"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btn_back"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp" />
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:layout_marginEnd="@dimen/spacing_md" />
 
     <!-- Back Button -->
     <com.google.android.material.button.MaterialButton
@@ -38,7 +38,7 @@
         app:layout_constraintBottom_toBottomOf="@id/title"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    
+
     <!-- Loading Indicator -->
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/loading_indicator"
@@ -57,7 +57,7 @@
         android:id="@+id/leaderboard_recycler"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/spacing_md"
         app:layout_constraintTop_toBottomOf="@id/title"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

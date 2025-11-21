@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView 
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    app:strokeWidth="1dp"
+    android:layout_margin="@dimen/spacing_xs"
+    app:cardCornerRadius="@dimen/corner_radius_lg"
+    app:cardElevation="@dimen/elevation_sm"
+    app:strokeWidth="@dimen/stroke_width_thin"
     app:strokeColor="@color/accent_outline"
     app:cardBackgroundColor="@color/surface_elevated">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="@dimen/spacing_md">
 
         <!-- Tower Icon -->
         <ImageView
             android:id="@+id/tower_icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/icon_size_xl"
+            android:layout_height="@dimen/icon_size_xl"
             android:contentDescription="@string/tower_icon"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -33,12 +33,12 @@
             android:layout_height="wrap_content"
             android:text="@string/firewall"
             android:textAppearance="@style/TextAppearance.App.Headline2"
-            android:textSize="16sp"
+            android:textSize="@dimen/text_size_md"
             android:gravity="center"
             app:layout_constraintTop_toBottomOf="@id/tower_icon"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="@dimen/spacing_xs" />
 
         <!-- Level Indicator -->
         <TextView
@@ -46,14 +46,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/level_1"
-            android:textSize="12sp"
+            android:textSize="@dimen/text_size_sm"
             android:textColor="@color/warning_yellow"
             android:textStyle="bold"
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/tower_name"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="@dimen/spacing_xxs" />
 
         <!-- Cost -->
         <TextView
@@ -64,12 +64,12 @@
             android:textAppearance="@style/TextAppearance.App.Monospace"
             android:textColor="@color/warning_yellow"
             app:drawableStartCompat="@drawable/ic_resource"
-            android:drawablePadding="4dp"
+            android:drawablePadding="@dimen/spacing_xxs"
             android:gravity="center"
             app:layout_constraintTop_toBottomOf="@id/tower_level"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="@dimen/spacing_xs" />
 
         <!-- Description -->
         <TextView
@@ -77,10 +77,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/firewall_description"
-            android:textSize="12sp"
+            android:textSize="@dimen/text_size_sm"
             android:textColor="@color/text_secondary"
             android:gravity="center"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/spacing_xs"
             app:layout_constraintTop_toBottomOf="@id/tower_cost"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -95,7 +95,7 @@
             app:layout_constraintTop_toBottomOf="@id/tower_description"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="@dimen/spacing_sm">
 
             <!-- Damage Chip -->
             <com.google.android.material.chip.Chip
@@ -105,8 +105,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/damage_15"
                 app:chipIcon="@drawable/ic_damage"
-                app:chipIconSize="14dp"
-                android:layout_marginEnd="4dp" />
+                app:chipIconSize="@dimen/icon_size_sm"
+                android:layout_marginEnd="@dimen/spacing_xxs" />
 
             <!-- Range Chip -->
             <com.google.android.material.chip.Chip
@@ -116,8 +116,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/range_150"
                 app:chipIcon="@drawable/ic_range"
-                app:chipIconSize="14dp"
-                android:layout_marginEnd="4dp" />
+                app:chipIconSize="@dimen/icon_size_sm"
+                android:layout_marginEnd="@dimen/spacing_xxs" />
 
             <!-- Fire Rate Chip -->
             <com.google.android.material.chip.Chip
@@ -127,7 +127,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/fire_rate_2_0"
                 app:chipIcon="@drawable/ic_fire_rate"
-                app:chipIconSize="14dp" />
+                app:chipIconSize="@dimen/icon_size_sm" />
 
         </LinearLayout>
 
@@ -142,9 +142,9 @@
             app:layout_constraintTop_toBottomOf="@id/stats_container"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginTop="@dimen/spacing_md"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_marginEnd="@dimen/spacing_md" />
 
         <!-- Close Button (for dialog use) -->
         <com.google.android.material.button.MaterialButton
@@ -152,25 +152,25 @@
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minWidth="120dp"
-            android:minHeight="48dp"
+            android:minWidth="@dimen/button_min_width"
+            android:minHeight="@dimen/button_min_height"
             android:text="@string/close"
             android:textColor="@color/electric_blue"
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/btn_upgrade"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="@dimen/spacing_xs" />
 
         <!-- Delete Button -->
         <ImageButton
             android:id="@+id/btn_delete"
             style="@style/Widget.App.Button.Icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/button_size_md"
+            android:layout_height="@dimen/button_size_md"
             android:src="@drawable/ic_delete"
             android:contentDescription="@string/delete_tower"
-            android:padding="12dp"
+            android:padding="@dimen/spacing_sm"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:background="?attr/selectableItemBackgroundBorderless"
@@ -180,11 +180,11 @@
         <ImageButton
             android:id="@+id/btn_info"
             style="@style/Widget.App.Button.Icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/button_size_md"
+            android:layout_height="@dimen/button_size_md"
             android:src="@drawable/ic_info"
             android:contentDescription="@string/tower_info"
-            android:padding="12dp"
+            android:padding="@dimen/spacing_sm"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:background="?attr/selectableItemBackgroundBorderless" />
@@ -202,8 +202,8 @@
             app:layout_constraintEnd_toEndOf="parent">
 
             <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="@dimen/icon_size_lg"
+                android:layout_height="@dimen/icon_size_lg"
                 android:src="@drawable/ic_lock"
                 android:layout_gravity="center"
                 android:contentDescription="@string/locked" />

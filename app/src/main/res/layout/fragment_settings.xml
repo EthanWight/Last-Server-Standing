@@ -10,7 +10,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="@dimen/spacing_md">
 
         <!-- Header -->
         <TextView
@@ -18,12 +18,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/settings"
-            android:textSize="28sp"
+            android:textSize="@dimen/text_size_title"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="@dimen/spacing_md" />
 
         <!-- Back Button -->
         <com.google.android.material.button.MaterialButton
@@ -43,10 +43,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/profile"
-            android:textSize="18sp"
+            android:textSize="@dimen/text_size_lg"
             android:textStyle="bold"
             android:textColor="@color/electric_blue"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="@dimen/spacing_xl"
             app:layout_constraintTop_toBottomOf="@id/title"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -55,9 +55,9 @@
             android:id="@+id/player_name_layout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_marginEnd="@dimen/spacing_md"
             android:maxLength="32"
             android:hint="@string/player_name"
             app:boxBackgroundMode="filled"
@@ -66,7 +66,7 @@
             app:layout_constraintTop_toBottomOf="@id/profile_header"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintWidth_max="488dp">
+            app:layout_constraintWidth_max="@dimen/text_input_max_width">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_player_name"
@@ -85,10 +85,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/audio"
-            android:textSize="18sp"
+            android:textSize="@dimen/text_size_lg"
             android:textStyle="bold"
             android:textColor="@color/electric_blue"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="@dimen/spacing_lg"
             app:layout_constraintTop_toBottomOf="@id/player_name_layout"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -98,9 +98,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="@dimen/spacing_md"
             android:background="@drawable/bg_hud_element"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/spacing_md"
             app:layout_constraintTop_toBottomOf="@id/audio_header"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -116,15 +116,15 @@
                     android:layout_height="wrap_content"
                     android:text="@string/sound_effects"
                     android:textColor="@color/text_primary"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/text_size_md" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/sound_effects_description"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:layout_marginTop="4dp" />
+                    android:textSize="@dimen/text_size_sm"
+                    android:layout_marginTop="@dimen/spacing_xxs" />
             </LinearLayout>
 
             <com.google.android.material.switchmaterial.SwitchMaterial
@@ -143,10 +143,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/haptics"
-            android:textSize="18sp"
+            android:textSize="@dimen/text_size_lg"
             android:textStyle="bold"
             android:textColor="@color/electric_blue"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="@dimen/spacing_lg"
             app:layout_constraintTop_toBottomOf="@id/sound_container"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -156,9 +156,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="@dimen/spacing_md"
             android:background="@drawable/bg_hud_element"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/spacing_md"
             app:layout_constraintTop_toBottomOf="@id/haptics_header"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -174,15 +174,15 @@
                     android:layout_height="wrap_content"
                     android:text="@string/vibration"
                     android:textColor="@color/text_primary"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/text_size_md" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/vibration_description"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:layout_marginTop="4dp" />
+                    android:textSize="@dimen/text_size_sm"
+                    android:layout_marginTop="@dimen/spacing_xxs" />
             </LinearLayout>
 
             <com.google.android.material.switchmaterial.SwitchMaterial
@@ -201,10 +201,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/display"
-            android:textSize="18sp"
+            android:textSize="@dimen/text_size_lg"
             android:textStyle="bold"
             android:textColor="@color/electric_blue"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="@dimen/spacing_lg"
             app:layout_constraintTop_toBottomOf="@id/vibration_container"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -214,9 +214,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="@dimen/spacing_md"
             android:background="@drawable/bg_hud_element"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/spacing_md"
             app:layout_constraintTop_toBottomOf="@id/display_header"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -232,15 +232,15 @@
                     android:layout_height="wrap_content"
                     android:text="@string/tower_ranges"
                     android:textColor="@color/text_primary"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/text_size_md" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/tower_ranges_description"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:layout_marginTop="4dp" />
+                    android:textSize="@dimen/text_size_sm"
+                    android:layout_marginTop="@dimen/spacing_xxs" />
             </LinearLayout>
 
             <com.google.android.material.switchmaterial.SwitchMaterial
@@ -259,10 +259,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/game_info"
-            android:textSize="18sp"
+            android:textSize="@dimen/text_size_lg"
             android:textStyle="bold"
             android:textColor="@color/electric_blue"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="@dimen/spacing_lg"
             app:layout_constraintTop_toBottomOf="@id/tower_ranges_container"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -272,9 +272,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="@dimen/spacing_md"
             android:background="@drawable/bg_hud_element"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/spacing_md"
             android:clickable="true"
             android:focusable="true"
             app:layout_constraintTop_toBottomOf="@id/info_header"
@@ -292,20 +292,20 @@
                     android:layout_height="wrap_content"
                     android:text="@string/view_info"
                     android:textColor="@color/text_primary"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/text_size_md" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/game_info_description"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:layout_marginTop="4dp" />
+                    android:textSize="@dimen/text_size_sm"
+                    android:layout_marginTop="@dimen/spacing_xxs" />
             </LinearLayout>
 
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="@dimen/icon_size_md"
+                android:layout_height="@dimen/icon_size_md"
                 android:layout_gravity="center_vertical"
                 android:src="@android:drawable/ic_menu_info_details"
                 android:contentDescription="@string/game_info"
@@ -316,12 +316,12 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_save"
             android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:layout_marginTop="32dp"
+            android:layout_height="@dimen/button_height_lg"
+            android:layout_marginTop="@dimen/spacing_xl"
             android:backgroundTint="@color/electric_blue"
             android:text="@string/save_settings"
             android:textColor="@color/button_text_dark"
-            android:textSize="16sp"
+            android:textSize="@dimen/text_size_md"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/info_container" />
@@ -331,13 +331,13 @@
             android:id="@+id/btn_main_menu"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="wrap_content"
-            android:layout_height="60dp"
+            android:layout_height="@dimen/button_height_lg"
             android:text="@string/main_menu"
-            android:textSize="16sp"
+            android:textSize="@dimen/text_size_md"
             android:textColor="@color/danger_red"
             app:strokeColor="@color/danger_red"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:layout_marginBottom="@dimen/spacing_md"
             app:layout_constraintTop_toBottomOf="@id/btn_save"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

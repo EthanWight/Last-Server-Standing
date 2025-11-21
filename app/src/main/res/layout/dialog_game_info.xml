@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     android:background="@color/background_deep"
     android:fillViewport="true"
-    android:padding="16dp">
+    android:padding="@dimen/spacing_md">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,38 +19,38 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/game_info"
-            android:textSize="24sp"
+            android:textSize="@dimen/text_size_xxl"
             android:textStyle="bold"
             android:textColor="@color/electric_blue"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="@dimen/spacing_md" />
 
         <!-- Towers Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/towers"
-            android:textSize="20sp"
+            android:textSize="@dimen/text_size_xl"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:layout_marginBottom="@dimen/spacing_xs" />
 
         <!-- Firewall Tower -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="@dimen/spacing_sm"
             app:cardBackgroundColor="@color/surface_elevated"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="@dimen/corner_radius_md"
+            app:cardElevation="@dimen/elevation_sm">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/firewall_tower_info"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:padding="16dp"
+                android:textSize="@dimen/text_size_body"
+                android:padding="@dimen/spacing_md"
                 android:lineSpacingMultiplier="1.2"
                 tools:ignore="VisualLintLongText" />
         </androidx.cardview.widget.CardView>
@@ -59,18 +59,18 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="@dimen/spacing_sm"
             app:cardBackgroundColor="@color/surface_elevated"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="@dimen/corner_radius_md"
+            app:cardElevation="@dimen/elevation_sm">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/honeypot_tower_info"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:padding="16dp"
+                android:textSize="@dimen/text_size_body"
+                android:padding="@dimen/spacing_md"
                 android:lineSpacingMultiplier="1.2"
                 tools:ignore="VisualLintLongText" />
         </androidx.cardview.widget.CardView>
@@ -79,18 +79,18 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="@dimen/spacing_md"
             app:cardBackgroundColor="@color/surface_elevated"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="@dimen/corner_radius_md"
+            app:cardElevation="@dimen/elevation_sm">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/jammer_tower_info"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:padding="16dp"
+                android:textSize="@dimen/text_size_body"
+                android:padding="@dimen/spacing_md"
                 android:lineSpacingMultiplier="1.2"
                 tools:ignore="VisualLintLongText" />
         </androidx.cardview.widget.CardView>
@@ -98,10 +98,10 @@
         <!-- Divider -->
         <View
             android:layout_width="match_parent"
-            android:layout_height="1dp"
+            android:layout_height="@dimen/divider_height"
             android:background="@color/text_secondary"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:layout_marginBottom="@dimen/spacing_md"
             android:alpha="0.3" />
 
         <!-- Enemies Section -->
@@ -109,27 +109,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/enemies"
-            android:textSize="20sp"
+            android:textSize="@dimen/text_size_xl"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="@dimen/spacing_xs" />
 
         <!-- Data Crawler -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="@dimen/spacing_sm"
             app:cardBackgroundColor="@color/surface_elevated"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="@dimen/corner_radius_md"
+            app:cardElevation="@dimen/elevation_sm">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/data_crawler_info"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:padding="16dp"
+                android:textSize="@dimen/text_size_body"
+                android:padding="@dimen/spacing_md"
                 android:lineSpacingMultiplier="1.2"
                 tools:ignore="VisualLintLongText" />
         </androidx.cardview.widget.CardView>
@@ -138,19 +138,19 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="@dimen/spacing_sm"
             app:cardBackgroundColor="@color/surface_elevated"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="@dimen/corner_radius_md"
+            app:cardElevation="@dimen/elevation_sm">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:lineSpacingMultiplier="1.2"
-                android:padding="16dp"
+                android:padding="@dimen/spacing_md"
                 android:text="@string/virus_bot_info"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
+                android:textSize="@dimen/text_size_body"
                 tools:ignore="VisualLintLongText,TextContrastCheck,TextContrastCheck,TextContrastCheck" />
         </androidx.cardview.widget.CardView>
 
@@ -158,18 +158,18 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="@dimen/spacing_sm"
             app:cardBackgroundColor="@color/surface_elevated"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="@dimen/corner_radius_md"
+            app:cardElevation="@dimen/elevation_sm">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/trojan_horse_info"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:padding="16dp"
+                android:textSize="@dimen/text_size_body"
+                android:padding="@dimen/spacing_md"
                 android:lineSpacingMultiplier="1.2"
                 tools:ignore="VisualLintLongText" />
         </androidx.cardview.widget.CardView>
@@ -179,15 +179,15 @@
             android:id="@+id/btn_close"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minWidth="200dp"
-            android:minHeight="48dp"
+            android:minWidth="@dimen/button_min_width_lg"
+            android:minHeight="@dimen/button_min_height"
             android:text="@string/close"
             android:textColor="@color/button_text_dark"
             android:backgroundTint="@color/electric_blue"
-            android:paddingHorizontal="32dp"
-            android:paddingVertical="12dp"
+            android:paddingHorizontal="@dimen/spacing_xl"
+            android:paddingVertical="@dimen/spacing_sm"
             android:layout_gravity="center"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="@dimen/spacing_md" />
 
     </LinearLayout>
 </ScrollView>

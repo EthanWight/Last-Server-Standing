@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout 
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@color/surface_elevated"
-    android:padding="16dp">
+    android:padding="@dimen/spacing_md">
 
     <!-- Drag Handle -->
     <View
         android:id="@+id/drag_handle"
-        android:layout_width="32dp"
-        android:layout_height="4dp"
+        android:layout_width="@dimen/drag_handle_width"
+        android:layout_height="@dimen/drag_handle_height"
         android:background="@color/accent_outline"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="@dimen/spacing_md" />
 
     <!-- Title -->
     <TextView
@@ -22,15 +22,15 @@
         android:layout_height="wrap_content"
         android:text="@string/select_tower"
         android:textAppearance="@style/TextAppearance.App.Headline2"
-        android:textSize="20sp"
-        android:layout_marginBottom="16dp" />
+        android:textSize="@dimen/text_size_xl"
+        android:layout_marginBottom="@dimen/spacing_md" />
 
     <!-- Tower RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tower_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="200dp"
+        android:minHeight="@dimen/recycler_min_height"
         android:clipToPadding="false" />
 
 </LinearLayout>
