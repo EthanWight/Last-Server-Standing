@@ -18,8 +18,8 @@ public class GameState {
     public long score;
 
     // Serialized tower and enemy data
-    public List<TowerData> towers;
-    public List<EnemyData> enemies;
+    public final List<TowerData> towers;
+    public final List<EnemyData> enemies;
 
     public GameState() {
         towers = new ArrayList<>();
@@ -53,10 +53,10 @@ public class GameState {
      * @author Ethan Wight
      */
     public static class TowerData {
-        public String type;
-        public float x;
-        public float y;
-        public int level;
+        public final String type;
+        public final float x;
+        public final float y;
+        public final int level;
 
         public TowerData(String type, PointF position, int level) {
             this.type = type;
@@ -72,12 +72,12 @@ public class GameState {
      * @author Ethan Wight
      */
     public static class EnemyData {
-        public String type;
-        public float x;
-        public float y;
-        public float health;
-        public int currentPathIndex;
-        public List<Point> path;
+        public final String type;
+        public final float x;
+        public final float y;
+        public final float health;
+        public final int currentPathIndex;
+        public final List<Point> path;
 
         public EnemyData(String type, PointF position, float health, int pathIndex, List<PointF> path) {
             this.type = type;
@@ -92,23 +92,19 @@ public class GameState {
         }
 
         /**
-         * Point class for path coordinates.
-         *
-         * @author Ethan Wight
-         */
-        public static class Point {
-            public float x, y;
-
+                 * Point class for path coordinates.
+                 *
+                 * @author Ethan Wight
+                 */
+                public record Point(float x, float y) {
             /**
              * Constructor for point.
              *
              * @param x The x coordinate.
              * @param y The y coordinate.
              */
-            public Point(float x, float y) {
-                this.x = x;
-                this.y = y;
+            public Point {
             }
-        }
+                }
     }
 }

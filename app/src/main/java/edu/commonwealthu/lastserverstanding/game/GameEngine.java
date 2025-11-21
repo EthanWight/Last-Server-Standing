@@ -1297,7 +1297,7 @@ public class GameEngine {
         // Reconstruct path
         List<PointF> path = new ArrayList<>();
         for (edu.commonwealthu.lastserverstanding.data.models.GameState.EnemyData.Point p : data.path) {
-            path.add(new PointF(p.x, p.y));
+            path.add(new PointF(p.x(), p.y()));
         }
 
         // For now, only support DataCrawler (expand later)

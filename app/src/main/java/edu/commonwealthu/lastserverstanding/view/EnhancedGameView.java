@@ -59,46 +59,7 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
     
     // Selected grid cell
     private PointF selectedCell;
-    
-    // Gesture listeners
-    private OnGridTapListener gridTapListener;
-    private OnTowerLongPressListener towerLongPressListener;
-    private OnSwipeUpListener swipeUpListener;
-    
-    /**
-     * Listener for grid tap events.
-     */
-    public interface OnGridTapListener {
-        /**
-         * Called when a grid is tapped.
-         *
-         * @param gridPosition The grid position that was tapped.
-         */
-        void onGridTapped(PointF gridPosition);
-    }
 
-    /**
-     * Listener for tower long press events.
-     */
-    public interface OnTowerLongPressListener {
-        /**
-         * Called when a tower is long pressed.
-         *
-         * @param gridPosition The grid position that was long pressed.
-         */
-        void onTowerLongPressed(PointF gridPosition);
-    }
-
-    /**
-     * Listener for swipe up events.
-     */
-    public interface OnSwipeUpListener {
-        /**
-         * Called when a swipe up gesture is detected.
-         */
-        void onSwipeUp();
-    }
-    
     /**
      * Constructor for XML inflation.
      *
@@ -181,7 +142,7 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
                 @Override
                 public boolean onFling(MotionEvent e1, @NonNull MotionEvent e2,
                                       float velocityX, float velocityY) {
-                    handleFling(velocityX, velocityY);
+                    // Fling gesture - can be extended for momentum scrolling
                     return true;
                 }
             });
@@ -205,17 +166,11 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
      */
     private void handleSingleTap(float screenX, float screenY) {
         PointF worldPos = screenToWorld(new PointF(screenX, screenY));
-        PointF gridPos = worldToGrid(worldPos);
-        
+
         // Update selected cell
-        selectedCell = gridPos;
-        
-        // Notify listener
-        if (gridTapListener != null) {
-            gridTapListener.onGridTapped(gridPos);
-        }
-        
-        // Also notify game engine
+        selectedCell = worldToGrid(worldPos);
+
+        // Notify game engine
         if (gameEngine != null) {
             gameEngine.handleTap(worldPos);
         }
@@ -227,17 +182,10 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
      * @param screenX The x coordinate of the press.
      * @param screenY The y coordinate of the press.
      */
+    @SuppressWarnings("unused") // Parameters required by gesture callback
     private void handleLongPress(float screenX, float screenY) {
-        PointF worldPos = screenToWorld(new PointF(screenX, screenY));
-        PointF gridPos = worldToGrid(worldPos);
-        
         // Trigger haptic feedback
         performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-        
-        // Notify listener
-        if (towerLongPressListener != null) {
-            towerLongPressListener.onTowerLongPressed(gridPos);
-        }
     }
     
     /**
@@ -304,23 +252,7 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
             }
         }
     }
-    
-    /**
-     * Handle fling gesture.
-     *
-     * @param velocityX The horizontal velocity.
-     * @param velocityY The vertical velocity.
-     */
-    private void handleFling(float velocityX, float velocityY) {
-        // Check for upward swipe from bottom of screen
-        // Use absolute value of velocityX to ensure it's primarily vertical
-        if (velocityY < -2000 && Math.abs(velocityX) < Math.abs(velocityY)) {
-            if (swipeUpListener != null) {
-                swipeUpListener.onSwipeUp();
-            }
-        }
-    }
-    
+
     /**
      * Apply bounds to camera panning.
      */
@@ -407,36 +339,6 @@ public class EnhancedGameView extends SurfaceView implements SurfaceHolder.Callb
         this.gameEngine = engine;
     }
 
-    /**
-     * Set grid tap listener.
-     *
-     * @param listener The listener.
-     */
-    @SuppressWarnings("unused") // Public API
-    public void setOnGridTapListener(OnGridTapListener listener) {
-        this.gridTapListener = listener;
-    }
-
-    /**
-     * Set tower long press listener.
-     *
-     * @param listener The listener.
-     */
-    @SuppressWarnings("unused") // Public API
-    public void setOnTowerLongPressListener(OnTowerLongPressListener listener) {
-        this.towerLongPressListener = listener;
-    }
-
-    /**
-     * Set swipe up listener.
-     *
-     * @param listener The listener.
-     */
-    @SuppressWarnings("unused") // Public API
-    public void setOnSwipeUpListener(OnSwipeUpListener listener) {
-        this.swipeUpListener = listener;
-    }
-    
     // Game loop and rendering methods (same as original GameView)
 
     @Override

@@ -40,11 +40,8 @@
     <dimen name="button_min_height">48dp</dimen>
 
     <!-- Drag Handle -->
-    <dimen name="drag_handle_width">32dp</dimen>
-    <dimen name="drag_handle_height">4dp</dimen>
 
     <!-- RecyclerView -->
-    <dimen name="recycler_min_height">200dp</dimen>
 
     <!-- Text Input -->
     <dimen name="text_input_max_width">488dp</dimen>

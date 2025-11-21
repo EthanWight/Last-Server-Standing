@@ -8,7 +8,6 @@
 
     <!-- Background Animation - Matrix-style Binary Rain -->
     <edu.commonwealthu.lastserverstanding.view.BinaryRainView
-        android:id="@+id/background_animation_game"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0.5"
@@ -23,7 +22,6 @@
 
     <!-- HUD Overlay -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/hud_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="@dimen/spacing_md">
@@ -189,7 +187,6 @@
 
         <!-- Emergency Alert Banner (Top, Hidden by Default) -->
         <LinearLayout
-            android:id="@+id/emergency_banner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -202,7 +199,6 @@
             android:layout_marginTop="@dimen/spacing_md">
 
             <TextView
-                android:id="@+id/banner_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

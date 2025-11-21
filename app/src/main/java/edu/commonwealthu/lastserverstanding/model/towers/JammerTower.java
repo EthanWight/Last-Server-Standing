@@ -2,7 +2,6 @@ package edu.commonwealthu.lastserverstanding.model.towers;
 
 import android.graphics.PointF;
 
-import java.util.UUID;
 
 import edu.commonwealthu.lastserverstanding.model.Projectile;
 import edu.commonwealthu.lastserverstanding.model.StatusEffect;
@@ -23,7 +22,6 @@ public class JammerTower extends Tower {
      */
     public JammerTower(PointF position) {
         super(
-            UUID.randomUUID().toString(),
             position,
             1,  // level
             10f, // damage
@@ -67,7 +65,6 @@ public class JammerTower extends Tower {
         );
 
         return new Projectile(
-            UUID.randomUUID().toString(),
             new PointF(position.x, position.y),
             target,
             damage,

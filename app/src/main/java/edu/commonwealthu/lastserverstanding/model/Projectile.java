@@ -8,7 +8,6 @@ import android.graphics.PointF;
  * @author Ethan Wight
  */
 public class Projectile {
-    private final String id;
     private final PointF position;
     private final PointF velocity;
     private final Enemy target;
@@ -23,15 +22,13 @@ public class Projectile {
     /**
      * Constructor for a projectile.
      *
-     * @param id Unique identifier for this projectile.
      * @param start Starting position of the projectile.
      * @param target The target enemy to hit.
      * @param damage Damage to deal on hit.
      * @param speed Movement speed in units per second.
      * @param statusEffect Optional status effect to apply on hit.
      */
-    public Projectile(String id, PointF start, Enemy target, float damage, float speed, StatusEffect statusEffect) {
-        this.id = id;
+    public Projectile(PointF start, Enemy target, float damage, float speed, StatusEffect statusEffect) {
         this.position = new PointF(start.x, start.y);
         this.velocity = new PointF(0, 0); // Initialize velocity once
         this.target = target;
@@ -122,9 +119,7 @@ public class Projectile {
     }
     
     // Getters
-    public String getId() { return id; }
     public PointF getPosition() { return position; }
-    public float getDamage() { return damage; }
     public boolean hasHit() { return hasHit; }
     public StatusEffect getStatusEffect() { return statusEffect; }
 }

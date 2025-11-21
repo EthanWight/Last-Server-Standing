@@ -68,6 +68,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     private float dragPreviewRange = 0f;
 
     public interface OnTapListener {
+        @SuppressWarnings("unused") // Used via method reference in GameFragment
         void onTap(PointF worldPosition);
     }
 

@@ -212,7 +212,6 @@ public class FirebaseManager {
      * @author Ethan Wight
      */
     public static class LeaderboardEntry {
-        public String userId;       // Firebase anonymous auth user ID (used as document ID)
         public String playerName;   // Display name for the player
         public int wave;
         public long timestamp;
@@ -227,14 +226,12 @@ public class FirebaseManager {
         /**
          * Constructor with all fields.
          *
-         * @param userId The user ID.
          * @param playerName The player name.
          * @param wave The wave number.
          * @param timestamp The timestamp of the entry.
          */
         @SuppressWarnings("unused")
-        public LeaderboardEntry(String userId, String playerName, int wave, long timestamp) {
-            this.userId = userId;
+        public LeaderboardEntry(String playerName, int wave, long timestamp) {
             this.playerName = playerName;
             this.wave = wave;
             this.timestamp = timestamp;

@@ -12,24 +12,24 @@ import java.util.List;
  */
 public abstract class Enemy {
     // Unique identifier
-    protected String id;
+    protected final String id;
     
     // Position and movement
     protected PointF position;
-    protected List<PointF> path;
+    protected final List<PointF> path;
     protected int currentPathIndex;
     
     // Stats
     protected float health;
-    protected float maxHealth;
-    protected float speed; // Units per second
+    protected final float maxHealth;
+    protected final float speed; // Units per second
     
     // Economy & Damage
-    protected int reward;
-    protected int damage; // Damage dealt to data center if reaches end
+    protected final int reward;
+    protected final int damage; // Damage dealt to data center if reaches end
     
     // Status effects
-    protected List<StatusEffect> statusEffects;
+    protected final List<StatusEffect> statusEffects;
     
     // State
     protected boolean isAlive;
@@ -216,6 +216,7 @@ public abstract class Enemy {
     }
     
     // Getters
+    @SuppressWarnings("unused") // Reserved for future debugging/networking
     public String getId() { return id; }
     public PointF getPosition() { return position; }
     public List<PointF> getPath() { return path; }

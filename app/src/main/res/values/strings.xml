@@ -9,7 +9,6 @@
     <string name="wave">Wave</string>
     <string name="resources">Resources</string>
     <string name="breach_detected">Breach Detected!</string>
-    <string name="select_tower">Select Tower</string>
     <string name="tower_icon">Tower Icon</string>
     <string name="tower_info">Tower Information</string>
     <string name="delete_tower">Delete Tower</string>

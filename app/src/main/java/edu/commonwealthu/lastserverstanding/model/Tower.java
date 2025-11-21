@@ -9,11 +9,8 @@ import android.graphics.PointF;
  * @author Ethan Wight
  */
 public abstract class Tower {
-    // Unique identifier for this tower instance
-    protected String id;
-    
     // Position on the game grid
-    protected PointF position;
+    protected final PointF position;
     
     // Current upgrade level (1-5)
     protected int level;
@@ -24,7 +21,7 @@ public abstract class Tower {
     protected float fireRate; // Attacks per second
     
     // Economy
-    protected int cost;
+    protected final int cost;
     protected int totalInvestment; // Total resources invested (base cost + upgrades)
 
     // Current target
@@ -36,7 +33,6 @@ public abstract class Tower {
     /**
      * Constructor for tower base class.
      *
-     * @param id Unique identifier for this tower instance.
      * @param position Position on the game grid.
      * @param level Current upgrade level (1-5).
      * @param damage Damage per shot.
@@ -44,8 +40,7 @@ public abstract class Tower {
      * @param fireRate Attacks per second.
      * @param cost Cost to build this tower.
      */
-    public Tower(String id, PointF position, int level, float damage, float range, float fireRate, int cost) {
-        this.id = id;
+    public Tower(PointF position, int level, float damage, float range, float fireRate, int cost) {
         this.position = position;
         this.level = level;
         this.damage = damage;
@@ -61,6 +56,7 @@ public abstract class Tower {
      *
      * @param deltaTime Time since last update in seconds.
      */
+    @SuppressWarnings("unused") // Parameter needed for interface consistency
     public abstract void update(float deltaTime);
     
     /**
@@ -136,7 +132,6 @@ public abstract class Tower {
     }
     
     // Getters and Setters
-    public String getId() { return id; }
     public PointF getPosition() { return position; }
     public int getLevel() { return level; }
     public float getDamage() { return damage; }

@@ -21,7 +21,7 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
 
     // Node representing a position on the grid
     private static class Node implements Comparable<Node> {
-        PointF position;
+        final PointF position;
         Node parent;
         float gCost; // Distance from start
         float hCost; // Estimated distance to goal
@@ -235,7 +235,7 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
      * @param end The ending position.
      * @return True if there is a clear line of sight.
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"SameReturnValue", "unused"}) // Stub for future obstacle checking
     private boolean hasLineOfSight(PointF start, PointF end) {
         // In a full implementation, check against obstacles here
         // For now, assume clear line of sight

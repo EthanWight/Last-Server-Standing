@@ -23,18 +23,6 @@ public class Settings {
     }
 
     /**
-     * Constructor with sound and vibration settings.
-     *
-     * @param soundEnabled Whether sound is enabled.
-     * @param vibrationEnabled Whether vibration is enabled.
-     */
-    public Settings(boolean soundEnabled, boolean vibrationEnabled) {
-        this.soundEnabled = soundEnabled;
-        this.vibrationEnabled = vibrationEnabled;
-        this.showTowerRanges = true;
-    }
-
-    /**
      * Constructor with all settings.
      *
      * @param soundEnabled Whether sound is enabled.
