@@ -12,21 +12,33 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 /**
- * A* Pathfinding implementation for enemy navigation.
- * Finds optimal path from start to goal while avoiding obstacles.
+ * A* pathfinding implementation for optimal enemy navigation around obstacles.
+ * Uses grid-based search with Euclidean heuristic for 8-directional movement.
+ * Returns smoothed paths with fallback to direct line if completely blocked.
  *
  * @author Ethan Wight
  */
-public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
+public record Pathfinding(
+        int gridWidth,
+        int gridHeight,
+        int cellSize) {
 
-    /** Node representing a position on the grid for A* pathfinding. */
+    /**
+     * A node in the A* pathfinding grid.
+     * Maintains g-cost, h-cost, and f-cost for algorithm prioritization.
+     */
     private static class Node implements Comparable<Node> {
         final PointF position;
         Node parent;
-        float gCost; // Distance from start
-        float hCost; // Estimated distance to goal
-        float fCost; // Total cost (g + h)
+        float gCost;
+        float hCost;
+        float fCost;
 
+        /**
+         * Creates a new node at the specified grid position.
+         *
+         * @param position the grid position of this node
+         */
         Node(PointF position) {
             this.position = position;
             this.gCost = Float.MAX_VALUE;
@@ -34,11 +46,23 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
             this.fCost = Float.MAX_VALUE;
         }
 
+        /**
+         * Compares nodes by f-cost for priority queue ordering.
+         *
+         * @param other the node to compare to
+         * @return negative if lower f-cost, positive if higher, zero if equal
+         */
         @Override
         public int compareTo(Node other) {
             return Float.compare(this.fCost, other.fCost);
         }
 
+        /**
+         * Checks equality based on grid position with epsilon tolerance.
+         *
+         * @param obj the object to compare with
+         * @return true if nodes occupy the same grid cell
+         */
         @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof Node other)) return false;
@@ -46,6 +70,11 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
                     Math.abs(position.y - other.position.y) < 0.01f;
         }
 
+        /**
+         * Generates hash code from grid position.
+         *
+         * @return hash code value for this node
+         */
         @Override
         public int hashCode() {
             return (int) (position.x * 1000 + position.y);
@@ -53,23 +82,18 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
     }
 
     /**
-     * Constructor.
-     */
-    public Pathfinding {
-    }
-
-    /**
-     * Find path from start to goal using A* algorithm.
+     * Finds optimal path from start to goal using A* algorithm.
      *
-     * @param start Starting position.
-     * @param goal Goal position.
-     * @param obstacles List of obstacle positions (tower positions).
-     * @return List of waypoints from start to goal, or empty list if no path found.
+     * @param start starting position in world coordinates
+     * @param goal goal position in world coordinates
+     * @param obstacles list of obstacle positions to avoid
+     * @return smoothed list of waypoints, or direct line if blocked
      */
     public List<PointF> findPath(PointF start, PointF goal, List<PointF> obstacles) {
         PointF startGrid = worldToGrid(start);
         PointF goalGrid = worldToGrid(goal);
 
+        // Initialize open set with priority queue and tracking structures
         PriorityQueue<Node> openSet = new PriorityQueue<>();
         Set<String> openSetKeys = new HashSet<>();
         Map<String, Node> allNodes = new HashMap<>();
@@ -83,12 +107,14 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
         openSetKeys.add(getKey(startGrid));
         allNodes.put(getKey(startGrid), startNode);
 
+        // Build obstacle map for quick lookup
         Map<String, Boolean> obstacleMap = new HashMap<>();
         for (PointF obstacle : obstacles) {
             PointF obstacleGrid = worldToGrid(obstacle);
             obstacleMap.put(getKey(obstacleGrid), true);
         }
 
+        // Main A* loop
         while (!openSet.isEmpty()) {
             Node current = openSet.poll();
             if (current == null) continue;
@@ -96,10 +122,12 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
             String currentKey = getKey(current.position);
             openSetKeys.remove(currentKey);
 
+            // Check if goal reached
             if (distance(current.position, goalGrid) < 0.5f) {
                 return reconstructPath(current);
             }
 
+            // Evaluate neighbors
             for (Node neighbor : getNeighbors(current, goalGrid, obstacleMap, allNodes)) {
                 float tentativeGCost = current.gCost + distance(current.position, neighbor.position);
 
@@ -118,7 +146,7 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
             }
         }
 
-        // No path found - return straight line as fallback
+        // Fallback: return direct line if no path found
         List<PointF> fallbackPath = new ArrayList<>();
         fallbackPath.add(start);
         fallbackPath.add(goal);
@@ -202,34 +230,14 @@ public record Pathfinding(int gridWidth, int gridHeight, int cellSize) {
 
         int current = 0;
         while (current < path.size() - 1) {
-            // Try to skip ahead as far as possible
-            int furthest = current + 1;
-            for (int i = path.size() - 1; i > current + 1; i--) {
-                if (hasLineOfSight(path.get(current), path.get(i))) {
-                    furthest = i;
-                    break;
-                }
-            }
+            // Skip ahead to furthest point - assume clear line of sight (no obstacle checking)
+            int furthest = Math.max(path.size() - 1, current + 1);
 
             smoothed.add(path.get(furthest));
             current = furthest;
         }
 
         return smoothed;
-    }
-
-    /**
-     * Check if there's a clear line of sight between two points.
-     *
-     * @param start The starting position.
-     * @param end The ending position.
-     * @return True if there is a clear line of sight.
-     */
-    @SuppressWarnings({"SameReturnValue", "unused"}) // Stub for future obstacle checking
-    private boolean hasLineOfSight(PointF start, PointF end) {
-        // In a full implementation, check against obstacles here
-        // For now, assume clear line of sight
-        return true;
     }
 
     /**

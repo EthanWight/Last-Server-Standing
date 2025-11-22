@@ -10,52 +10,11 @@ import edu.commonwealthu.lastserverstanding.model.Enemy;
 
 /**
  * Trojan Horse - The heavy, tank-class enemy in Last Server Standing.
- *
- * <p>This enemy represents sophisticated malware that disguises itself as legitimate
- * software while carrying a devastating payload. Trojan Horses are the most dangerous
- * standard enemy type, requiring significant firepower to eliminate.</p>
- *
- * <h2>Gameplay Role</h2>
- * <p>Trojan Horses serve as "tank" enemies that test the player's overall DPS
- * (damage per second) capability. Their slow speed gives towers ample time to attack,
- * but their high health demands either upgraded towers or concentrated fire from
- * multiple sources. A leaking Trojan Horse is a major setback.</p>
- *
- * <h2>Spawn Behavior</h2>
- * <ul>
- *   <li>First appears at Wave 10 - marks late-game difficulty</li>
- *   <li>Spawns less frequently than weaker enemies</li>
- *   <li>Often used as "mini-boss" enemies at wave intervals</li>
- *   <li>May be mixed with faster enemies to split player attention</li>
- *   <li>Wave composition may feature Trojans as the primary threat</li>
- * </ul>
- *
- * <h2>Visual Representation</h2>
- * <p>Rendered in GREEN color with a horse icon ({@code ic_enemy_horse}), referencing
- * the mythological Trojan Horse. Green was chosen to suggest deception (money/greed)
- * and to complete the RGB color differentiation with other enemy types.</p>
- *
- * <h2>Balance Considerations</h2>
- * <p>Stats follow a 4x multiplier from baseline Data Crawler:</p>
- * <ul>
- *   <li>4x health (200 vs 50) - true tank that absorbs tower damage</li>
- *   <li>Slowest speed (80 vs 120) - necessary to allow counterplay</li>
- *   <li>4x reward (20 vs 5) - high-value target worth prioritizing</li>
- *   <li>4x damage (20 vs 5) - leaks are devastating, encourages focus fire</li>
- * </ul>
- *
- * <h2>Strategic Implications</h2>
- * <p>Players must decide whether to:</p>
- * <ul>
- *   <li>Focus fire on Trojans to prevent catastrophic leaks</li>
- *   <li>Let splash damage handle them while targeting faster enemies</li>
- *   <li>Build specialized high-damage towers for Trojan elimination</li>
- * </ul>
+ * Represents sophisticated malware with high health (200) and slow speed (80).
+ * Stats are 4x multiplier from Data Crawler, requiring upgraded towers or concentrated fire.
+ * Rendered in green with a horse icon, first appears at Wave 10.
  *
  * @author Ethan Wight
- * @see Enemy
- * @see DataCrawler
- * @see VirusBot
  */
 public class TrojanHorse extends Enemy {
 
@@ -95,23 +54,10 @@ public class TrojanHorse extends Enemy {
      */
 
     /**
-     * Constructs a new Trojan Horse enemy with predefined stats.
+     * Constructs a new Trojan Horse with predefined stats.
+     * Initializes with health 200, speed 80, reward 20 credits, and damage 20.
      *
-     * <p>The Trojan Horse is initialized with the following characteristics:</p>
-     * <ul>
-     *   <li><b>Health:</b> 200 - High durability, tank-class enemy</li>
-     *   <li><b>Speed:</b> 80 - Slowest movement, allows sustained damage</li>
-     *   <li><b>Reward:</b> 20 credits - High payout for difficult kill</li>
-     *   <li><b>Damage:</b> 20 - Devastating damage to data center on leak</li>
-     * </ul>
-     *
-     * <p>A unique identifier is automatically generated using {@link UUID#randomUUID()}
-     * to ensure each enemy instance can be tracked individually by the game engine.</p>
-     *
-     * @param path The list of waypoints defining the path this enemy will traverse.
-     *             Must not be null and should contain at least two points (start and end).
-     *             The enemy will move sequentially through each point until reaching
-     *             the data center or being destroyed.
+     * @param path List of waypoints defining the path this enemy will traverse
      */
     public TrojanHorse(List<PointF> path) {
         super(
@@ -127,12 +73,7 @@ public class TrojanHorse extends Enemy {
     /**
      * Returns the display name for this enemy type.
      *
-     * <p>This name is used in UI elements such as wave previews, kill notifications,
-     * and statistics tracking. The name "Trojan Horse" references the famous Greek
-     * mythological deception, representing malware that appears harmless but carries
-     * a destructive payload.</p>
-     *
-     * @return The string "Trojan Horse" as the human-readable type identifier.
+     * @return "Trojan Horse"
      */
     @Override
     public String getType() {
@@ -142,18 +83,7 @@ public class TrojanHorse extends Enemy {
     /**
      * Returns the primary color used to render this enemy.
      *
-     * <p>Trojan Horses are rendered in GREEN ({@code 0xFF00FF00}), chosen to:</p>
-     * <ul>
-     *   <li>Complete the RGB color scheme (Red-Blue-Green) for enemy types</li>
-     *   <li>Suggest themes of deception and false security (green = "safe")</li>
-     *   <li>Provide maximum contrast with both red and blue enemies</li>
-     *   <li>Create visual hierarchy - green for the most dangerous standard enemy</li>
-     * </ul>
-     *
-     * <p>The color is applied to the enemy's body/shape in the game renderer
-     * and may be used for health bar tinting or particle effects.</p>
-     *
-     * @return {@link android.graphics.Color#GREEN} (0xFF00FF00) for rendering.
+     * @return Green color for rendering
      */
     @Override
     public int getColor() {
@@ -165,17 +95,7 @@ public class TrojanHorse extends Enemy {
     /**
      * Returns the drawable resource ID for this enemy's icon.
      *
-     * <p>The horse icon ({@code ic_enemy_horse}) directly references the mythological
-     * Trojan Horse, making the enemy type instantly recognizable. This icon is used for:</p>
-     * <ul>
-     *   <li>Enemy rendering on the game canvas</li>
-     *   <li>Wave preview displays to warn of incoming tanks</li>
-     *   <li>Kill/defeat animations and celebration effects</li>
-     *   <li>Statistics screens showing high-value kills</li>
-     * </ul>
-     *
-     * @return The resource ID {@code R.drawable.ic_enemy_horse} pointing to the
-     *         horse-shaped vector drawable asset.
+     * @return Horse icon resource ID
      */
     @Override
     public int getIconResId() {

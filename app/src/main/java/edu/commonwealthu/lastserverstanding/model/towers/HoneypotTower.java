@@ -8,57 +8,20 @@ import edu.commonwealthu.lastserverstanding.model.StatusEffect;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
 /**
- * Honeypot Tower - A strategic control tower that slows enemy movement.
- *
- * <p>This tower represents a cybersecurity honeypot - a decoy system designed to
- * attract and trap malicious actors. In gameplay, it excels at crowd control by
- * significantly reducing enemy movement speed, giving other towers more time to
- * deal damage and allowing players to manage enemy flow through the map.</p>
- *
- * <h3>Gameplay Role:</h3>
- * <ul>
- *   <li>Primary crowd control tower - essential for wave management</li>
- *   <li>Force multiplier - increases effectiveness of all nearby damage towers</li>
- *   <li>Best placed at map entry points or before damage-dealing tower clusters</li>
- *   <li>Synergizes exceptionally well with Firewall Towers (more burn ticks)</li>
- * </ul>
- *
- * <h3>Balance Philosophy:</h3>
- * <p>The Honeypot Tower trades range and fire rate for powerful utility. Its
- * 50% slow effect is among the strongest crowd control abilities, justified by
- * its shorter range (120) and moderate attack speed (1.5/sec). The higher cost
- * (300 credits) reflects its strategic value - a well-placed Honeypot can
- * dramatically increase a defense's overall effectiveness.</p>
- *
- * <h3>Thematic Design:</h3>
- * <p>Honeypots in cybersecurity are trap systems that lure attackers, slowing
- * their progress while gathering intelligence. The slow effect represents how
- * enemies become "stuck" investigating the decoy system, giving defenders
- * time to neutralize them.</p>
+ * Honeypot Tower - Strategic crowd control tower that slows enemy movement by 50%.
+ * Higher damage (15), short range (120), moderate fire rate (1.5/sec). Cost: 300 credits.
+ * Excels at force multiplication, giving other towers more time to deal damage.
+ * Best placed at entry points or before damage-dealing tower clusters.
  *
  * @author Ethan Wight
- * @see Tower
- * @see StatusEffect.Type#SLOW
  */
 public class HoneypotTower extends Tower {
 
     /**
-     * Constructs a new Honeypot Tower at the specified position with default stats.
+     * Constructs a new Honeypot Tower with default stats.
+     * Damage: 15, Range: 120, Fire Rate: 1.5/sec, Cost: 300.
      *
-     * <p>Default statistics prioritize control utility over raw damage:</p>
-     * <ul>
-     *   <li><b>Damage (15):</b> Higher than Firewall to compensate for slower fire rate</li>
-     *   <li><b>Range (120):</b> Short range requires careful placement near paths</li>
-     *   <li><b>Fire Rate (1.5/sec):</b> Slower attacks, but slow effect has long duration</li>
-     *   <li><b>Cost (300):</b> Premium price reflects high strategic value, doubled from 150</li>
-     * </ul>
-     *
-     * <p>The short range is an intentional design choice - players must commit to
-     * placing Honeypots in high-traffic areas where enemies will definitely pass,
-     * creating interesting strategic decisions about tower placement.</p>
-     *
-     * @param position The position to place this tower on the grid, in screen coordinates.
-     *                 This position represents the center point of the tower.
+     * @param position The center position to place this tower in screen coordinates.
      */
     public HoneypotTower(PointF position) {
         super(
@@ -72,24 +35,11 @@ public class HoneypotTower extends Tower {
     }
 
     /**
-     * Updates the tower state each frame, managing target acquisition and validation.
-     *
-     * <p>This method performs essential housekeeping by clearing invalid targets.
-     * A target becomes invalid when:</p>
-     * <ul>
-     *   <li>The enemy has been destroyed (no longer alive)</li>
-     *   <li>The enemy has moved out of the tower's attack range</li>
-     * </ul>
-     *
-     * <p>For Honeypot Towers, target validation is especially important because
-     * the short range means enemies can quickly move out of attack radius.
-     * Clearing stale targets ensures the tower rapidly reacquires new threats.</p>
-     *
-     * @param deltaTime Time elapsed since the last update call, in seconds.
-     *                  Used for time-based calculations and animations.
+     * Updates the tower state each frame, clearing invalid targets.
+     * A target is invalid if it's dead or out of range.
      */
     @Override
-    public void update(float deltaTime) {
+    public void update() {
         // Validate current target - clear if dead or out of range
         if (target != null && (!target.isAlive() || isOutOfRange(target))) {
             target = null;
@@ -97,27 +47,10 @@ public class HoneypotTower extends Tower {
     }
 
     /**
-     * Fires a projectile at the current target if conditions are met.
+     * Fires a projectile that deals damage and applies 50% slow for 3 seconds.
+     * The slow duration exceeds attack cooldown, allowing permanent slow on targets in range.
      *
-     * <p>Creates a sticky projectile that deals moderate damage on impact
-     * and applies a powerful slow status effect. The slow effect reduces
-     * enemy movement speed by 50% for 3 seconds, providing excellent
-     * crowd control and synergy with damage-focused towers.</p>
-     *
-     * <h4>Projectile Configuration:</h4>
-     * <ul>
-     *   <li><b>Speed (350):</b> Slower projectile speed, thematically "sticky"</li>
-     *   <li><b>Slow Intensity:</b> 50% movement speed reduction (0.5 modifier)</li>
-     *   <li><b>Slow Duration:</b> 3.0 seconds - long duration for sustained control</li>
-     * </ul>
-     *
-     * <h4>Strategic Value:</h4>
-     * <p>The 3-second slow duration exceeds the tower's attack cooldown (0.67 sec),
-     * meaning a single Honeypot can maintain permanent slow on a target. Multiple
-     * Honeypots don't stack the slow effect, but can cover larger areas.</p>
-     *
-     * @return A new Projectile targeting the current enemy with slow effect attached,
-     *         or {@code null} if no valid target exists or the tower is on cooldown.
+     * @return A new Projectile with slow effect, or null if no valid target or on cooldown.
      */
     @Override
     public Projectile fire() {
@@ -151,11 +84,7 @@ public class HoneypotTower extends Tower {
     /**
      * Returns the display name for this tower type.
      *
-     * <p>This identifier is used in the UI for tower selection, upgrade menus,
-     * and player-facing text. The name "Honeypot" reflects the cybersecurity
-     * concept of a decoy system designed to attract and trap attackers.</p>
-     *
-     * @return The string "Honeypot" as this tower's type identifier.
+     * @return The string "Honeypot".
      */
     @Override
     public String getType() {

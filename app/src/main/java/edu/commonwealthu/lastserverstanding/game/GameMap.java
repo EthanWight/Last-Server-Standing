@@ -21,6 +21,13 @@ public class GameMap {
     private float offsetX;
     private float offsetY;
 
+    /**
+     * Constructor for GameMap.
+     *
+     * @param width Width of the map in grid tiles.
+     * @param height Height of the map in grid tiles.
+     * @param gridSize Size of each grid tile in pixels.
+     */
     public GameMap(int width, int height, int gridSize) {
         this.width = width;
         this.height = height;
@@ -169,28 +176,65 @@ public class GameMap {
         pathPoints.add(gridToWorld(x, y));
     }
 
-    // Getters
+    /**
+     * Get map width in tiles.
+     *
+     * @return The width in tiles.
+     */
     public int getWidth() { return width; }
+
+    /**
+     * Get map height in tiles.
+     *
+     * @return The height in tiles.
+     */
     public int getHeight() { return height; }
+
+    /**
+     * Get horizontal offset for centering.
+     *
+     * @return The X offset in pixels.
+     */
     public float getOffsetX() { return offsetX; }
+
+    /**
+     * Get vertical offset for centering.
+     *
+     * @return The Y offset in pixels.
+     */
     public float getOffsetY() { return offsetY; }
 
+    /**
+     * Set the enemy spawn point.
+     *
+     * @param x The x grid coordinate.
+     * @param y The y grid coordinate.
+     */
     public void setSpawnPoint(int x, int y) { this.spawnPoint = gridToWorld(x, y); }
+
+    /**
+     * Set the datacenter location (enemy goal).
+     *
+     * @param x The x grid coordinate.
+     * @param y The y grid coordinate.
+     */
     public void setDataCenterPoint(int x, int y) { this.dataCenterPoint = gridToWorld(x, y); }
 
+    /**
+     * Get the datacenter position.
+     *
+     * @return The datacenter position in world coordinates.
+     */
     public PointF getDataCenterPoint() { return dataCenterPoint; }
 
     /**
      * Create a butterfly-shaped map with a beautiful symmetric design.
      * The path traces through both wings of the butterfly.
      *
-     * @param gridWidth The grid width (for API compatibility).
-     * @param gridHeight The grid height (for API compatibility).
      * @param gridSize The size of each grid cell.
      * @return A new GameMap with a butterfly shape.
      */
-    @SuppressWarnings("unused") // gridWidth and gridHeight parameters kept for API compatibility
-    public static GameMap createSimpleMap(int gridWidth, int gridHeight, int gridSize) {
+    public static GameMap createSimpleMap(int gridSize) {
         // Create a smaller map (18x12) for better centering
         int mapWidth = 18;
         int mapHeight = 12;

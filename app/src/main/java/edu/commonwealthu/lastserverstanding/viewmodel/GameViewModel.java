@@ -98,10 +98,32 @@ public class GameViewModel extends AndroidViewModel {
         score.postValue(sc);
     }
 
-    // Getters for LiveData
+    /**
+     * Get settings LiveData.
+     *
+     * @return LiveData containing user settings.
+     */
     public LiveData<Settings> getSettings() { return settings; }
+
+    /**
+     * Get current wave LiveData.
+     *
+     * @return LiveData containing current wave number.
+     */
     public LiveData<Integer> getCurrentWave() { return currentWave; }
+
+    /**
+     * Get resources LiveData.
+     *
+     * @return LiveData containing current resources.
+     */
     public LiveData<Integer> getResources() { return resources; }
+
+    /**
+     * Get health LiveData.
+     *
+     * @return LiveData containing current health.
+     */
     public LiveData<Integer> getHealth() { return health; }
 
     /**

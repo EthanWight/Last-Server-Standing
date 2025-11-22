@@ -19,8 +19,10 @@ import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
 import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
 /**
- * Main Menu Fragment - Entry point for the application.
- * Provides navigation to game, leaderboards, and settings.
+ * Main Menu Fragment - Entry point for the application UI.
+ * Serves as the primary navigation hub providing buttons for starting a new game, continuing a saved game,
+ * viewing leaderboards, and accessing settings. The continue button dynamically appears when a saved game
+ * with progress is detected in Firebase, and an animated binary rain background creates a cybersecurity-themed atmosphere.
  *
  * @author Ethan Wight
  */
@@ -30,13 +32,28 @@ public class MainMenuFragment extends Fragment {
     private MaterialButton continueButton;
     private GameViewModel viewModel;
 
+    /**
+     * Creates and returns the view hierarchy associated with this fragment.
+     *
+     * @param inflater The LayoutInflater used to inflate views in this fragment
+     * @param container The parent view that this fragment's UI should be attached to
+     * @param savedInstanceState Previous state data (not used in this fragment)
+     * @return The inflated view for the main menu UI
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_main_menu, container, false);
     }
-    
+
+    /**
+     * Called immediately after onCreateView to perform final initialization.
+     * Initializes the ViewModel, sets up button listeners, and checks Firebase for saved games.
+     *
+     * @param view The View returned by onCreateView
+     * @param savedInstanceState Previous state data (not used in this fragment)
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -86,6 +103,10 @@ public class MainMenuFragment extends Fragment {
         // Background animation (BinaryRainView) starts automatically when attached to window
     }
 
+    /**
+     * Called when the fragment becomes visible to the user.
+     * Refreshes the continue button visibility to reflect the current save state.
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -96,9 +117,10 @@ public class MainMenuFragment extends Fragment {
     }
 
     /**
-     * Check Firebase for autosaves and update continue button visibility.
+     * Checks Firebase for auto-saved games and updates continue button visibility.
+     * Shows the button only if a save with progress exists.
      *
-     * @param viewModel The game view model to use for loading saves
+     * @param viewModel The GameViewModel to use for loading and checking saved games
      */
     private void checkForFirebaseSave(GameViewModel viewModel) {
         Log.d(TAG, "==========================================");

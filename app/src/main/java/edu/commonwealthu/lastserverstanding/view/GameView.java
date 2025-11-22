@@ -15,8 +15,9 @@ import android.view.SurfaceView;
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
 
 /**
- * Custom SurfaceView for rendering the game at 60 FPS using Choreographer.
- * Handles all game rendering and input.
+ * Custom SurfaceView that renders the tower defense game at 60 FPS.
+ * Uses Choreographer for vsync-synchronized rendering and supports touch input for tower placement.
+ * Grid rendering is cached to a bitmap for improved performance.
  *
  * @author Ethan Wight
  */
@@ -24,63 +25,59 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
 
     private static final String TAG = "GameView";
 
-    // Removed fixed aspect ratio - use device's natural landscape dimensions
-
-    // Choreographer for vsync-based rendering
     private Choreographer choreographer;
     private volatile boolean isRunning;
     private long lastFrameTimeNanos;
-
-    // Game engine reference
     private GameEngine gameEngine;
-
-    // Rendering
     private Paint paint;
-    private Paint gridPaint; // Separate paint for grid to avoid reconfiguration
+    private Paint gridPaint;
     private Canvas canvas;
-
-    // Performance optimization - cache grid
     private boolean gridNeedsRedraw = true;
     private android.graphics.Bitmap gridCache;
     private Canvas gridCacheCanvas;
-
-    // Grid settings
-    private final int gridSize = 64; // Size of each grid cell in pixels
+    private final int gridSize = 64;
     private int gridWidth;
     private int gridHeight;
-    
-    // Camera
     private PointF cameraOffset;
     private final float cameraZoom = 1.0f;
-    
-    // Touch input
     private PointF lastTouchPoint;
-    private final PointF tempTouchPoint = new PointF(); // Reusable temp for touch events
-
-    // Tap listener for tower placement
+    private final PointF tempTouchPoint = new PointF();
     private OnTapListener tapListener;
-
-    // Drag preview
     private boolean showDragPreview = false;
     private final PointF dragPreviewPosition = new PointF();
     private int dragPreviewIconRes = 0;
     private boolean isDragPreviewValid = false;
     private float dragPreviewRange = 0f;
 
+    /**
+     * Listener interface for tap events on the game view.
+     * Allows external components to respond to user taps for actions such as tower placement.
+     */
     public interface OnTapListener {
-        @SuppressWarnings("unused") // Used via method reference in GameFragment
+        /**
+         * Called when user performs a tap gesture on the game view.
+         *
+         * @param worldPosition The tap position in world coordinates (grid-aligned)
+         */
         void onTap(PointF worldPosition);
     }
 
+    /**
+     * Sets the listener for tap events on the game view.
+     * Movement less than 20 pixels is considered a tap.
+     *
+     * @param listener The tap listener, or null to remove the listener
+     */
     public void setOnTapListener(OnTapListener listener) {
         this.tapListener = listener;
     }
 
     /**
-     * Show tower drag preview.
+     * Activates tower drag preview mode with specified tower type and range.
+     * Displays a semi-transparent preview including tower icon, validity circle, and range circle.
      *
-     * @param iconRes The icon resource ID.
-     * @param range The tower range.
+     * @param iconRes Drawable resource ID for the tower icon
+     * @param range Tower attack range in pixels (radius of range circle)
      */
     public void showDragPreview(int iconRes, float range) {
         this.showDragPreview = true;
@@ -89,17 +86,17 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Hide tower drag preview.
+     * Hides the tower drag preview overlay.
      */
     public void hideDragPreview() {
         this.showDragPreview = false;
     }
 
     /**
-     * Update drag preview position and validity.
+     * Updates the drag preview position and placement validity state.
      *
-     * @param screenPos The screen position.
-     * @param isValid Whether the placement is valid.
+     * @param screenPos The screen position in pixels
+     * @param isValid Whether the placement is valid at this position
      */
     public void updateDragPreview(PointF screenPos, boolean isValid) {
         PointF worldPos = screenToWorld(screenPos);
@@ -110,8 +107,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     /**
      * Constructor for XML inflation.
      *
-     * @param context The application context.
-     * @param attrs The attribute set.
+     * @param context The application context
+     * @param attrs The attribute set
      */
     public GameView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -121,7 +118,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     /**
      * Constructor for programmatic creation.
      *
-     * @param context The application context.
+     * @param context The application context
      */
     public GameView(Context context) {
         super(context);
@@ -129,10 +126,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Measure the view.
+     * Measures the view using the device's natural dimensions.
      *
-     * @param widthMeasureSpec The width measure specification.
-     * @param heightMeasureSpec The height measure specification.
+     * @param widthMeasureSpec The width measure specification
+     * @param heightMeasureSpec The height measure specification
      */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -146,7 +143,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Initialize the view.
+     * Initializes the view with surface holder, paint objects, and camera settings.
      */
     private void init() {
         // Set up surface holder callbacks
@@ -172,19 +169,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Set the game engine.
+     * Sets the game engine for rendering and update callbacks.
      *
-     * @param engine The game engine.
+     * @param engine The game engine instance
      */
     public void setGameEngine(GameEngine engine) {
         this.gameEngine = engine;
     }
     
     /**
-     * Calculate grid dimensions based on view size.
+     * Calculates grid dimensions based on view size and marks grid for redraw if changed.
      *
-     * @param width The view width.
-     * @param height The view height.
+     * @param width The view width in pixels
+     * @param height The view height in pixels
      */
     private void calculateGridDimensions(int width, int height) {
         int newGridWidth = width / gridSize;
@@ -240,7 +237,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Start the game loop using Choreographer.
+     * Starts the game loop using Choreographer for vsync-synchronized rendering.
      */
     public void startGameLoop() {
         if (!isRunning) {
@@ -252,7 +249,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Stop the game loop.
+     * Stops the game loop and removes frame callbacks.
      */
     public void stopGameLoop() {
         isRunning = false;
@@ -262,9 +259,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Choreographer frame callback - called on each vsync (typically 60 FPS).
+     * Choreographer frame callback invoked on each vsync to update and render the game.
      *
-     * @param frameTimeNanos The frame time in nanoseconds.
+     * @param frameTimeNanos The frame time in nanoseconds
      */
     @Override
     public void doFrame(long frameTimeNanos) {
@@ -293,7 +290,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Render the game.
+     * Renders the game scene including grid, game elements, and drag preview.
      */
     private void render() {
         if (!getHolder().getSurface().isValid()) {
@@ -338,7 +335,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Draw the game grid (optimized with caching).
+     * Draws the game grid using bitmap caching for performance optimization.
      */
     private void drawGrid() {
         int gridPixelWidth = gridWidth * gridSize;
@@ -399,7 +396,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Fallback method to draw grid directly (if caching fails).
+     * Fallback method to draw grid directly when bitmap caching fails.
      */
     private void drawGridDirect() {
         // Vertical lines
@@ -416,7 +413,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Draw drag preview of tower being placed.
+     * Draws the drag preview showing tower placement position, validity, and range.
      */
     private void drawDragPreview() {
         float radius = gridSize / 2f;
@@ -491,10 +488,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Handle touch input.
+     * Handles touch input for tap detection and gesture processing.
      *
-     * @param event The motion event.
-     * @return True if the event was handled.
+     * @param event The motion event
+     * @return True if the event was handled
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -529,9 +526,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
 
     /**
-     * Handle click for accessibility.
+     * Handles click events and notifies tap listener or game engine.
      *
-     * @return True if the click was handled.
+     * @return True if the click was handled
      */
     @Override
     public boolean performClick() {
@@ -549,10 +546,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     }
     
     /**
-     * Convert screen coordinates to world coordinates.
+     * Converts screen coordinates to world coordinates accounting for camera transform.
      *
-     * @param screenPos The screen position.
-     * @return The world position.
+     * @param screenPos The screen position in pixels
+     * @return The world position
      */
     public PointF screenToWorld(PointF screenPos) {
         return new PointF(

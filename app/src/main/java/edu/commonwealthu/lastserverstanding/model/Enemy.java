@@ -6,126 +6,51 @@ import java.util.List;
 
 /**
  * Abstract base class for all enemy types in the tower defense game.
- *
- * <p>This class represents a rogue AI system attacking the data center. Enemies follow
- * a predefined path from spawn point to the data center, taking damage from towers along
- * the way. Each enemy type has unique characteristics defined in subclasses.</p>
- *
- * <h2>Responsibilities:</h2>
- * <ul>
- *   <li>Path-following movement with configurable speed</li>
- *   <li>Health management and damage processing</li>
- *   <li>Status effect application and tracking (slow, stun, burn)</li>
- *   <li>Reward and damage value definitions for game economy</li>
- * </ul>
- *
- * <h2>Usage:</h2>
- * <pre>{@code
- * // Create a concrete enemy subclass
- * Enemy virus = new VirusEnemy("virus_001", pathPoints);
- *
- * // Update each frame
- * enemy.update(deltaTime);
- *
- * // Apply damage from towers
- * enemy.takeDamage(50.0f);
- *
- * // Check if enemy reached the data center
- * if (enemy.hasReachedEnd()) {
- *     dataCenter.takeDamage(enemy.getDamage());
- * }
- * }</pre>
- *
- * <h2>Subclasses must implement:</h2>
- * <ul>
- *   <li>{@link #getType()} - Returns the enemy type identifier</li>
- *   <li>{@link #getColor()} - Returns the rendering color</li>
- *   <li>{@link #getIconResId()} - Returns the drawable resource ID</li>
- * </ul>
+ * Enemies follow a predefined path from spawn to data center, taking damage and applying status effects.
+ * Subclasses must implement getType(), getColor(), and getIconResId().
  *
  * @author Ethan Wight
- * @see StatusEffect
- * @see Tower
  */
 public abstract class Enemy {
 
-    /**
-     * Unique identifier for this enemy instance.
-     * Used for tracking, debugging, and potential networking features.
-     */
+    /** Unique identifier for this enemy instance. */
     protected final String id;
 
-    /**
-     * Current position of the enemy in game world coordinates.
-     * Updated each frame as the enemy moves along its path.
-     */
+    /** Current position of the enemy in game world coordinates. */
     protected PointF position;
 
-    /**
-     * The complete path this enemy will follow from spawn to data center.
-     * Stored as a defensive copy to prevent external modification.
-     */
+    /** The complete path this enemy will follow from spawn to data center. */
     protected final List<PointF> path;
 
-    /**
-     * Index of the current waypoint the enemy is moving toward.
-     * Increments as the enemy reaches each waypoint along the path.
-     * When this equals path.size(), the enemy has reached the end.
-     */
+    /** Index of the current waypoint the enemy is moving toward. */
     protected int currentPathIndex;
 
-    /**
-     * Current health points of the enemy.
-     * Decremented when taking damage. Enemy dies when this reaches zero.
-     */
+    /** Current health points of the enemy. */
     protected float health;
 
-    /**
-     * Maximum health points this enemy can have.
-     * Used for health bar rendering and percentage calculations.
-     */
+    /** Maximum health points this enemy can have. */
     protected final float maxHealth;
 
-    /**
-     * Base movement speed in game units per second.
-     * May be modified by status effects (slow, stun) during gameplay.
-     */
+    /** Base movement speed in game units per second. */
     protected final float speed;
 
-    /**
-     * Currency reward granted to the player upon defeating this enemy.
-     * Used to purchase and upgrade towers.
-     */
+    /** Currency reward granted to the player upon defeating this enemy. */
     protected final int reward;
 
-    /**
-     * Damage dealt to the data center if this enemy reaches the end of the path.
-     * Higher values represent more dangerous enemy types.
-     */
+    /** Damage dealt to the data center if this enemy reaches the end of the path. */
     protected final int damage;
 
-    /**
-     * List of currently active status effects on this enemy.
-     * Effects are processed each frame and removed when expired.
-     *
-     * @see StatusEffect
-     */
+    /** List of currently active status effects on this enemy. */
     protected final List<StatusEffect> statusEffects;
 
-    /**
-     * Whether this enemy is still alive.
-     * Set to false when health reaches zero.
-     */
+    /** Whether this enemy is still alive. */
     protected boolean isAlive;
 
     /**
      * Constructs a new enemy with the specified attributes.
      *
-     * <p>The enemy is initialized at the first point of the provided path
-     * with full health and no active status effects.</p>
-     *
      * @param id        Unique identifier for this enemy instance
-     * @param path      The waypoints this enemy will follow (defensively copied)
+     * @param path      The waypoints this enemy will follow
      * @param maxHealth Maximum health points for this enemy
      * @param speed     Movement speed in game units per second
      * @param reward    Currency reward when defeated
@@ -147,12 +72,7 @@ public abstract class Enemy {
 
     /**
      * Updates the enemy state for the current frame.
-     *
-     * <p>This method performs two main operations each frame:</p>
-     * <ol>
-     *   <li>Apply and update all active status effects (burn damage, duration countdown)</li>
-     *   <li>Move toward the next waypoint if the path is not complete</li>
-     * </ol>
+     * Applies status effects and moves toward the next waypoint.
      *
      * @param deltaTime Time elapsed since the last update, in seconds
      */
@@ -169,40 +89,27 @@ public abstract class Enemy {
     /**
      * Returns the type identifier for this enemy.
      *
-     * <p>Used for display purposes, logging, and enemy-specific game logic.</p>
-     *
-     * @return The type name of this enemy (e.g., "Virus", "Trojan", "Worm")
+     * @return The type name of this enemy
      */
     public abstract String getType();
 
     /**
      * Returns the color used to render this enemy.
      *
-     * <p>Each enemy type has a distinct color for visual identification.</p>
-     *
-     * @return Color value as an integer (use {@link android.graphics.Color} constants)
+     * @return Color value as an integer
      */
     public abstract int getColor();
 
     /**
      * Returns the drawable resource ID for this enemy's icon.
      *
-     * <p>Used for rendering the enemy sprite on the game canvas.</p>
-     *
-     * @return Android drawable resource ID (R.drawable.*)
+     * @return Android drawable resource ID
      */
     public abstract int getIconResId();
 
     /**
      * Moves the enemy along its path toward the next waypoint.
-     *
-     * <p>Movement algorithm:</p>
-     * <ol>
-     *   <li>Calculate direction vector to current target waypoint</li>
-     *   <li>Apply status effects to determine effective speed (slow/stun)</li>
-     *   <li>Move by effective speed * deltaTime in the target direction</li>
-     *   <li>If reached waypoint, snap to it and advance to next waypoint</li>
-     * </ol>
+     * Calculates effective speed considering status effects.
      *
      * @param deltaTime Time elapsed since the last update, in seconds
      */
@@ -237,17 +144,9 @@ public abstract class Enemy {
 
     /**
      * Calculates the effective movement speed after applying all status effects.
+     * Stun stops movement, slow effects stack multiplicatively with a 10% minimum speed floor.
      *
-     * <p>Status effect priority:</p>
-     * <ul>
-     *   <li>STUN: Immediately returns 0 (complete movement stop)</li>
-     *   <li>SLOW: Multiplies speed by (1 - strength), effects stack multiplicatively</li>
-     * </ul>
-     *
-     * <p>A minimum speed floor of 10% base speed is enforced to prevent
-     * enemies from being permanently immobilized by stacking slow effects.</p>
-     *
-     * @return The effective speed after applying all status effects, in units per second
+     * @return The effective speed after applying all status effects
      */
     private float getEffectiveSpeed() {
         float effectiveSpeed = speed;
@@ -269,14 +168,7 @@ public abstract class Enemy {
 
     /**
      * Processes all active status effects and removes expired ones.
-     *
-     * <p>Effect processing:</p>
-     * <ul>
-     *   <li>BURN: Deals damage equal to (strength * deltaTime) each frame</li>
-     *   <li>All effects: Duration countdown and expiration check</li>
-     * </ul>
-     *
-     * <p>Uses iterator for safe removal during iteration.</p>
+     * Applies burn damage and updates effect durations.
      *
      * @param deltaTime Time elapsed since the last update, in seconds
      */
@@ -305,10 +197,7 @@ public abstract class Enemy {
     /**
      * Applies damage to this enemy, potentially killing it.
      *
-     * <p>If damage reduces health to zero or below, the enemy is marked
-     * as dead and will be removed from the game on the next cleanup pass.</p>
-     *
-     * @param damageAmount Amount of damage to apply (positive value)
+     * @param damageAmount Amount of damage to apply
      */
     public void takeDamage(float damageAmount) {
         health -= damageAmount;
@@ -323,11 +212,7 @@ public abstract class Enemy {
     /**
      * Adds a status effect to this enemy.
      *
-     * <p>Multiple effects of the same type can stack. The effect will
-     * be processed each frame until its duration expires.</p>
-     *
      * @param effect The status effect to apply
-     * @see StatusEffect
      */
     public void addStatusEffect(StatusEffect effect) {
         statusEffects.add(effect);
@@ -336,10 +221,7 @@ public abstract class Enemy {
     /**
      * Returns the list of currently active status effects.
      *
-     * <p>Note: Returns the actual list, not a copy. Modifications will
-     * affect the enemy's status effects.</p>
-     *
-     * @return List of active status effects (may be empty, never null)
+     * @return List of active status effects
      */
     public List<StatusEffect> getStatusEffects() {
         return statusEffects;
@@ -348,10 +230,7 @@ public abstract class Enemy {
     /**
      * Checks whether this enemy has reached the end of its path.
      *
-     * <p>When true, the enemy should deal damage to the data center
-     * and be removed from the game.</p>
-     *
-     * @return {@code true} if the enemy has completed its path
+     * @return true if the enemy has completed its path
      */
     public boolean hasReachedEnd() {
         return currentPathIndex >= path.size();
@@ -360,9 +239,7 @@ public abstract class Enemy {
     /**
      * Calculates the current health as a percentage of maximum health.
      *
-     * <p>Used for rendering health bars above enemies.</p>
-     *
-     * @return Health percentage as a value from 0.0 (dead) to 1.0 (full health)
+     * @return Health percentage from 0.0 to 1.0
      */
     public float getHealthPercentage() {
         return health / maxHealth;
@@ -370,83 +247,35 @@ public abstract class Enemy {
 
     // ==================== Getters ====================
 
-    /**
-     * Returns the unique identifier for this enemy.
-     *
-     * @return The enemy's unique ID string
-     */
-    @SuppressWarnings("unused") // Reserved for future debugging/networking
-    public String getId() { return id; }
-
-    /**
-     * Returns the current position of this enemy.
-     *
-     * @return The enemy's position in game world coordinates
-     */
+    /** @return The enemy's position in game world coordinates */
     public PointF getPosition() { return position; }
 
-    /**
-     * Returns the path this enemy is following.
-     *
-     * @return List of waypoints from spawn to data center
-     */
+    /** @return List of waypoints from spawn to data center */
     public List<PointF> getPath() { return path; }
 
-    /**
-     * Returns the current health of this enemy.
-     *
-     * @return Current health points
-     */
+    /** @return Current health points */
     public float getHealth() { return health; }
 
-    /**
-     * Returns the maximum health of this enemy.
-     *
-     * @return Maximum health points
-     */
+    /** @return Maximum health points */
     public float getMaxHealth() { return maxHealth; }
 
-    /**
-     * Returns the currency reward for defeating this enemy.
-     *
-     * @return Reward amount in game currency
-     */
+    /** @return Reward amount in game currency */
     public int getReward() { return reward; }
 
-    /**
-     * Returns the damage this enemy deals if it reaches the data center.
-     *
-     * @return Damage amount
-     */
+    /** @return Damage dealt to data center if enemy reaches the end */
     public int getDamage() { return damage; }
 
-    /**
-     * Checks whether this enemy is still alive.
-     *
-     * @return {@code true} if the enemy has health remaining
-     */
+    /** @return true if the enemy has health remaining */
     public boolean isAlive() { return isAlive; }
 
-    /**
-     * Returns the index of the current waypoint target.
-     *
-     * @return Current path index (0-based)
-     */
+    /** @return Current path index */
     public int getCurrentPathIndex() { return currentPathIndex; }
 
     // ==================== Setters for Save/Load ====================
 
-    /**
-     * Sets the current path index for save/load functionality.
-     *
-     * @param index The path index to restore
-     */
+    /** @param index The path index to restore */
     public void setCurrentPathIndex(int index) { this.currentPathIndex = index; }
 
-    /**
-     * Sets the enemy's position for save/load functionality.
-     *
-     * @param newPos The position to restore
-     */
+    /** @param newPos The position to restore */
     public void setPosition(PointF newPos) { this.position = newPos; }
 }

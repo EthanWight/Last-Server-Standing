@@ -42,14 +42,8 @@ import edu.commonwealthu.lastserverstanding.view.GameView;
 import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
 /**
- * Game Fragment - Main gameplay screen.
- * Contains GameView and HUD overlay
- * Save/Load Flow:
- * - Auto-save occurs in onPause() whenever there's progress (wave > 0)
- * - This saves when: going to settings, main menu, background, or exiting app
- * - When user clicks "Continue" from main menu, saved game is loaded
- * - When user clicks "New Game" from main menu, saves are deleted and fresh game starts
- * - When returning from settings, existing game state is preserved in ViewModel
+ * Main gameplay screen that manages the game view, HUD overlay, and tower defense mechanics.
+ * Handles auto-save on pause, game state loading/restoration, and tower placement interactions.
  *
  * @author Ethan Wight
  */
@@ -1370,19 +1364,13 @@ public class GameFragment extends Fragment {
             public void onSuccess(int saveId) {
                 Log.d(TAG, "Auto-save successful - Wave: " +
                         gameState.currentWave + ", SaveID: " + saveId);
-                if (isAdded()) {
-                    Toast.makeText(requireContext(), "Game saved (Wave " + gameState.currentWave + ")",
-                            Toast.LENGTH_SHORT).show();
-                }
+                // No Toast for autosave to prevent excessive UI operations
             }
 
             @Override
             public void onError(String error) {
                 Log.e(TAG, "Failed to auto-save game: " + error);
-                if (isAdded()) {
-                    Toast.makeText(requireContext(), "Save failed: " + error,
-                            Toast.LENGTH_SHORT).show();
-                }
+                // No Toast for autosave errors - they're logged instead
             }
         });
     }

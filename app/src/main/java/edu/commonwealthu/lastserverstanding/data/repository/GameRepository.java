@@ -152,7 +152,11 @@ public class GameRepository {
         );
     }
 
-    // LiveData getters
+    /**
+     * Get settings LiveData.
+     *
+     * @return LiveData containing user settings.
+     */
     public LiveData<Settings> getSettings() {
         return settings;
     }
@@ -167,19 +171,64 @@ public class GameRepository {
         }
     }
 
-    // Callback interfaces
+    /**
+     * Callback interface for save operations.
+     *
+     * @author Ethan Wight
+     */
     public interface SaveCallback {
+        /**
+         * Called when save succeeds.
+         *
+         * @param saveId The ID of the saved game.
+         */
         void onSuccess(int saveId);
+
+        /**
+         * Called when save fails.
+         *
+         * @param message The error message.
+         */
         void onError(String message);
     }
 
+    /**
+     * Callback interface for load operations.
+     *
+     * @author Ethan Wight
+     */
     public interface LoadCallback {
+        /**
+         * Called when load succeeds.
+         *
+         * @param gameState The loaded game state.
+         */
         void onSuccess(GameState gameState);
+
+        /**
+         * Called when load fails.
+         *
+         * @param message The error message.
+         */
         void onError(String message);
     }
 
+    /**
+     * Callback interface for delete operations.
+     *
+     * @author Ethan Wight
+     */
     public interface DeleteCallback {
+        /**
+         * Called when delete succeeds.
+         */
         void onSuccess();
+
+        /**
+         * Called when delete fails.
+         *
+         * @param message The error message.
+         */
         void onError(String message);
     }
 }

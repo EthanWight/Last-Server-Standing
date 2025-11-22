@@ -188,18 +188,59 @@ public class FirebaseSettingsRepository {
             });
     }
 
-    // Callback interfaces
+    /**
+     * Callback interface for authentication operations.
+     *
+     * @author Ethan Wight
+     */
     public interface AuthCallback {
+        /**
+         * Called when authentication succeeds.
+         *
+         * @param userId The authenticated user ID.
+         */
         void onSuccess(String userId);
+
+        /**
+         * Called when authentication fails.
+         *
+         * @param error The error message.
+         */
         void onError(String error);
     }
 
+    /**
+     * Callback interface for load operations.
+     *
+     * @author Ethan Wight
+     */
     public interface LoadCallback {
+        /**
+         * Called when settings load successfully.
+         *
+         * @param soundEnabled Whether sound is enabled.
+         * @param vibrationEnabled Whether vibration is enabled.
+         * @param showTowerRanges Whether to show tower ranges.
+         */
         void onSuccess(boolean soundEnabled, boolean vibrationEnabled, boolean showTowerRanges);
     }
 
+    /**
+     * Callback interface for save operations.
+     *
+     * @author Ethan Wight
+     */
     public interface SaveCallback {
+        /**
+         * Called when save succeeds.
+         */
         void onSuccess();
+
+        /**
+         * Called when save fails.
+         *
+         * @param error The error message.
+         */
         void onError(String error);
     }
 }

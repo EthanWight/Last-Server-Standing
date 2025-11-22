@@ -533,24 +533,85 @@ public class FirebaseSaveRepository {
         });
     }
 
-    // Callback interfaces
+    /**
+     * Callback interface for authentication operations.
+     *
+     * @author Ethan Wight
+     */
     public interface AuthCallback {
+        /**
+         * Called when authentication succeeds.
+         *
+         * @param userId The authenticated user ID.
+         */
         void onSuccess(String userId);
+
+        /**
+         * Called when authentication fails.
+         *
+         * @param error The error message.
+         */
         void onError(String error);
     }
 
+    /**
+     * Callback interface for save operations.
+     *
+     * @author Ethan Wight
+     */
     public interface SaveCallback {
+        /**
+         * Called when save succeeds.
+         *
+         * @param saveId The ID of the saved game.
+         */
         void onSuccess(String saveId);
+
+        /**
+         * Called when save fails.
+         *
+         * @param error The error message.
+         */
         void onError(String error);
     }
 
+    /**
+     * Callback interface for load operations.
+     *
+     * @author Ethan Wight
+     */
     public interface LoadCallback {
+        /**
+         * Called when load succeeds.
+         *
+         * @param gameState The loaded game state.
+         */
         void onSuccess(GameState gameState);
+
+        /**
+         * Called when load fails.
+         *
+         * @param error The error message.
+         */
         void onError(String error);
     }
 
+    /**
+     * Callback interface for delete operations.
+     *
+     * @author Ethan Wight
+     */
     public interface DeleteCallback {
+        /**
+         * Called when delete succeeds.
+         */
         void onSuccess();
+
+        /**
+         * Called when delete fails.
+         *
+         * @param error The error message.
+         */
         void onError(String error);
     }
 }

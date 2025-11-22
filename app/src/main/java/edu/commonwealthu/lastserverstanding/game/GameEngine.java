@@ -27,90 +27,266 @@ import edu.commonwealthu.lastserverstanding.model.StatusEffect;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
 /**
- * Core game engine managing all game logic and state.
+ * Manages the core game loop, entity updates, and rendering for the tower defense game.
+ * Coordinates towers, enemies, projectiles, wave management, and player resources.
+ * Uses object pooling and batched rendering for optimal performance.
  *
  * @author Ethan Wight
  */
 public class GameEngine {
 
-    // Game listener for events
+    /** Listener for game events and state changes. */
     private GameListener gameListener;
 
-    // Game state
+    // ==================== Game State ====================
+
+    /** All active towers (synchronized for thread safety). */
     private final List<Tower> towers;
+
+    /** All active enemies (synchronized for thread safety). */
     private final List<Enemy> enemies;
+
+    /** All active projectiles (synchronized for thread safety). */
     private final List<Projectile> projectiles;
 
+    /** Current wave number (0-indexed). */
     private int currentWave;
+
+    /** Available resources for building and upgrading towers. */
     private int resources;
+
+    /** Datacenter health (game over when reaches 0). */
     private int dataCenterHealth;
+
+    /** Previous health value for detecting health loss. */
     private int previousHealth;
+
+    /** Player's accumulated score. */
     private long score;
+
+    /** Whether the game is currently paused. */
     private boolean isPaused;
+
+    /** Whether the game has ended. */
     private boolean isGameOver;
-    
-    // FPS tracking
+
+    // ==================== FPS Tracking ====================
+
+    /** Frames per second counter for performance monitoring. */
     private int fps;
+
+    /** Timestamp of last FPS calculation in milliseconds. */
     private long lastFpsTime;
+
+    /** Number of frames since last FPS calculation. */
     private int frameCount;
-    
-    // Game systems
+
+    // ==================== Game Systems ====================
+
+    /** Spatial partitioning system for efficient collision detection. */
     private CollisionSystem collisionSystem;
+
+    /** Pathfinding system using A* for enemy path generation. */
     private Pathfinding pathfinding;
+
+    /** Wave management system controlling enemy spawning. */
     private final WaveManager waveManager;
+
+    /** Game map with tile types and buildable areas. */
     private GameMap gameMap;
 
-    // World dimensions
+    // ==================== World Dimensions ====================
+
+    /** Width of the game world in pixels. */
     private int worldWidth;
+
+    /** Height of the game world in pixels. */
     private int worldHeight;
+
+    /** Size of each grid cell in pixels. */
     private int gridSize;
-    
-    // Game constants
+
+    // ==================== Game Constants ====================
+
+    /** Initial resources when starting a new game. */
     private static final int STARTING_RESOURCES = 500;
+
+    /** Initial datacenter health when starting a new game. */
     private static final int STARTING_HEALTH = 100;
-    // Icon sizes for rendering
+
+    /** Size in pixels for rendered tower icons. */
     private static final int TOWER_ICON_SIZE = 48;
+
+    /** Size in pixels for rendered datacenter icon. */
     private static final int DATACENTER_ICON_SIZE = 96;
 
-    // Tower icon cache
+    // ==================== Icon Caching ====================
+
+    /**
+     * Cache mapping tower type names to pre-rendered bitmap icons.
+     * Avoids repeated vector drawable conversion during rendering.
+     */
     private final Map<String, Bitmap> towerIcons;
-    // Enemy icon cache
+
+    /**
+     * Cache mapping enemy type names to pre-rendered bitmap icons.
+     * Avoids repeated vector drawable conversion during rendering.
+     */
     private final Map<String, Bitmap> enemyIcons;
-    // Data center goal icon
+
+    /**
+     * Cached bitmap icon for the datacenter goal.
+     * Loaded once and reused for all datacenter rendering.
+     */
     private Bitmap dataCenterIcon;
+
+    /**
+     * Android context for accessing resources and system services.
+     * Required for loading drawables, colors, and vibration services.
+     */
     private Context context;
 
-    // Settings
+    // ==================== Settings ====================
+
+    /**
+     * Whether haptic feedback is enabled for game events.
+     * When true, device vibrates on datacenter damage (if supported).
+     */
     private boolean vibrationEnabled = true;
+
+    /**
+     * Whether sound effects are enabled for game events.
+     * When true, plays alert sounds on datacenter damage.
+     */
     private boolean soundEnabled = true;
+
+    /**
+     * Whether to show tower range indicators during gameplay.
+     * When true, renders semi-transparent circles around towers.
+     */
     private boolean showTowerRanges = true;
 
-    // Object pooling for performance (reduce GC)
+    // ==================== Object Pooling for Performance ====================
+
+    /**
+     * Reusable Rect object for bitmap rendering to avoid per-frame allocation.
+     * Reduces garbage collection pressure in tight render loops.
+     */
     private final Rect tempRect = new Rect();
 
-    // Dedicated Paint objects to reduce configuration changes during rendering
+    /**
+     * Dedicated Paint object for rendering map tiles.
+     * Pre-configured for non-antialiased fill style to maximize tile rendering performance.
+     */
     private final Paint mapPaint = new Paint();
+
+    /**
+     * Dedicated Paint object for rendering tower icons and fallback circles.
+     * Pre-configured with antialiasing for smooth circular shapes.
+     */
     private final Paint towerPaint = new Paint();
+
+    /**
+     * Dedicated Paint object for rendering tower range indicators.
+     * Pre-configured as semi-transparent stroke with antialiasing.
+     */
     private final Paint towerRangePaint = new Paint();
+
+    /**
+     * Dedicated Paint object for rendering enemy icons and fallback circles.
+     * Pre-configured with antialiasing for smooth shapes.
+     */
     private final Paint enemyPaint = new Paint();
+
+    /**
+     * Dedicated Paint object for rendering projectiles.
+     * Pre-configured with antialiasing and color changes per projectile type.
+     */
     private final Paint projectilePaint = new Paint();
+
+    /**
+     * Dedicated Paint object for rendering enemy health bar fill.
+     * Color set from resources once context is available.
+     */
     private final Paint healthBarPaint = new Paint();
+
+    /**
+     * Dedicated Paint object for rendering enemy health bar background.
+     * Color set from resources once context is available.
+     */
     private final Paint healthBarBgPaint = new Paint();
 
-    // Reusable lists for rendering (avoid allocation per frame)
+    // ==================== Render Buffers ====================
+
+    /**
+     * Reusable list for defensive copy of towers during rendering.
+     * Pre-allocated to avoid per-frame list allocation and garbage collection.
+     */
     private final List<Tower> renderTowersCopy = new ArrayList<>();
+
+    /**
+     * Reusable list for defensive copy of enemies during rendering.
+     * Pre-allocated to avoid per-frame list allocation and garbage collection.
+     */
     private final List<Enemy> renderEnemiesCopy = new ArrayList<>();
+
+    /**
+     * Reusable list for defensive copy of projectiles during rendering.
+     * Pre-allocated to avoid per-frame list allocation and garbage collection.
+     */
     private final List<Projectile> renderProjectilesCopy = new ArrayList<>();
 
-    // Reusable lists for batched tile rendering (store grid coordinates as longs)
+    // ==================== Batched Tile Rendering ====================
+
+    /**
+     * Reusable list storing grid coordinates of path tiles as long values.
+     * Each long encodes (x, y) coordinates to avoid object allocation in render loop.
+     * Cleared and repopulated each frame for batched color rendering.
+     */
     private final List<Long> pathTiles = new ArrayList<>();
+
+    /**
+     * Reusable list storing grid coordinates of buildable tiles as long values.
+     * Used for batched rendering of all buildable tiles with a single color set.
+     */
     private final List<Long> buildableTiles = new ArrayList<>();
+
+    /**
+     * Reusable list storing grid coordinates of spawn tiles as long values.
+     * Used for batched rendering of all spawn tiles with a single color set.
+     */
     private final List<Long> spawnTiles = new ArrayList<>();
+
+    /**
+     * Reusable list storing grid coordinates of datacenter tiles as long values.
+     * Used for batched rendering of all datacenter tiles with a single color set.
+     */
     private final List<Long> datacenterTiles = new ArrayList<>();
 
+    // ==================== Cached Colors ====================
+
+    /**
+     * Cached color value for path tiles (resolved from resources once).
+     * Avoids repeated resource lookups during rendering.
+     */
     private int pathColor;
+
+    /**
+     * Cached color value for wall/buildable tiles (resolved from resources once).
+     * Avoids repeated resource lookups during rendering.
+     */
     private int wallColor;
+
+    /**
+     * Cached color value for spawn tiles (resolved from resources once).
+     * Avoids repeated resource lookups during rendering.
+     */
     private int spawnColor;
+
+    /**
+     * Cached color value for datacenter tiles (resolved from resources once).
+     * Avoids repeated resource lookups during rendering.
+     */
     private int datacenterColor;
 
     /**
@@ -231,9 +407,7 @@ public class GameEngine {
         pathfinding = new Pathfinding(width / cellSize, height / cellSize, cellSize);
 
         // Initialize game map
-        int gridWidth = width / cellSize;
-        int gridHeight = height / cellSize;
-        gameMap = GameMap.createSimpleMap(gridWidth, gridHeight, cellSize);
+        gameMap = GameMap.createSimpleMap(cellSize);
 
         // Center the map on screen
         gameMap.centerOnScreen(width, height);
@@ -259,7 +433,7 @@ public class GameEngine {
         // Update all towers with collision system for better targeting
         synchronized (towers) {
             for (Tower tower : towers) {
-                tower.update(deltaTime);
+                tower.update();
 
                 // Use collision system for more efficient target acquisition
                 if (tower.getTarget() == null || !tower.getTarget().isAlive()) {
@@ -1315,35 +1489,6 @@ public class GameEngine {
         return null;
     }
 
-    /**
-     * Try to upgrade tower at grid position.
-     *
-     * @param gridPos The grid position to check for a tower
-     * @return true if upgrade successful
-     */
-    public boolean tryUpgradeTowerAt(PointF gridPos) {
-        if (gameMap == null) return false;
-
-        synchronized (towers) {
-            for (Tower tower : towers) {
-                PointF towerGrid = gameMap.worldToGrid(tower.getPosition());
-                if (Math.abs(towerGrid.x - gridPos.x) < 0.5f
-                        && Math.abs(towerGrid.y - gridPos.y) < 0.5f) {
-                    int upgradeCost = tower.getUpgradeCost();
-                    if (resources >= upgradeCost) {
-                        boolean upgraded = tower.upgrade(upgradeCost);
-                        if (upgraded) {
-                            resources -= upgradeCost;
-                            notifyStatsChanged();
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            }
-        }
-        return false;
-    }
 
     /**
      * Trigger emergency alert with haptic and audio feedback.

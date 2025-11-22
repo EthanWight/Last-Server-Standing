@@ -249,8 +249,18 @@ public class WaveManager {
         gameEngine.notifyWaveComplete(currentWave);
     }
 
-    // Getters
+    /**
+     * Get current wave number.
+     *
+     * @return The current wave number.
+     */
     public int getCurrentWave() { return currentWave; }
+
+    /**
+     * Check if a wave is currently active.
+     *
+     * @return True if wave is active, false otherwise.
+     */
     public boolean isWaveActive() { return isWaveActive; }
 
     /**

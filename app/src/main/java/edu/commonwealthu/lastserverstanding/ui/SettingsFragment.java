@@ -24,23 +24,42 @@ import edu.commonwealthu.lastserverstanding.game.GameEngine;
 import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
 /**
- * Settings Fragment - User preferences and configuration.
+ * Settings Fragment - User preferences and configuration UI.
+ * Allows users to customize player name, audio settings, and gameplay preferences.
+ * Changes are saved to Firebase and persisted across sessions.
  *
  * @author Ethan Wight
  */
 public class SettingsFragment extends Fragment {
 
     private static final String TAG = "SettingsFragment";
+
+    /** ViewModel for managing game state and settings. */
     private GameViewModel viewModel;
 
-    // UI Elements
+    /** Text input for player name. */
     private com.google.android.material.textfield.TextInputEditText playerNameEdit;
+
+    /** Toggle switch for sound effects. */
     private SwitchMaterial soundSwitch;
+
+    /** Toggle switch for haptic feedback. */
     private SwitchMaterial vibrationSwitch;
+
+    /** Toggle switch for tower range indicators. */
     private SwitchMaterial towerRangesSwitch;
 
+    /** Current settings loaded from database. */
     private Settings currentSettings;
 
+    /**
+     * Creates and returns the settings layout.
+     *
+     * @param inflater Layout inflater for creating views
+     * @param container Parent view container
+     * @param savedInstanceState Saved state from previous instance
+     * @return Inflated settings view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -49,6 +68,13 @@ public class SettingsFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_settings, container, false);
     }
 
+    /**
+     * Initializes UI components and sets up event listeners.
+     * Loads current settings from ViewModel and player name from SharedPreferences.
+     *
+     * @param view The created view
+     * @param savedInstanceState Saved state from previous instance
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -80,7 +106,8 @@ public class SettingsFragment extends Fragment {
     }
 
     /**
-     * Load player name from SharedPreferences
+     * Loads player name from SharedPreferences and populates the text field.
+     * Uses device model as default if no name is set.
      */
     private void loadPlayerName() {
         android.content.SharedPreferences prefs = requireContext().getSharedPreferences("game_prefs", android.content.Context.MODE_PRIVATE);
@@ -95,7 +122,8 @@ public class SettingsFragment extends Fragment {
     }
 
     /**
-     * Load settings from ViewModel
+     * Loads settings from ViewModel and updates UI switches.
+     * Creates default settings if none exist.
      */
     private void loadSettings() {
         viewModel.getSettings().observe(getViewLifecycleOwner(), settings -> {
@@ -115,7 +143,8 @@ public class SettingsFragment extends Fragment {
     }
 
     /**
-     * Save settings to database
+     * Saves all settings to database and SharedPreferences.
+     * Updates player name in Firebase repository and navigates back.
      */
     private void saveSettings() {
         // Save player name to SharedPreferences
@@ -155,7 +184,8 @@ public class SettingsFragment extends Fragment {
     }
 
     /**
-     * Navigate to main menu (saves current game progress)
+     * Shows confirmation dialog and navigates to main menu.
+     * Saves current game progress before navigating.
      */
     private void goToMainMenu() {
         // Show confirmation dialog

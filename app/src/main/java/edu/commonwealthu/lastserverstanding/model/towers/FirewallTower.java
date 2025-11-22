@@ -8,66 +8,26 @@ import edu.commonwealthu.lastserverstanding.model.StatusEffect;
 import edu.commonwealthu.lastserverstanding.model.Tower;
 
 /**
- * Firewall Tower - The foundational defense tower representing a network firewall.
- *
- * <p>This tower serves as the primary damage-dealing defensive structure in the game,
- * designed to be the player's first line of defense against incoming cyber threats.
- * The Firewall Tower excels at consistent, reliable damage output with its balanced
- * stats making it effective throughout all stages of the game.</p>
- *
- * <h3>Gameplay Role:</h3>
- * <ul>
- *   <li>Early game staple - affordable cost allows quick deployment</li>
- *   <li>Consistent DPS dealer with burn damage over time</li>
- *   <li>Upgradeable penetration allows damage to pass through to additional enemies</li>
- *   <li>Best placed at chokepoints where enemies cluster</li>
- * </ul>
- *
- * <h3>Balance Philosophy:</h3>
- * <p>The Firewall Tower is intentionally designed as a "jack-of-all-trades" tower.
- * Its moderate cost (200 credits) makes it accessible early while its upgrade path
- * (penetration) rewards investment for late-game scaling. The burn effect adds
- * sustained damage that complements other tower types.</p>
- *
- * <h3>Thematic Design:</h3>
- * <p>Represents a network firewall that "burns" malicious traffic. The burn
- * damage-over-time effect symbolizes how firewalls continue to filter and
- * block threats even after initial detection.</p>
+ * Firewall Tower - Primary damage-dealing tower that applies burn damage over time.
+ * Moderate damage (10), medium range (150), fast fire rate (2.0/sec). Cost: 200 credits.
+ * Upgrades gain penetration chance, allowing projectiles to hit multiple enemies.
+ * Best placed at chokepoints where enemies cluster.
  *
  * @author Ethan Wight
- * @see Tower
- * @see StatusEffect.Type#BURN
  */
 public class FirewallTower extends Tower {
 
     /**
      * Penetration chance for projectiles to damage multiple enemies.
-     *
-     * <p>This value represents the probability (0.0 to 1.0) that a projectile
-     * will pass through the initial target and potentially hit enemies behind it.
-     * Penetration starts at 0% and increases by 15% per upgrade, capping at 60%.</p>
-     *
-     * <p>This mechanic rewards players who invest in upgrading their Firewall Towers,
-     * making them more effective against grouped enemies in later waves.</p>
+     * Starts at 0%, increases by 15% per upgrade, capped at 60%.
      */
     private float penetration;
 
     /**
-     * Constructs a new Firewall Tower at the specified position with default stats.
+     * Constructs a new Firewall Tower with default stats.
+     * Damage: 10, Range: 150, Fire Rate: 2.0/sec, Cost: 200.
      *
-     * <p>Default statistics are balanced for early-game accessibility:</p>
-     * <ul>
-     *   <li><b>Damage (10):</b> Moderate base damage, supplemented by burn effect</li>
-     *   <li><b>Range (150):</b> Medium range - requires strategic placement</li>
-     *   <li><b>Fire Rate (2.0/sec):</b> Reliable attack speed for consistent damage</li>
-     *   <li><b>Cost (200):</b> Affordable entry point, doubled from original 100 for balance</li>
-     * </ul>
-     *
-     * <p>The cost was doubled during balancing to prevent early-game tower spam
-     * and encourage more thoughtful placement decisions.</p>
-     *
-     * @param position The position to place this tower on the grid, in screen coordinates.
-     *                 This position represents the center point of the tower.
+     * @param position The center position to place this tower in screen coordinates.
      */
     public FirewallTower(PointF position) {
         super(
@@ -83,23 +43,11 @@ public class FirewallTower extends Tower {
     }
 
     /**
-     * Updates the tower state each frame, managing target acquisition and validation.
-     *
-     * <p>This method performs essential housekeeping by clearing invalid targets.
-     * A target becomes invalid when:</p>
-     * <ul>
-     *   <li>The enemy has been destroyed (no longer alive)</li>
-     *   <li>The enemy has moved out of the tower's attack range</li>
-     * </ul>
-     *
-     * <p>Clearing invalid targets allows the targeting system to acquire new
-     * enemies on the next targeting pass.</p>
-     *
-     * @param deltaTime Time elapsed since the last update call, in seconds.
-     *                  Used for time-based calculations and animations.
+     * Updates the tower state each frame, clearing invalid targets.
+     * A target is invalid if it's dead or out of range.
      */
     @Override
-    public void update(float deltaTime) {
+    public void update() {
         // Validate current target - clear if dead or out of range
         if (target != null && (!target.isAlive() || isOutOfRange(target))) {
             target = null;
@@ -107,23 +55,10 @@ public class FirewallTower extends Tower {
     }
 
     /**
-     * Fires a projectile at the current target if conditions are met.
+     * Fires a projectile that deals direct damage and applies burn effect.
+     * Burn deals 50% of direct damage per second for 2.5 seconds.
      *
-     * <p>Creates a fire-based projectile that deals direct damage on impact
-     * plus applies a burn status effect for damage over time. The burn effect
-     * deals 50% of the tower's direct damage per second for 2.5 seconds.</p>
-     *
-     * <h4>Projectile Configuration:</h4>
-     * <ul>
-     *   <li><b>Speed (400):</b> Moderate projectile speed, balanced for visual clarity</li>
-     *   <li><b>Burn DPS:</b> 50% of direct damage (5 DPS at base level)</li>
-     *   <li><b>Burn Duration:</b> 2.5 seconds for total burn damage of 12.5 at base</li>
-     * </ul>
-     *
-     * <p>Total damage per hit at base level: 10 (direct) + 12.5 (burn) = 22.5 damage</p>
-     *
-     * @return A new Projectile targeting the current enemy with burn effect attached,
-     *         or {@code null} if no valid target exists or the tower is on cooldown.
+     * @return A new Projectile with burn effect, or null if no valid target or on cooldown.
      */
     @Override
     public Projectile fire() {
@@ -157,11 +92,7 @@ public class FirewallTower extends Tower {
     /**
      * Returns the display name for this tower type.
      *
-     * <p>This identifier is used in the UI for tower selection, upgrade menus,
-     * and player-facing text. The name "Firewall" reflects the cybersecurity
-     * theme of the game.</p>
-     *
-     * @return The string "Firewall" as this tower's type identifier.
+     * @return The string "Firewall".
      */
     @Override
     public String getType() {
@@ -169,27 +100,11 @@ public class FirewallTower extends Tower {
     }
 
     /**
-     * Upgrades the tower to the next level, enhancing stats and penetration.
-     *
-     * <p>In addition to the base stat upgrades provided by the parent class
-     * (damage, range, fire rate), the Firewall Tower gains increased penetration
-     * chance with each upgrade. This allows projectiles to potentially hit
-     * multiple enemies, making upgraded Firewall Towers effective against
-     * clustered enemy formations.</p>
-     *
-     * <h4>Penetration Progression:</h4>
-     * <ul>
-     *   <li>Level 1: 0% penetration (base)</li>
-     *   <li>Level 2: 15% penetration</li>
-     *   <li>Level 3: 30% penetration</li>
-     *   <li>Level 4: 45% penetration</li>
-     *   <li>Level 5+: 60% penetration (capped)</li>
-     * </ul>
+     * Upgrades the tower, enhancing base stats and increasing penetration by 15% (capped at 60%).
+     * Penetration allows projectiles to hit multiple enemies.
      *
      * @param upgradeCost The amount of credits deducted for this upgrade.
-     *                    Used for tracking total investment in the tower.
-     * @return {@code true} if the upgrade was successful, {@code false} if
-     *         the tower is already at maximum level or upgrade failed.
+     * @return true if upgrade was successful, false if at maximum level or failed.
      */
     @Override
     public boolean upgrade(int upgradeCost) {
