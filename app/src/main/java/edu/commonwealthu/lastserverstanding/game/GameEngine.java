@@ -1662,6 +1662,16 @@ public class GameEngine {
     }
 
     /**
+     * Plays a button click sound effect.
+     * Can be called from UI components to provide audio feedback.
+     */
+    public void playButtonClickSound() {
+        if (soundManager != null) {
+            soundManager.playSound(SoundManager.SoundType.BUTTON_CLICK);
+        }
+    }
+
+    /**
      * Cleanup method to release resources when game is destroyed.
      * Should be called from Fragment/Activity onDestroy().
      */

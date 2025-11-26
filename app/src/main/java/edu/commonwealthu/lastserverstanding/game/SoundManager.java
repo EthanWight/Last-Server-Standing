@@ -48,7 +48,8 @@ public class SoundManager {
     public enum SoundType {
         FIREWALL_BURN,
         HONEYPOT_STICKY,
-        JAMMER_ZAP
+        JAMMER_ZAP,
+        BUTTON_CLICK
     }
 
     /**
@@ -104,6 +105,7 @@ public class SoundManager {
         loadedCount += loadSound(SoundType.FIREWALL_BURN, R.raw.firewall_burn);
         loadedCount += loadSound(SoundType.HONEYPOT_STICKY, R.raw.honeypot_sticky);
         loadedCount += loadSound(SoundType.JAMMER_ZAP, R.raw.jammer_zap);
+        loadedCount += loadSound(SoundType.BUTTON_CLICK, R.raw.button_click);
 
         Log.d(TAG, "Loaded " + loadedCount + " of " + SoundType.values().length + " sound effects");
     }

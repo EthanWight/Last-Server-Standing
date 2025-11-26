@@ -283,10 +283,16 @@ public class GameFragment extends Fragment {
         });
 
         // Set up next wave button
-        nextWaveFab.setOnClickListener(v -> startNextWave());
+        nextWaveFab.setOnClickListener(v -> {
+            playButtonSound();
+            startNextWave();
+        });
 
         // Set up settings button
-        settingsFab.setOnClickListener(v -> openSettings());
+        settingsFab.setOnClickListener(v -> {
+            playButtonSound();
+            openSettings();
+        });
 
         // Set up tower selection buttons with drag and drop
         setupTowerDragAndDrop(fabFirewall, 0);
@@ -405,6 +411,7 @@ public class GameFragment extends Fragment {
     private void setupTowerDragAndDrop(AccessibleImageButton fab, int towerIndex) {
         // Add click listener for accessibility support
         fab.setOnClickListener(v -> {
+            playButtonSound();
             // Ignore click if it's from a drag operation
             if (isDragging) {
                 isDragging = false;
@@ -725,9 +732,21 @@ public class GameFragment extends Fragment {
                 .create();
 
         // Set up close button to dismiss dialog
-        closeButton.setOnClickListener(v -> dialog.dismiss());
+        closeButton.setOnClickListener(v -> {
+            playButtonSound();
+            dialog.dismiss();
+        });
 
         dialog.show();
+    }
+
+    /**
+     * Plays a button click sound effect for user feedback.
+     */
+    private void playButtonSound() {
+        if (gameEngine != null) {
+            gameEngine.playButtonClickSound();
+        }
     }
 
     /**
@@ -795,6 +814,7 @@ public class GameFragment extends Fragment {
 
         // Set up upgrade button click
         upgradeButton.setOnClickListener(v -> {
+            playButtonSound();
             if (gameEngine.upgradeTower(tower)) {
                 Toast.makeText(requireContext(),
                         getString(R.string.tower_upgraded_format, towerType, tower.getLevel()),
@@ -811,6 +831,7 @@ public class GameFragment extends Fragment {
 
         // Set up delete button
         deleteButton.setOnClickListener(v -> {
+            playButtonSound();
             // Show confirmation dialog
             int totalInvestment = tower.getTotalInvestment();
             int refundAmount = totalInvestment / 2;
@@ -818,6 +839,7 @@ public class GameFragment extends Fragment {
                     .setTitle("Delete Tower")
                     .setMessage("Delete this tower?\n\nTotal Investment: " + totalInvestment + " resources\nRefund (50%): " + refundAmount + " resources")
                     .setPositiveButton("Delete", (confirmDialog, which) -> {
+                        playButtonSound();
                         if (gameEngine.removeTower(tower)) {
                             Toast.makeText(requireContext(),
                                     "Tower deleted. Refunded " + refundAmount + " resources.",
@@ -834,7 +856,10 @@ public class GameFragment extends Fragment {
         });
 
         // Set up close button
-        closeButton.setOnClickListener(v -> dialog.dismiss());
+        closeButton.setOnClickListener(v -> {
+            playButtonSound();
+            dialog.dismiss();
+        });
 
         dialog.show();
     }
@@ -1207,6 +1232,7 @@ public class GameFragment extends Fragment {
                 .setTitle("Game Over!")
                 .setMessage(message)
                 .setPositiveButton("Main Menu", (dialog, which) -> {
+                    playButtonSound();
                     // Delete the auto-save since game is over
                     viewModel.deleteAutoSave(new edu.commonwealthu.lastserverstanding
                             .data.repository.GameRepository.DeleteCallback() {
@@ -1236,6 +1262,7 @@ public class GameFragment extends Fragment {
                     }
                 })
                 .setNegativeButton("New Game", (dialog, which) -> {
+                    playButtonSound();
                     // Delete the auto-save since we're starting fresh
                     viewModel.deleteAutoSave(new edu.commonwealthu.lastserverstanding
                             .data.repository.GameRepository.DeleteCallback() {
