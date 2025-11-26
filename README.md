@@ -1,7 +1,7 @@
 # Last-Server-Standing  
 A tower defense Android game developed by **Ethan Wight**.
 
-## 🖥️ About the Game  
+## About the Game  
 **Last-Server-Standing** is a fast-paced tower defense game where your mission is to **protect the last surviving server** from waves of incoming digital threats — including **bugs, viruses, trojan horses**, and more.
 
 Strategically place defenses, manage resources, and survive increasingly difficult waves.  
@@ -9,14 +9,14 @@ Once the server falls, the network collapses — so defend it at all costs!
 
 ---
 
-## 🎮 Features  
+## Features  
 - Tower-defense style gameplay  
 - Incoming waves of bugs, viruses, and trojans  
 - Increasing difficulty and enemy variety  
 
 ---
 
-## 📱 Installation & Running in Android Studio  
+## Installation & Running in Android Studio  
 
 ### **Prerequisites**
 - **Android Studio (latest version)**  
@@ -58,14 +58,10 @@ cd Last-Server-Standing
 ---
 
 ### **4. Build & Run the Game**
-Click the Run ▶️ button, or press:
+Click the Run button, or press:
 ```
 Shift + F10
 ```
 Android Studio will build, install, and launch the game.
 
 ---
-
-## **🐛 Known Issues**
-- UI scaling inconsistent on smaller screens
-- FPS drops during high enemy counts
