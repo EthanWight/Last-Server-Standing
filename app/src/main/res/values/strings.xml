@@ -73,9 +73,11 @@
     <string name="view_info">View Info</string>
     <string name="game_info_description">Learn about towers and enemies</string>
     <string name="towers">Towers</string>
+    <string name="tower_upgrades">Tower Upgrades</string>
     <string name="enemies">Enemies</string>
 
     <!-- Tower Info Descriptions -->
+    <string name="tower_upgrades_info"><b>Upgrade System</b>\n\n<b>Max Level:</b> 5\n\n<b>Upgrade Cost:</b> Base Cost × 2^Level\n• Level 1→2: Base Cost × 2\n• Level 2→3: Base Cost × 4\n• Level 3→4: Base Cost × 8\n• Level 4→5: Base Cost × 16\n\n<b>Stat Improvements per Level:</b>\n• Damage: +20%\n• Range: +10%\n• Fire Rate: +20%\n\n<b>Strategy Tip:</b> Upgrade your best-positioned towers first to maximize their effectiveness throughout the game!</string>
     <string name="firewall_tower_info"><b>Firewall Tower</b>\n\nCost: 200\nDamage: 10\nRange: 150\nFire Rate: 2.0/sec\n\n<b>Ability:</b> Applies a burn effect that deals damage over time (50% of direct damage for 2.5 seconds). Gains penetration chance with upgrades, potentially damaging multiple enemies.</string>
     <string name="honeypot_tower_info" tools:ignore="StringFormatInvalid"><b>Honeypot Tower</b>\n\nCost: 300\nDamage: 15\nRange: 120\nFire Rate: 1.5/sec\n\n<b>Ability:</b> Covers enemies in sticky glue, slowing their movement by 50% for 3 seconds. Excellent for controlling enemy movement and creating choke points.</string>
     <string name="jammer_tower_info"><b>Jammer Tower</b>\n\nCost: 400\nDamage: 10\nRange: 200\nFire Rate: 3.0/sec\n\n<b>Ability:</b> Stuns enemies for 0.5 seconds with very fast attack speed. Wide range makes it ideal for covering large areas and hitting multiple targets.</string>

@@ -95,6 +95,9 @@ public class GameEngine {
     /** Game map with tile types and buildable areas. */
     private GameMap gameMap;
 
+    /** Sound manager for playing tower attack sound effects. */
+    private SoundManager soundManager;
+
     // ==================== World Dimensions ====================
 
     /** Width of the game world in pixels. */
@@ -380,6 +383,10 @@ public class GameEngine {
             // Set health bar colors now that context is available
             healthBarPaint.setColor(ContextCompat.getColor(context, R.color.health_bar_fill));
             healthBarBgPaint.setColor(ContextCompat.getColor(context, R.color.health_bar_background));
+
+            // Initialize sound manager
+            soundManager = new SoundManager(context);
+            soundManager.setSoundEnabled(soundEnabled);
         }
     }
 
@@ -447,6 +454,9 @@ public class GameEngine {
                     synchronized (projectiles) {
                         projectiles.add(projectile);
                     }
+
+                    // Play tower-specific sound effect
+                    playTowerSound(tower.getType());
                 }
             }
         }
@@ -1575,6 +1585,9 @@ public class GameEngine {
      */
     public void setSoundEnabled(boolean enabled) {
         this.soundEnabled = enabled;
+        if (soundManager != null) {
+            soundManager.setSoundEnabled(enabled);
+        }
     }
 
     /**
@@ -1618,6 +1631,44 @@ public class GameEngine {
     public void notifyWaveComplete(int waveNumber) {
         if (gameListener != null) {
             gameListener.onWaveComplete(waveNumber);
+        }
+    }
+
+    /**
+     * Plays the appropriate sound effect for a tower type.
+     *
+     * @param towerType The type of tower ("Firewall", "Honeypot", "Jammer")
+     */
+    private void playTowerSound(String towerType) {
+        if (soundManager == null) {
+            android.util.Log.w("GameEngine", "SoundManager is null, cannot play sound for " + towerType);
+            return;
+        }
+
+        switch (towerType) {
+            case "Firewall":
+                android.util.Log.d("GameEngine", "Playing Firewall burn sound");
+                soundManager.playSound(SoundManager.SoundType.FIREWALL_BURN);
+                break;
+            case "Honeypot":
+                android.util.Log.d("GameEngine", "Playing Honeypot sticky sound");
+                soundManager.playSound(SoundManager.SoundType.HONEYPOT_STICKY);
+                break;
+            case "Jammer":
+                android.util.Log.d("GameEngine", "Playing Jammer zap sound");
+                soundManager.playSound(SoundManager.SoundType.JAMMER_ZAP);
+                break;
+        }
+    }
+
+    /**
+     * Cleanup method to release resources when game is destroyed.
+     * Should be called from Fragment/Activity onDestroy().
+     */
+    public void cleanup() {
+        if (soundManager != null) {
+            soundManager.release();
+            soundManager = null;
         }
     }
 

@@ -1409,6 +1409,11 @@ public class GameFragment extends Fragment {
             gameView.stopGameLoop();
         }
 
+        // Clean up game engine resources (sound manager, etc.)
+        if (gameEngine != null) {
+            gameEngine.cleanup();
+        }
+
         // Clean up HUD handler to prevent memory leaks
         if (hudHandler != null && hudUpdater != null) {
             hudHandler.removeCallbacks(hudUpdater);

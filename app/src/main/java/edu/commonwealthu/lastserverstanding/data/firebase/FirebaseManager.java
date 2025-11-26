@@ -13,6 +13,8 @@ import java.util.Map;
  * Manages Firebase Firestore leaderboard operations.
  * Handles score submission and retrieval with automatic deduplication using userId.
  * Gracefully degrades if Firebase is unavailable.
+ *
+ * @author Ethan Wight
  */
 public class FirebaseManager {
 

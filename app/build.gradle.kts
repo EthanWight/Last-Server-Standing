@@ -53,6 +53,9 @@ dependencies {
     // Gson for JSON serialization
     implementation(libs.gson)
 
+    // SplashScreen API
+    implementation(libs.splashscreen)
+
     // Firebase - Import the Firebase BoM
     implementation(platform(libs.firebase.bom))
 

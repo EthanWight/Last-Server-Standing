@@ -43,6 +43,24 @@
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
+    <!-- Splash Screen Theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Set the splash screen background color -->
+        <item name="windowSplashScreenBackground">@color/background_deep</item>
+
+        <!-- Set the splash screen icon (your launcher icon) -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+
+        <!-- Icon background color (optional, can be transparent) -->
+        <item name="windowSplashScreenIconBackgroundColor">@color/background_deep</item>
+
+        <!-- Duration the splash screen is shown -->
+        <item name="windowSplashScreenAnimationDuration">300</item>
+
+        <!-- Post-splash screen theme to use -->
+        <item name="postSplashScreenTheme">@style/Theme.LastServerStanding</item>
+    </style>
+
     <style name="Theme.LastServerStanding" parent="Base.Theme.LastServerStanding" />
 
     <!-- Typography Styles -->

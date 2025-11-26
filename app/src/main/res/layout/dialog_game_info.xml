@@ -103,6 +103,44 @@
             android:layout_marginBottom="@dimen/spacing_md"
             android:alpha="0.3" />
 
+        <!-- Tower Upgrades Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tower_upgrades"
+            android:textSize="@dimen/text_size_xl"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="@dimen/spacing_xs" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_md"
+            app:cardBackgroundColor="@color/surface_elevated"
+            app:cardCornerRadius="@dimen/corner_radius_md"
+            app:cardElevation="@dimen/elevation_sm">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tower_upgrades_info"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_size_body"
+                android:padding="@dimen/spacing_md"
+                android:lineSpacingMultiplier="1.2"
+                tools:ignore="VisualLintLongText" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/divider_height"
+            android:background="@color/text_secondary"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:alpha="0.3" />
+
         <!-- Enemies Section -->
         <TextView
             android:layout_width="wrap_content"

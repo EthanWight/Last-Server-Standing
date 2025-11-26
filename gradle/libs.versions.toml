@@ -11,6 +11,7 @@ lifecycle = "2.10.0"
 navigation = "2.9.6"
 gson = "2.13.2"
 firebaseBom = "34.6.0"
+splashscreen = "1.2.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -31,6 +32,9 @@ navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version
 
 # Gson
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+
+# SplashScreen
+splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
