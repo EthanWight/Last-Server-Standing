@@ -97,5 +97,4 @@
     <color name="drag_preview_invalid">#78FF9696</color>      <!-- Red transparent -->
 
     <!-- Debug/Testing -->
-    <color name="debug_white">#FFFFFFFF</color>
 </resources>

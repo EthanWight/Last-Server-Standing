@@ -35,11 +35,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     private boolean gridNeedsRedraw = true;
     private android.graphics.Bitmap gridCache;
     private Canvas gridCacheCanvas;
-    private final int gridSize = 64;
+    private static final int GRID_SIZE = 64;
     private int gridWidth;
     private int gridHeight;
     private PointF cameraOffset;
-    private final float cameraZoom = 1.0f;
+    private static final float CAMERA_ZOOM = 1.0f;
     private PointF lastTouchPoint;
     private final PointF tempTouchPoint = new PointF();
     private OnTapListener tapListener;
@@ -57,9 +57,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
         /**
          * Called when user performs a tap gesture on the game view.
          *
-         * @param worldPosition The tap position in world coordinates (grid-aligned)
+         * @param position The tap position in world coordinates (grid-aligned)
          */
-        void onTap(PointF worldPosition);
+        @SuppressWarnings("unused") // Parameter is used in implementations (e.g., GameFragment.handleTowerPlacement)
+        void onTap(PointF position);
     }
 
     /**
@@ -184,8 +185,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
      * @param height The view height in pixels
      */
     private void calculateGridDimensions(int width, int height) {
-        int newGridWidth = width / gridSize;
-        int newGridHeight = height / gridSize;
+        int newGridWidth = width / GRID_SIZE;
+        int newGridHeight = height / GRID_SIZE;
 
         // Check if dimensions changed
         if (newGridWidth != gridWidth || newGridHeight != gridHeight) {
@@ -310,7 +311,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
             
             // Apply camera transform
             canvas.translate(cameraOffset.x, cameraOffset.y);
-            canvas.scale(cameraZoom, cameraZoom);
+            canvas.scale(CAMERA_ZOOM, CAMERA_ZOOM);
             
             // Draw grid
             drawGrid();
@@ -338,8 +339,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
      * Draws the game grid using bitmap caching for performance optimization.
      */
     private void drawGrid() {
-        int gridPixelWidth = gridWidth * gridSize;
-        int gridPixelHeight = gridHeight * gridSize;
+        int gridPixelWidth = gridWidth * GRID_SIZE;
+        int gridPixelHeight = gridHeight * GRID_SIZE;
 
         // Redraw grid to cache if needed
         if (gridNeedsRedraw && gridPixelWidth > 0 && gridPixelHeight > 0) {
@@ -368,13 +369,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
                 // Draw grid to cache
                 // Vertical lines
                 for (int x = 0; x <= gridWidth; x++) {
-                    float xPos = x * gridSize;
+                    float xPos = x * GRID_SIZE;
                     gridCacheCanvas.drawLine(xPos, 0, xPos, gridPixelHeight, gridPaint);
                 }
 
                 // Horizontal lines
                 for (int y = 0; y <= gridHeight; y++) {
-                    float yPos = y * gridSize;
+                    float yPos = y * GRID_SIZE;
                     gridCacheCanvas.drawLine(0, yPos, gridPixelWidth, yPos, gridPaint);
                 }
 
@@ -401,14 +402,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
     private void drawGridDirect() {
         // Vertical lines
         for (int x = 0; x <= gridWidth; x++) {
-            float xPos = x * gridSize;
-            canvas.drawLine(xPos, 0, xPos, gridHeight * gridSize, gridPaint);
+            float xPos = x * GRID_SIZE;
+            canvas.drawLine(xPos, 0, xPos, gridHeight * GRID_SIZE, gridPaint);
         }
 
         // Horizontal lines
         for (int y = 0; y <= gridHeight; y++) {
-            float yPos = y * gridSize;
-            canvas.drawLine(0, yPos, gridWidth * gridSize, yPos, gridPaint);
+            float yPos = y * GRID_SIZE;
+            canvas.drawLine(0, yPos, gridWidth * GRID_SIZE, yPos, gridPaint);
         }
     }
     
@@ -416,7 +417,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
      * Draws the drag preview showing tower placement position, validity, and range.
      */
     private void drawDragPreview() {
-        float radius = gridSize / 2f;
+        float radius = GRID_SIZE / 2f;
 
         // Draw semi-transparent background circle
         paint.setStyle(Paint.Style.FILL);
@@ -433,7 +434,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
                 android.graphics.drawable.Drawable drawable = androidx.appcompat.content.res.AppCompatResources.getDrawable(getContext(), dragPreviewIconRes);
                 if (drawable != null) {
                     // Calculate icon bounds centered on preview position
-                    int iconSize = (int) (gridSize * 0.6f); // Icon is 60% of grid size
+                    int iconSize = (int) (GRID_SIZE * 0.6f); // Icon is 60% of grid size
                     int left = (int) (dragPreviewPosition.x - iconSize / 2f);
                     int top = (int) (dragPreviewPosition.y - iconSize / 2f);
                     int right = left + iconSize;
@@ -553,11 +554,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Cho
      */
     public PointF screenToWorld(PointF screenPos) {
         return new PointF(
-            (screenPos.x - cameraOffset.x) / cameraZoom,
-            (screenPos.y - cameraOffset.y) / cameraZoom
+            (screenPos.x - cameraOffset.x) / CAMERA_ZOOM,
+            (screenPos.y - cameraOffset.y) / CAMERA_ZOOM
         );
     }
 
     // Getters
-    public int getGridSize() { return gridSize; }
+    public int getGridSize() { return GRID_SIZE; }
 }
