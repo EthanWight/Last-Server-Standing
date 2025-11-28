@@ -184,67 +184,34 @@ public class SettingsFragment extends Fragment {
     }
 
     /**
-     * Shows confirmation dialog and navigates to main menu.
-     * Saves current game progress before navigating.
+     * Navigates to main menu, silently saving game progress if present.
+     * No popup is shown - save happens in background.
      */
     private void goToMainMenu() {
-        // Show confirmation dialog
-        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Return to Main Menu")
-                .setMessage("Return to main menu? Your progress will be saved.")
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    // Save current game state before returning to menu
-                    saveCurrentGameAndReturnToMenu();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    /**
-     * Save current game state and navigate to main menu
-     */
-    private void saveCurrentGameAndReturnToMenu() {
         GameEngine gameEngine = viewModel.getGameEngine();
 
         if (gameEngine != null && gameEngine.getCurrentWave() > 0) {
-            // There's actual game progress to save
+            // There's actual game progress to save - do it silently
             GameState gameState = gameEngine.captureGameState();
-
-            Log.d(TAG, "Saving game state before returning to menu - Wave: " + gameState.currentWave);
+            Log.d(TAG, "Silently saving game state before returning to menu - Wave: " + gameState.currentWave);
 
             viewModel.saveGame(gameState, true, new GameRepository.SaveCallback() {
                 @Override
                 public void onSuccess(int saveId) {
                     Log.d(TAG, "Game auto-saved successfully - SaveID: " + saveId);
-
-                    if (isAdded()) {
-                        requireActivity().runOnUiThread(() -> {
-                            Toast.makeText(requireContext(), "Game saved", Toast.LENGTH_SHORT).show();
-
-                            // Navigate to main menu
-                            Navigation.findNavController(requireView()).navigate(R.id.action_settings_to_menu);
-                        });
-                    }
                 }
 
                 @Override
                 public void onError(String error) {
                     Log.e(TAG, "Failed to save game: " + error);
-
-                    if (isAdded()) {
-                        requireActivity().runOnUiThread(() -> {
-                            // Still navigate even if save failed
-                            Toast.makeText(requireContext(), "Warning: Failed to save game", Toast.LENGTH_SHORT).show();
-                            Navigation.findNavController(requireView()).navigate(R.id.action_settings_to_menu);
-                        });
-                    }
                 }
             });
         } else {
-            // No progress to save, just navigate
-            Log.d(TAG, "No game progress to save - returning to menu");
-            Navigation.findNavController(requireView()).navigate(R.id.action_settings_to_menu);
+            Log.d(TAG, "No game progress to save");
         }
+
+        // Navigate to main menu immediately (don't wait for save to complete)
+        Navigation.findNavController(requireView()).navigate(R.id.action_settings_to_menu);
     }
 
     /**

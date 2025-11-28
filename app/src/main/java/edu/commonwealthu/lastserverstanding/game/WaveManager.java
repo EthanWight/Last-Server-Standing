@@ -32,10 +32,6 @@ public class WaveManager {
     private final List<PointF> goalPoints;
     private final Random random;
     
-    // Difficulty scaling
-    private float difficultyMultiplier;
-    private static final float DIFFICULTY_INCREASE_PER_WAVE = 0.15f;
-    
     /**
      * Constructor for WaveManager.
      */
@@ -45,7 +41,6 @@ public class WaveManager {
         this.timeSinceLastSpawn = 0;
         this.enemiesSpawnedThisWave = 0;
         this.spawnInterval = 1.0f;
-        this.difficultyMultiplier = 1.0f;
         this.random = new Random();
         
         // Initialize spawn and goal points
@@ -101,13 +96,10 @@ public class WaveManager {
         isWaveActive = true;
         timeSinceLastSpawn = 0;
         enemiesSpawnedThisWave = 0;
-        
+
         // Calculate wave parameters with difficulty scaling
         calculateWaveParameters();
-        
-        // Update difficulty multiplier
-        difficultyMultiplier = 1.0f + (currentWave - 1) * DIFFICULTY_INCREASE_PER_WAVE;
-        
+
         // Award resources for starting new wave
         gameEngine.addResources(50 + currentWave * 10);
     }
@@ -241,10 +233,6 @@ public class WaveManager {
         int waveBonus = 100 + (currentWave * 25);
         gameEngine.addResources(waveBonus);
 
-        // Award score bonus
-        long scoreBonus = (long)(500 * currentWave * difficultyMultiplier);
-        gameEngine.addScore(scoreBonus);
-
         // Notify wave completion (for autosave)
         gameEngine.notifyWaveComplete(currentWave);
     }
@@ -273,7 +261,5 @@ public class WaveManager {
         this.isWaveActive = false; // Wave is paused when loading
         this.enemiesSpawnedThisWave = 0;
         this.timeSinceLastSpawn = 0;
-        // Restore difficulty multiplier for the current wave
-        this.difficultyMultiplier = 1.0f + (wave - 1) * DIFFICULTY_INCREASE_PER_WAVE;
     }
 }

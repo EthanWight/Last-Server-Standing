@@ -27,7 +27,6 @@ public class GameViewModel extends AndroidViewModel {
     private final MutableLiveData<Integer> currentWave = new MutableLiveData<>(0);
     private final MutableLiveData<Integer> resources = new MutableLiveData<>(500);
     private final MutableLiveData<Integer> health = new MutableLiveData<>(100);
-    private final MutableLiveData<Long> score = new MutableLiveData<>(0L);
 
     // Game engine instance (persists across navigation and config changes)
     private GameEngine gameEngine;
@@ -89,13 +88,11 @@ public class GameViewModel extends AndroidViewModel {
      * @param wave The current wave number.
      * @param res The current resources.
      * @param hp The current health.
-     * @param sc The current score.
      */
-    public void updateGameStats(int wave, int res, int hp, long sc) {
+    public void updateGameStats(int wave, int res, int hp) {
         currentWave.postValue(wave);
         resources.postValue(res);
         health.postValue(hp);
-        score.postValue(sc);
     }
 
     /**

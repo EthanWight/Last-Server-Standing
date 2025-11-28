@@ -61,9 +61,6 @@ public class GameEngine {
     /** Previous health value for detecting health loss. */
     private int previousHealth;
 
-    /** Player's accumulated score. */
-    private long score;
-
     /** Whether the game is currently paused. */
     private boolean isPaused;
 
@@ -309,7 +306,6 @@ public class GameEngine {
         resources = STARTING_RESOURCES;
         dataCenterHealth = STARTING_HEALTH;
         previousHealth = STARTING_HEALTH;
-        score = 0;
         isPaused = false;
         isGameOver = false;
         
@@ -479,7 +475,6 @@ public class GameEngine {
                 // Remove dead enemies
                 if (!enemy.isAlive()) {
                     resources += enemy.getReward();
-                    score += enemy.getReward() * 10L;
                     notifyStatsChanged();
                     enemyIterator.remove();
                 }
@@ -1302,21 +1297,11 @@ public class GameEngine {
     }
     
     /**
-     * Add score.
-     *
-     * @param amount Amount of score to add
-     */
-    public void addScore(long amount) {
-        score += amount;
-        notifyStatsChanged();
-    }
-
-    /**
      * Notify listener that stats have changed.
      */
     private void notifyStatsChanged() {
         if (gameListener != null) {
-            gameListener.onStatsChanged(currentWave, resources, dataCenterHealth, score);
+            gameListener.onStatsChanged(currentWave, resources, dataCenterHealth);
         }
     }
 
@@ -1354,7 +1339,6 @@ public class GameEngine {
         state.currentWave = currentWave;
         state.resources = resources;
         state.dataCenterHealth = dataCenterHealth;
-        state.score = score;
 
         // Capture tower data
         synchronized (towers) {
@@ -1406,7 +1390,6 @@ public class GameEngine {
         resources = state.resources;
         dataCenterHealth = state.dataCenterHealth;
         previousHealth = state.dataCenterHealth; // Initialize to avoid false alert on load
-        score = state.score;
 
         // Restore wave manager state to match saved wave
         waveManager.restoreWaveState(state.currentWave);
@@ -1602,7 +1585,6 @@ public class GameEngine {
     // Getters and Setters
     public int getCurrentWave() { return currentWave; }
     public int getResources() { return resources; }
-    public long getScore() { return score; }
     public boolean isPaused() { return isPaused; }
     public void setPaused(boolean paused) { this.isPaused = paused; }
     public int getFPS() { return fps; }
@@ -1619,7 +1601,7 @@ public class GameEngine {
         this.gameListener = listener;
         // Immediately notify with current stats
         if (listener != null) {
-            listener.onStatsChanged(currentWave, resources, dataCenterHealth, score);
+            listener.onStatsChanged(currentWave, resources, dataCenterHealth);
         }
     }
 
@@ -1687,7 +1669,7 @@ public class GameEngine {
      */
     public interface GameListener {
         void onGameOver(int finalWave);
-        void onStatsChanged(int wave, int resources, int health, long score);
+        void onStatsChanged(int wave, int resources, int health);
         void onWaveComplete(int waveNumber);
     }
 }

@@ -151,9 +151,9 @@ public class GameFragment extends Fragment {
             }
 
             @Override
-            public void onStatsChanged(int wave, int resources, int health, long score) {
+            public void onStatsChanged(int wave, int resources, int health) {
                 if (viewModel != null) {
-                    viewModel.updateGameStats(wave, resources, health, score);
+                    viewModel.updateGameStats(wave, resources, health);
                 }
             }
 
@@ -184,9 +184,9 @@ public class GameFragment extends Fragment {
                 }
 
                 @Override
-                public void onStatsChanged(int wave, int resources, int health, long score) {
+                public void onStatsChanged(int wave, int resources, int health) {
                     if (viewModel != null) {
-                        viewModel.updateGameStats(wave, resources, health, score);
+                        viewModel.updateGameStats(wave, resources, health);
                     }
                 }
 
@@ -211,9 +211,9 @@ public class GameFragment extends Fragment {
                 }
 
                 @Override
-                public void onStatsChanged(int wave, int resources, int health, long score) {
+                public void onStatsChanged(int wave, int resources, int health) {
                     if (viewModel != null) {
-                        viewModel.updateGameStats(wave, resources, health, score);
+                        viewModel.updateGameStats(wave, resources, health);
                     }
                 }
 
@@ -553,8 +553,6 @@ public class GameFragment extends Fragment {
             }
         });
 
-        // Score is observed but not displayed in HUD (shown at game over)
-        // viewModel.getScore().observe(getViewLifecycleOwner(), score -> { ... });
     }
 
     /**
@@ -591,7 +589,7 @@ public class GameFragment extends Fragment {
                 2.0f,
                 R.drawable.ic_tower_firewall,
                 false,
-                "Basic defense tower with high fire rate. Good all-around tower for early game."
+                "Applies burn damage over time. Balanced range and fire rate make it versatile for early game."
         ));
 
         // Honeypot Tower (unlocked)
@@ -604,7 +602,7 @@ public class GameFragment extends Fragment {
                 1.5f,
                 R.drawable.ic_tower_honeypot,
                 false,
-                "Slows enemies and deals damage over time. Effective for controlling enemy movement."
+                "Slows enemies by 50% for 3 seconds. Higher damage but short range requires strategic placement."
         ));
 
         // Jammer Tower (unlocked)
@@ -617,7 +615,7 @@ public class GameFragment extends Fragment {
                 3.0f,
                 R.drawable.ic_tower_jammer,
                 false,
-                "Fast attack speed with wide range. Best for hitting multiple targets."
+                "Stuns enemies briefly with rapid attacks. Widest range and highest DPS of basic towers."
         ));
     }
 
@@ -892,14 +890,14 @@ public class GameFragment extends Fragment {
     private String getTowerDescription(String towerType) {
         return switch (towerType) {
             case "Firewall" ->
-                    "Basic defense tower with high fire rate. "
-                    + "Good all-around tower for early game.";
+                    "Applies burn damage over time. "
+                    + "Balanced range and fire rate make it versatile for early game.";
             case "Honeypot" ->
-                    "Slows enemies and deals damage over time. "
-                    + "Effective for controlling enemy movement.";
+                    "Slows enemies by 50% for 3 seconds. "
+                    + "Higher damage but short range requires strategic placement.";
             case "Jammer" ->
-                    "Fast attack speed with wide range. "
-                    + "Best for hitting multiple targets.";
+                    "Stuns enemies briefly with rapid attacks. "
+                    + "Widest range and highest DPS of basic towers.";
             default -> "Unknown tower type.";
         };
     }
@@ -1143,9 +1141,6 @@ public class GameFragment extends Fragment {
             // Use device model as default
             String playerName = prefs.getString("player_name", android.os.Build.MODEL);
 
-            // Get the final score from game engine
-            long finalScore = gameEngine != null ? gameEngine.getScore() : 0;
-
             // Ensure user is authenticated and get userId for leaderboard submission
             FirebaseAuth auth = FirebaseAuth.getInstance();
             FirebaseUser currentUser = auth.getCurrentUser();
@@ -1172,7 +1167,7 @@ public class GameFragment extends Fragment {
             }
 
             // Show game over dialog
-            showGameOverDialog(finalWave, finalScore);
+            showGameOverDialog(finalWave);
         });
     }
 
@@ -1215,18 +1210,16 @@ public class GameFragment extends Fragment {
      * Show game over dialog.
      *
      * @param finalWave The final wave reached
-     * @param finalScore The final score achieved
      */
-    private void showGameOverDialog(int finalWave, long finalScore) {
+    private void showGameOverDialog(int finalWave) {
         if (!isAdded()) return;
 
         String message = String.format(Locale.getDefault(),
                 """
                         You reached Wave %d!
-                        Final Score: %,d
-                        
+
                         Your score has been submitted to the leaderboard.""",
-                finalWave, finalScore);
+                finalWave);
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Game Over!")
@@ -1285,6 +1278,24 @@ public class GameFragment extends Fragment {
                     // Re-initialize the game
                     if (gameView != null) {
                         gameView.setGameEngine(gameEngine);
+
+                        // Set world dimensions for the new game engine
+                        int width = gameView.getWidth();
+                        int height = gameView.getHeight();
+                        int gridSize = gameView.getGridSize();
+                        if (width > 0 && height > 0) {
+                            gameEngine.setWorldDimensions(width, height, gridSize);
+                            Log.d(TAG, "World dimensions set for new game: " + width + "x" + height);
+                        }
+                    }
+
+                    // Apply current settings to new game engine
+                    if (viewModel.getSettings().getValue() != null) {
+                        edu.commonwealthu.lastserverstanding.data.models.Settings settings =
+                            viewModel.getSettings().getValue();
+                        gameEngine.setSoundEnabled(settings.isSoundEnabled());
+                        gameEngine.setVibrationEnabled(settings.isVibrationEnabled());
+                        gameEngine.setShowTowerRanges(settings.isShowTowerRanges());
                     }
 
                     // Set up game event listener
@@ -1295,9 +1306,9 @@ public class GameFragment extends Fragment {
                         }
 
                         @Override
-                        public void onStatsChanged(int wave, int resources, int health, long score) {
+                        public void onStatsChanged(int wave, int resources, int health) {
                             if (viewModel != null) {
-                                viewModel.updateGameStats(wave, resources, health, score);
+                                viewModel.updateGameStats(wave, resources, health);
                             }
                         }
 

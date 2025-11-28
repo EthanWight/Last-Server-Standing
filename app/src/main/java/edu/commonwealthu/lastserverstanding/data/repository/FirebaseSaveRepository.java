@@ -34,7 +34,6 @@ public class FirebaseSaveRepository {
     private static final String FIELD_TIMESTAMP = "timestamp";
     private static final String FIELD_IS_AUTO_SAVE = "isAutoSave";
     private static final String FIELD_WAVE = "wave";
-    private static final String FIELD_SCORE = "score";
 
     private final FirebaseFirestore firestore;
     private final FirebaseAuth auth;
@@ -212,7 +211,6 @@ public class FirebaseSaveRepository {
         saveData.put(FIELD_TIMESTAMP, timestamp);
         saveData.put(FIELD_IS_AUTO_SAVE, isAutoSave);
         saveData.put(FIELD_WAVE, gameState.currentWave);
-        saveData.put(FIELD_SCORE, gameState.score);
 
         return saveData;
     }

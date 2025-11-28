@@ -15,7 +15,6 @@ public class GameState {
     public int currentWave;
     public int resources;
     public int dataCenterHealth;
-    public long score;
 
     // Serialized tower and enemy data
     public final List<TowerData> towers;

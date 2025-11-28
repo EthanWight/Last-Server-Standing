@@ -10,18 +10,12 @@ import edu.commonwealthu.lastserverstanding.model.Tower;
 /**
  * Firewall Tower - Primary damage-dealing tower that applies burn damage over time.
  * Moderate damage (10), medium range (150), fast fire rate (2.0/sec). Cost: 200 credits.
- * Upgrades gain penetration chance, allowing projectiles to hit multiple enemies.
- * Best placed at chokepoints where enemies cluster.
+ * Burn effect deals 50% of tower damage per second for 2.5 seconds.
+ * Best placed along enemy paths for consistent damage output.
  *
  * @author Ethan Wight
  */
 public class FirewallTower extends Tower {
-
-    /**
-     * Penetration chance for projectiles to damage multiple enemies.
-     * Starts at 0%, increases by 15% per upgrade, capped at 60%.
-     */
-    private float penetration;
 
     /**
      * Constructs a new Firewall Tower with default stats.
@@ -38,8 +32,6 @@ public class FirewallTower extends Tower {
             2.0f, // fireRate - 2 attacks per second provides steady damage output
             200 // cost - doubled from 100 to prevent early tower spam
         );
-        // Initialize penetration to 0 - players must upgrade to gain this ability
-        this.penetration = 0.0f;
     }
 
     /**
@@ -97,25 +89,6 @@ public class FirewallTower extends Tower {
     @Override
     public String getType() {
         return "Firewall";
-    }
-
-    /**
-     * Upgrades the tower, enhancing base stats and increasing penetration by 15% (capped at 60%).
-     * Penetration allows projectiles to hit multiple enemies.
-     *
-     * @param upgradeCost The amount of credits deducted for this upgrade.
-     * @return true if upgrade was successful, false if at maximum level or failed.
-     */
-    @Override
-    public boolean upgrade(int upgradeCost) {
-        // Attempt base upgrade first (handles level cap and stat increases)
-        boolean upgraded = super.upgrade(upgradeCost);
-        if (upgraded) {
-            // Increase penetration by 15% per level, capped at 60% maximum
-            // This cap prevents the tower from becoming too powerful
-            penetration = Math.min(penetration + 0.15f, 0.6f);
-        }
-        return upgraded;
     }
 
 }

@@ -138,8 +138,7 @@ public class MainMenuFragment extends Fragment {
                 // Found a save - show continue button if it has progress
                 if (gameState != null && gameState.currentWave > 0) {
                     Log.d(TAG, "checkForFirebaseSave: ✓✓✓ SHOWING CONTINUE BUTTON");
-                    Log.d(TAG, "checkForFirebaseSave: Wave: " + gameState.currentWave
-                            + ", Score: " + gameState.score);
+                    Log.d(TAG, "checkForFirebaseSave: Wave: " + gameState.currentWave);
                     continueButton.setVisibility(View.VISIBLE);
                     Log.d(TAG, "checkForFirebaseSave: Button visibility set to VISIBLE");
                 } else {
