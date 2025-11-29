@@ -308,7 +308,7 @@
                 android:layout_gravity="center_vertical"
                 android:src="@android:drawable/ic_menu_info_details"
                 android:contentDescription="@string/game_info"
-                app:tint="@color/electric_blue" />
+                app:tint="@color/text_primary" />
         </LinearLayout>
 
         <!-- Save Button -->

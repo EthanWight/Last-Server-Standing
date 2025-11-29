@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,6 +20,7 @@ import java.util.List;
 
 import edu.commonwealthu.lastserverstanding.R;
 import edu.commonwealthu.lastserverstanding.data.firebase.FirebaseManager;
+import edu.commonwealthu.lastserverstanding.util.ToastHelper;
 
 /**
  * Stats Fragment - Displays leaderboard ranked by highest wave reached.
@@ -109,9 +109,10 @@ public class StatsFragment extends Fragment {
 
                     getActivity().runOnUiThread(() -> {
                         showError("Failed to connect: " + message);
-                        Toast.makeText(requireContext(),
-                                "Could not connect to leaderboard: " + message,
-                                Toast.LENGTH_LONG).show();
+                        if (getView() != null) {
+                            ToastHelper.showLong(getView(),
+                                    "Could not connect to leaderboard: " + message);
+                        }
                     });
                 }
             });
@@ -120,9 +121,10 @@ public class StatsFragment extends Fragment {
             responseReceived[0] = true;
             if (isAdded()) {
                 showError("Error: " + e.getMessage());
-                Toast.makeText(requireContext(),
-                        "Leaderboard error: " + e.getMessage(),
-                        Toast.LENGTH_LONG).show();
+                if (getView() != null) {
+                    ToastHelper.showLong(getView(),
+                            "Leaderboard error: " + e.getMessage());
+                }
             }
         }
     }

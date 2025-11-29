@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,6 +37,7 @@ import edu.commonwealthu.lastserverstanding.model.Tower;
 import edu.commonwealthu.lastserverstanding.model.towers.FirewallTower;
 import edu.commonwealthu.lastserverstanding.model.towers.HoneypotTower;
 import edu.commonwealthu.lastserverstanding.model.towers.JammerTower;
+import edu.commonwealthu.lastserverstanding.util.ToastHelper;
 import edu.commonwealthu.lastserverstanding.view.GameView;
 import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
@@ -325,7 +325,7 @@ public class GameFragment extends Fragment {
             // If wave is active and not paused, pause the game
             if (isWaveActive && !isPaused) {
                 gameEngine.setPaused(true);
-                Toast.makeText(requireContext(), "Game paused", Toast.LENGTH_SHORT).show();
+                ToastHelper.showShort(requireView(), "Game paused");
                 Log.d(TAG, "Game paused");
                 return;
             }
@@ -334,7 +334,7 @@ public class GameFragment extends Fragment {
             // (If paused but no wave active, fall through to start wave instead)
             if (isPaused && isWaveActive) {
                 gameEngine.setPaused(false);
-                Toast.makeText(requireContext(), "Game resumed!", Toast.LENGTH_SHORT).show();
+                ToastHelper.showShort(requireView(), "Game resumed!");
                 Log.d(TAG, "Game resumed");
                 return;
             }
@@ -348,9 +348,8 @@ public class GameFragment extends Fragment {
             // Auto-unpause the game when starting a wave
             gameEngine.setPaused(false);
 
-            Toast.makeText(requireContext(),
-                "Wave " + gameEngine.getCurrentWave() + " started!",
-                Toast.LENGTH_SHORT).show();
+            ToastHelper.showShort(requireView(),
+                "Wave " + gameEngine.getCurrentWave() + " started!");
 
             Log.d(TAG, "Wave " + gameEngine.getCurrentWave() + " started");
         }
@@ -634,9 +633,8 @@ public class GameFragment extends Fragment {
 
         // Check if tower is locked
         if (tower.isLocked()) {
-            Toast.makeText(requireContext(),
-                    tower.name() + " is locked! Complete more waves to unlock.",
-                    Toast.LENGTH_SHORT).show();
+            ToastHelper.showShort(requireView(),
+                    tower.name() + " is locked! Complete more waves to unlock.");
             return;
         }
 
@@ -664,7 +662,7 @@ public class GameFragment extends Fragment {
             message += " - Need " + (tower.cost() - resources) + " more!";
         }
 
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+        ToastHelper.showShort(requireView(), message);
         Log.d(TAG, "Tower selected: " + tower.name());
     }
 
@@ -814,16 +812,14 @@ public class GameFragment extends Fragment {
         upgradeButton.setOnClickListener(v -> {
             playButtonSound();
             if (gameEngine.upgradeTower(tower)) {
-                Toast.makeText(requireContext(),
-                        getString(R.string.tower_upgraded_format, towerType, tower.getLevel()),
-                        Toast.LENGTH_SHORT).show();
+                ToastHelper.showShort(requireView(),
+                        getString(R.string.tower_upgraded_format, towerType, tower.getLevel()));
                 Log.d(TAG, towerType + " upgraded - New stats: Damage=" + tower.getDamage() +
                         ", Range=" + tower.getRange() + ", FireRate=" + tower.getFireRate());
                 dialog.dismiss();
             } else {
-                Toast.makeText(requireContext(),
-                        getString(R.string.not_enough_resources),
-                        Toast.LENGTH_SHORT).show();
+                ToastHelper.showShort(requireView(),
+                        getString(R.string.not_enough_resources));
             }
         });
 
@@ -839,14 +835,12 @@ public class GameFragment extends Fragment {
                     .setPositiveButton("Delete", (confirmDialog, which) -> {
                         playButtonSound();
                         if (gameEngine.removeTower(tower)) {
-                            Toast.makeText(requireContext(),
-                                    "Tower deleted. Refunded " + refundAmount + " resources.",
-                                    Toast.LENGTH_SHORT).show();
+                            ToastHelper.showShort(requireView(),
+                                    "Tower deleted. Refunded " + refundAmount + " resources.");
                             dialog.dismiss();
                         } else {
-                            Toast.makeText(requireContext(),
-                                    "Failed to delete tower",
-                                    Toast.LENGTH_SHORT).show();
+                            ToastHelper.showShort(requireView(),
+                                    "Failed to delete tower");
                         }
                     })
                     .setNegativeButton("Cancel", null)
@@ -952,17 +946,15 @@ public class GameFragment extends Fragment {
             }
 
             if (towerToAdd == null) {
-                Toast.makeText(requireContext(),
-                        "Error: Unknown tower type",
-                        Toast.LENGTH_SHORT).show();
+                ToastHelper.showShort(requireView(),
+                        "Error: Unknown tower type");
                 return;
             }
 
             // Check if placement location is valid
             if (!gameEngine.isValidTowerPlacement(worldPosition)) {
-                Toast.makeText(requireContext(),
-                        "Invalid spot! Place towers on walls only.",
-                        Toast.LENGTH_SHORT).show();
+                ToastHelper.showShort(requireView(),
+                        "Invalid spot! Place towers on walls only.");
                 return;
             }
 
@@ -974,7 +966,7 @@ public class GameFragment extends Fragment {
                 String message = String.format(Locale.getDefault(),
                         "Cannot afford %s!\nCosts %d resources (you have %d)\nNeed %d more",
                         towerToPlace.name(), towerCost, currentResources, needed);
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                ToastHelper.showLong(requireView(), message);
                 return;
             }
 
@@ -985,8 +977,7 @@ public class GameFragment extends Fragment {
                 Log.d(TAG, String.format(Locale.getDefault(),
                         "Tower placed successfully at (%.0f, %.0f)",
                         worldPosition.x, worldPosition.y));
-                Toast.makeText(requireContext(), towerToPlace.name() + " placed!",
-                        Toast.LENGTH_SHORT).show();
+                ToastHelper.showShort(requireView(), towerToPlace.name() + " placed!");
             } else {
                 // Check why placement failed
                 if (gameEngine.getResources() < towerCost) {
@@ -994,18 +985,16 @@ public class GameFragment extends Fragment {
                     String failMessage = String.format(Locale.getDefault(),
                             "Cannot afford %s!\nCosts %d resources (you have %d)\nNeed %d more",
                             towerToPlace.name(), towerCost, gameEngine.getResources(), needed);
-                    Toast.makeText(requireContext(), failMessage, Toast.LENGTH_LONG).show();
+                    ToastHelper.showLong(requireView(), failMessage);
                 } else {
-                    Toast.makeText(requireContext(),
-                            "Invalid spot! Place towers on walls only.",
-                            Toast.LENGTH_SHORT).show();
+                    ToastHelper.showShort(requireView(),
+                            "Invalid spot! Place towers on walls only.");
                 }
             }
         } catch (Exception e) {
             Log.e(TAG, "Error placing tower", e);
-            Toast.makeText(requireContext(),
-                    "Error placing tower: " + e.getMessage(),
-                    Toast.LENGTH_LONG).show();
+            ToastHelper.showLong(requireView(),
+                    "Error placing tower: " + e.getMessage());
         }
     }
 
@@ -1042,8 +1031,9 @@ public class GameFragment extends Fragment {
                             requireActivity().runOnUiThread(() -> {
                                 String gameOverMessage = "Previous game ended at Wave "
                                         + gameState.currentWave + ". Starting new game.";
-                                Toast.makeText(requireContext(), gameOverMessage,
-                                        Toast.LENGTH_LONG).show();
+                                if (getView() != null) {
+                                    ToastHelper.showLong(getView(), gameOverMessage);
+                                }
 
                                 // Delete the old save and start fresh
                                 deleteAutoSave();
@@ -1071,9 +1061,10 @@ public class GameFragment extends Fragment {
                                 nextWaveFab.setVisibility(View.VISIBLE);
                             }
 
-                            Toast.makeText(requireContext(),
-                                    "Game loaded - Wave " + gameState.currentWave,
-                                    Toast.LENGTH_SHORT).show();
+                            if (getView() != null) {
+                                ToastHelper.showShort(getView(),
+                                        "Game loaded - Wave " + gameState.currentWave);
+                            }
                         });
                     }
                 }
@@ -1085,9 +1076,10 @@ public class GameFragment extends Fragment {
                 hasLoadedGame = true; // Mark as loaded to prevent re-initialization
                 if (isAdded()) {
                     requireActivity().runOnUiThread(() -> {
-                        Toast.makeText(requireContext(),
-                                "No saved game found. Starting new game.",
-                                Toast.LENGTH_SHORT).show();
+                        if (getView() != null) {
+                            ToastHelper.showShort(getView(),
+                                    "No saved game found. Starting new game.");
+                        }
 
                         // Set up for new game
                         gameEngine.setPaused(true);
@@ -1157,10 +1149,9 @@ public class GameFragment extends Fragment {
                             submitScoreToLeaderboard(userId, playerName, finalWave);
                         } else {
                             Log.e(TAG, "Failed to authenticate for leaderboard submission");
-                            if (isAdded()) {
-                                Toast.makeText(requireContext(),
-                                    "Warning: Failed to submit score to leaderboard",
-                                    Toast.LENGTH_SHORT).show();
+                            if (isAdded() && getView() != null) {
+                                ToastHelper.showShort(getView(),
+                                    "Warning: Failed to submit score to leaderboard");
                             }
                         }
                     });
@@ -1187,20 +1178,18 @@ public class GameFragment extends Fragment {
                 public void onSuccess() {
                     Log.d(TAG, "Score submitted successfully to leaderboard - UserId: "
                             + userId + ", Player: " + playerName + ", Wave: " + wave);
-                    if (isAdded()) {
-                        Toast.makeText(requireContext(),
-                                "Score submitted to leaderboard!",
-                                Toast.LENGTH_SHORT).show();
+                    if (isAdded() && getView() != null) {
+                        ToastHelper.showShort(getView(),
+                                "Score submitted to leaderboard!");
                     }
                 }
 
                 @Override
                 public void onError(String message) {
                     Log.e(TAG, "Failed to submit score: " + message);
-                    if (isAdded()) {
-                        Toast.makeText(requireContext(),
-                            "Warning: Failed to submit score to leaderboard",
-                            Toast.LENGTH_SHORT).show();
+                    if (isAdded() && getView() != null) {
+                        ToastHelper.showShort(getView(),
+                            "Warning: Failed to submit score to leaderboard");
                     }
                 }
             });

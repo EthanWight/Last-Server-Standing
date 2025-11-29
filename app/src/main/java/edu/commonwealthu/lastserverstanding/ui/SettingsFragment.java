@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,6 +20,7 @@ import edu.commonwealthu.lastserverstanding.data.models.GameState;
 import edu.commonwealthu.lastserverstanding.data.models.Settings;
 import edu.commonwealthu.lastserverstanding.data.repository.GameRepository;
 import edu.commonwealthu.lastserverstanding.game.GameEngine;
+import edu.commonwealthu.lastserverstanding.util.ToastHelper;
 import edu.commonwealthu.lastserverstanding.viewmodel.GameViewModel;
 
 /**
@@ -172,12 +172,12 @@ public class SettingsFragment extends Fragment {
 
         // Save via ViewModel
         viewModel.updateSettings(currentSettings);
-        
+
         // Refresh player name in Firebase repository for save continuity
         viewModel.refreshPlayerName();
 
         // Show confirmation
-        Toast.makeText(requireContext(), "Settings saved", Toast.LENGTH_SHORT).show();
+        ToastHelper.showShort(requireView(), "Settings saved");
 
         // Navigate back
         Navigation.findNavController(requireView()).navigateUp();
